@@ -63,6 +63,34 @@ All notable changes to this project are documented here. Format: [Date] v[Versio
 
 ---
 
-**Last Updated**: 2026-05-13
-**Current Version**: v3.6
-**Status**: ✅ Complete — App.jsx fully refactored. All inline functions extracted to lib/ modules. Factory instantiation live (lines 786–795).
+## [2026-05-14] v3.6.1 — Power Dialer + Audit Fixes
+
+### Added
+- **Power Dialer engine** moved from TodaysBlock → DialView (18s attempt 1, 30s attempt 2, auto-hangup)
+- **`fireDisp()` wrapper** in DialView: disposition buttons now advance PD to next lead when answered
+- **GitHub repository**: https://github.com/Jeremy-stack-ship-it/metkacrm (version control live)
+
+### Changed
+- TodaysBlock stripped to read-only planning view — all execution machinery removed
+- `TOKEN_FIELDS`, `renderLiveTokens`, `ATTEMPT1_SEC`, `ATTEMPT2_SEC` hoisted to module scope (no per-render redefinition)
+- `saveLeads` + `saveActivity` wrapped in `useCallback([])` — stable references
+- `makeLeadManager` + `makeActivityManager` wrapped in `useMemo` — downstream components no longer re-render on unrelated state changes
+- `todayLeads` moved to `useMemo` in App.jsx (was inline sort on every render)
+- Removed Bucket A→B→C and Name A–Z sort options from DialView (not needed in phase-engine workflow)
+- Deleted 3 dead source files: `src/TodaysBlock.jsx`, `src/DashboardTab.jsx`, `src/App.jsx.bak`
+
+### Fixed
+- `filteredContacts` useMemo missing 3 deps (`exclBucket`, `exclStage`, `exclDisp`)
+- Note history React keys using index → now `n.ts || n.id || i` (prevents full re-render on prepend)
+- Templates destructuring `[name, text]` → `[key, tpl]` with `tpl.name`/`tpl.text` (was producing `[object Object]`)
+- AppHeader null guard: `activityStats?.today` safe default prevents crash before Supabase reconciles
+- PD advance-after-disposition: answered calls now auto-advance instead of freezing
+
+### Build
+- `npm run build` ✅ 0 errors — 144 modules, 775.68 kB (207.09 kB gzip)
+
+---
+
+**Last Updated**: 2026-05-14
+**Current Version**: v3.6.1
+**Status**: ✅ Production ready. Power Dialer functional end-to-end. GitHub live.

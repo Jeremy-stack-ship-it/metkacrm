@@ -120,34 +120,4 @@ In Settings → Phase Lifecycle Engine:
 - **Phase Summary bar** — Live count of leads in each phase (P1 / P2 / P3 / M2 / EXIT / Unphased)
 
 ### UPDATED: Disposition Handling (Queue View)
-Logging a disposition from the lead detail view now:
-- Stamps `lastContact` with today's date
-- Applies `applyPhaseTransition` — next dial date auto-updates
-- Writes changes to both localStorage and Supabase cloud sync
-
-### UPDATED: CSV Import
-All imported leads are now auto-backfilled with phase data on import. No manual setup required.
-
-### UPDATED: Add Lead (Manual)
-Manually added leads auto-enter P1 with a full 17-point forward schedule from today.
-
-### FIXED: vite.config.js
-- Added `.jsx` and `.js` explicit loader mapping for Vite's esbuild dep scanner
-- Resolves `Expected identifier but found "/"` error on Windows during `npm run dev`
-- Build and dev server now both run cleanly
-
----
-
-## v1.0.0 — Initial Build (April 2026)
-
-- Single-file React CRM (React.createElement, no JSX in main component)
-- Supabase cloud sync + localStorage dual-write
-- Lead queue with stage/disposition tracking
-- Activity log with dial counter
-- Dashboard with KPI cards (Contact Rate, Show Rate, Close Rate, Week Dials)
-- Financial Tracker (weekly overhead vs. commission)
-- Settings: Supabase config, CSV import/export, manual lead entry
-- SMS notifications (manual copy/open — TCPA compliant, no ATDS)
-- Ghost Protocol messaging
-- Click-to-dial via tel: links
-- 2,440 leads imported across Bucket A (Hot), B (Warm), C (Cold)
+Logging a disposition from the lead detail view 
