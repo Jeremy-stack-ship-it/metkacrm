@@ -92,6 +92,10 @@ export default function DialView({
   // ── Queue filter: "today" shows only phase-engine due leads, "all" shows full queue ──
   const [dialQueueFilter, setDialQueueFilter] = useState('today');
 
+  // ── Power Dial queue: intersection of current UI queue and phase-engine due-today ──
+  // This is what Power Dial actually dials through — consistent with the TODAY badge.
+  const pdQueue = React.useMemo(() => queue.filter(isDueToday), [queue]);
+
   const [pdMode,         setPdMode]         = useState(false);
   const [pdIdx,          setPdIdx]          = useState(0);
   const [pdAttempt,      setPdAttempt]      = useState(1);
@@ -152,11 +156,11 @@ export default function DialView({
   }, [dialLead, hangUp, twilioDevice, handleDisposition, setOpenId, pdClearTimers]);
 
   const pdStart = useCallback(() => {
-    if (!todayLeads || !todayLeads.length) {
-      alert('No leads due today per the Phase Engine. Check Today\'s Block for details.');
+    if (!pdQueue || !pdQueue.length) {
+      alert('No leads due today in your current queue. Switch to ALL or adjust your filters.');
       return;
     }
-    const queue = [...todayLeads];
+    const queue = [...pdQueue];
     setPdLockedQueue(queue);
     setPdIdx(0); setPdAttempt(1); setPdStatus('dialing'); setPdMode(true);
 
@@ -186,7 +190,7 @@ export default function DialView({
         }, ATTEMPT2_SEC * 1000);
       }, 1500);
     }, ATTEMPT1_SEC * 1000);
-  }, [todayLeads, dialLead, hangUp, twilioDevice, handleDisposition, setOpenId, pdClearTimers, pdAdvanceToNext]);
+  }, [pdQueue, dialLead, hangUp, twilioDevice, handleDisposition, setOpenId, pdClearTimers, pdAdvanceToNext]);
 
   const pdStop = useCallback(() => {
     pdClearTimers();
@@ -367,34 +371,34 @@ export default function DialView({
                 React.createElement("span", null, "STOP POWER DIAL"),
                 React.createElement("span", {
                   style: { fontSize: "9px", fontWeight: "800", background: "rgba(220,38,38,0.3)", color: "#EF4444", borderRadius: "10px", padding: "1px 7px" }
-                }, pdIdx + 1 + "/" + pdLockedQueue.length)
+                }, (pdIdx + 1) + "/" + pdLockedQueue.length)
               )
             : React.createElement("button", {
                 onClick: pdStart,
-                title: "Auto-dial today's leads: 18s attempt 1, 30s attempt 2, then advance",
+                title: "Auto-dial: 18s attempt 1, 30s attempt 2, then advance to next lead",
                 style: {
                   width: "100%", minHeight: "34px", padding: "0 8px",
                   fontSize: "10px", fontWeight: "800", letterSpacing: "0.8px",
-                  background: todayCount > 0 ? "rgba(16,185,129,0.22)" : "rgba(255,255,255,0.06)",
-                  color: todayCount > 0 ? "#10B981" : "rgba(255,255,255,0.35)",
-                  border: "1px solid " + (todayCount > 0 ? "rgba(16,185,129,0.45)" : "rgba(255,255,255,0.12)"),
-                  borderRadius: "6px", cursor: todayCount > 0 ? "pointer" : "default",
+                  background: pdQueue.length > 0 ? "rgba(16,185,129,0.22)" : "rgba(255,255,255,0.06)",
+                  color: pdQueue.length > 0 ? "#10B981" : "rgba(255,255,255,0.35)",
+                  border: "1px solid " + (pdQueue.length > 0 ? "rgba(16,185,129,0.45)" : "rgba(255,255,255,0.12)"),
+                  borderRadius: "6px", cursor: pdQueue.length > 0 ? "pointer" : "default",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: "5px"
                 }
               },
                 React.createElement("span", null, "⚡"),
-                React.createElement("span", null, "POWER DIAL TODAY"),
+                React.createElement("span", null, "POWER DIAL"),
                 React.createElement("span", {
                   style: {
                     fontSize: "9px", fontWeight: "800",
-                    background: todayCount > 0 ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.1)",
-                    color: todayCount > 0 ? "#10B981" : "rgba(255,255,255,0.3)",
+                    background: pdQueue.length > 0 ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.1)",
+                    color: pdQueue.length > 0 ? "#10B981" : "rgba(255,255,255,0.3)",
                     borderRadius: "10px", padding: "1px 7px"
                   }
-                }, todayCount)
+                }, pdQueue.length)
               ),
 
-          // ▶ Dial This Queue — whatever is currently visible in the sidebar
+          // ▶ Manual Dial — one lead at a time, full queue as sorted
           queue.length > 0 && React.createElement("button", {
             onClick: () => {
               const ids = queue.map(l => l.id);
@@ -403,7 +407,7 @@ export default function DialView({
               try { localStorage.setItem(LS_SESSION, JSON.stringify(s)); } catch {}
               setOpenId(ids[0]); setDialSessionActive(true); setNoteText(""); setDetailTab("live");
             },
-            title: "Start a session from the current queue as sorted",
+            title: "Manual dial: step through the queue one lead at a time",
             style: {
               width: "100%", minHeight: "28px", padding: "0 8px",
               fontSize: "9px", fontWeight: "700", letterSpacing: "0.5px",
@@ -413,7 +417,7 @@ export default function DialView({
             }
           },
             React.createElement("span", null, "▶"),
-            React.createElement("span", null, "DIAL THIS QUEUE"),
+            React.createElement("span", null, "MANUAL DIAL"),
             React.createElement("span", {
               style: {
                 fontSize: "9px", fontWeight: "700", background: "rgba(255,255,255,0.1)",
