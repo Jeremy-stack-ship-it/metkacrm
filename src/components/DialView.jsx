@@ -93,6 +93,9 @@ export default function DialView({
   // ── Queue filter: "today" shows only phase-engine due leads, "all" shows full queue ──
   const [dialQueueFilter, setDialQueueFilter] = useState('today');
 
+  // ── Attempt 2 pending flag — fires after call actually disconnects (callStatus=null) ──
+  const [pdPendingAttempt2, setPdPendingAttempt2] = useState(false);
+
   // ── Callback scheduler popover ────────────────────────────────────────────
   const [cbPopoverOpen, setCbPopoverOpen] = useState(false);
   const [cbCustomTs,    setCbCustomTs]    = useState('');
@@ -137,15 +140,10 @@ export default function DialView({
       setPdCountdown(secs);
       pdTimerRef.current = setInterval(() => { secs -= 1; setPdCountdown(secs); }, 1000);
       pdTimeoutRef.current = setTimeout(() => {
-        // Attempt 1 timeout — hang up, brief pause, attempt 2
+        // Attempt 1 timeout — hang up, set pending flag; useEffect fires attempt 2 once callStatus hits null
         if (hangUp) hangUp(); else if (twilioDevice) twilioDevice.disconnectAll();
-        setPdAttempt(2); setPdStatus('pausing'); pdClearTimers();
-
-        pdAdvanceRef.current = setTimeout(() => {
-          setPdStatus('dialing');
-          dialLead(nextLead);
-          setPdCountdown(null); // No timer — open-ended. User leaves VM, hangs up, then dispositions to advance.
-        }, 1500);
+        pdClearTimers();
+        setPdAttempt(2); setPdStatus('pausing'); setPdPendingAttempt2(true);
       }, ATTEMPT1_SEC * 1000);
     }, 1500);
   }, [dialLead, hangUp, twilioDevice, setOpenId, pdClearTimers]);
@@ -168,20 +166,15 @@ export default function DialView({
     pdTimerRef.current = setInterval(() => { secs -= 1; setPdCountdown(secs); }, 1000);
     pdTimeoutRef.current = setTimeout(() => {
       if (hangUp) hangUp(); else if (twilioDevice) twilioDevice.disconnectAll();
-      setPdAttempt(2); setPdStatus('pausing'); pdClearTimers();
-
-      pdAdvanceRef.current = setTimeout(() => {
-        setPdStatus('dialing');
-        dialLead(lead);
-        setPdCountdown(null); // No timer — open-ended. User leaves VM, hangs up, then dispositions to advance.
-      }, 1500);
+      pdClearTimers();
+      setPdAttempt(2); setPdStatus('pausing'); setPdPendingAttempt2(true);
     }, ATTEMPT1_SEC * 1000);
   }, [pdQueue, dialLead, hangUp, twilioDevice, handleDisposition, setOpenId, pdClearTimers, pdAdvanceToNext]);
 
   const pdStop = useCallback(() => {
     pdClearTimers();
     if (hangUp) hangUp(); else if (twilioDevice) twilioDevice.disconnectAll();
-    setPdStatus('idle'); setPdIdx(0); setPdAttempt(1); setPdLockedQueue([]); setPdMode(false);
+    setPdStatus('idle'); setPdIdx(0); setPdAttempt(1); setPdPendingAttempt2(false); setPdLockedQueue([]); setPdMode(false);
   }, [hangUp, twilioDevice, pdClearTimers]);
 
   // Detect answered call — stop countdown, mark as answered
@@ -190,6 +183,18 @@ export default function DialView({
       pdClearTimers(); setPdStatus('answered');
     }
   }, [callStatus, pdMode, pdStatus, pdClearTimers]);
+
+  // Fire attempt 2 once the attempt 1 call has actually disconnected (callStatus → null)
+  useEffect(() => {
+    if (pdMode && pdPendingAttempt2 && callStatus === null) {
+      setPdPendingAttempt2(false);
+      const currentLead = pdLockedQueue[pdIdx];
+      if (!currentLead) return;
+      setPdStatus('dialing');
+      dialLead(currentLead);
+      setPdCountdown(null);
+    }
+  }, [callStatus, pdMode, pdPendingAttempt2, pdLockedQueue, pdIdx, dialLead]);
 
   // ── fireDisp: disposition wrapper that also advances PD when a call is answered ──
   // All JSX disposition buttons call this instead of handleDisposition directly.
