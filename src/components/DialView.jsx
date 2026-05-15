@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { BC, BL, NC, fmt, inp, chip, isUWStuck, daysInUW } from '../constants.js';
 import { getPhasePriority } from './TodaysBlock';
+import { isDueToday } from '../lib/phaseEngine';
 
 const LS_SESSION = "metka-session-v1";
 
@@ -429,7 +430,7 @@ export default function DialView({
         }, session
           ? (session.idx + 1) + " / " + session.total + " leads"
           : dialQueueFilter === "today"
-            ? (todayLeads || []).length + " due today"
+            ? queue.filter(isDueToday).length + " due today"
             : queue.length + " in queue"
         ),
         session && React.createElement("div", {
@@ -488,7 +489,7 @@ export default function DialView({
         // TODAY | ALL toggle
         React.createElement("div", { style: { display: "flex", gap: "4px", marginBottom: "8px" } },
           (() => {
-            const todayCount2 = (todayLeads || []).length;
+            const todayCount2 = queue.filter(isDueToday).length;
             const allCount = queue.length;
             const btnBase = { flex: 1, minHeight: "26px", borderRadius: "5px", fontSize: "9px", fontWeight: "800", letterSpacing: "0.8px", cursor: "pointer", border: "1px solid", transition: "all 0.15s" };
             return [
@@ -550,7 +551,7 @@ export default function DialView({
       },
         (() => {
           const now3 = new Date();
-          const activeList = dialQueueFilter === "today" ? (todayLeads || []) : queue;
+          const activeList = dialQueueFilter === "today" ? queue.filter(isDueToday) : queue;
           let sorted = [...activeList];
           if (dialSortMode === "phase") sorted.sort((a, b) => getPhasePriority(b) - getPhasePriority(a));
           else if (dialSortMode === "overdue") sorted.sort((a, b) => {
@@ -594,7 +595,7 @@ export default function DialView({
             );
           });
         })(),
-        (dialQueueFilter === "today" ? (todayLeads || []).length : queue.length) === 0 && React.createElement("li", { style: { padding: "40px 16px", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: "12px", listStyle: "none" } },
+        (dialQueueFilter === "today" ? queue.filter(isDueToday).length : queue.length) === 0 && React.createElement("li", { style: { padding: "40px 16px", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: "12px", listStyle: "none" } },
           dialQueueFilter === "today" ? "No leads due today" : "✓ Queue empty"
         )
       )
