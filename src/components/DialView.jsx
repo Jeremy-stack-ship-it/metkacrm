@@ -62,6 +62,7 @@ export default function DialView({
   open, upd,
   dialLead, useTwilioCalling, twilioDevice,
   hangUp, callStatus,
+  activeCall, activeCallLead, callMuted, callElapsed, toggleMute,
   todayLeads,
   noteText, setNoteText,
   noteType, setNoteType,
@@ -82,6 +83,13 @@ export default function DialView({
   setView,
 }) {
   // ── POWER DIALER ENGINE (18s/30s auto-hangup) ──────────────────
+
+  // ── Call control panel state ─────────────────────────────────────────────
+  const [callPanelExpanded, setCallPanelExpanded] = useState(true);
+  const [onHold,            setOnHold]            = useState(false);
+
+  // ── Queue filter: "today" shows only phase-engine due leads, "all" shows full queue ──
+  const [dialQueueFilter, setDialQueueFilter] = useState('today');
 
   const [pdMode,         setPdMode]         = useState(false);
   const [pdIdx,          setPdIdx]          = useState(0);
@@ -217,23 +225,125 @@ export default function DialView({
     // ── LEFT: Dark sidebar queue (210px) ──
     React.createElement("div", { style: { width: "210px", flexShrink: 0, background: "#0d3d2e", display: "flex", flexDirection: "column", overflow: "hidden", borderRight: "1px solid rgba(0,0,0,0.3)" } },
 
-      // Header + session controls
-      React.createElement("div", { style: { padding: "12px 12px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 } },
-        // Top row: label + exit button
-        React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" } },
-          React.createElement("div", { style: { fontSize: "9px", fontWeight: "800", color: "rgba(255,255,255,0.5)", letterSpacing: "2px" } }, "MINISTRY OF PROTECTION"),
-          React.createElement("button", {
-            onClick: () => setView("dashboard"),
-            title: "Exit dial view",
+      // ── SECTION 1: Header — MINISTRY OF PROTECTION (unchanged) ──────────────
+      React.createElement("div", { style: { padding: "10px 12px 8px", borderBottom: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 } },
+        React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between" } },
+          // Brand label + live dot
+          React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "7px" } },
+            React.createElement("div", {
+              style: {
+                width: 7, height: 7, borderRadius: "50%", flexShrink: 0,
+                background: callStatus === 'connected' ? "#10B981" : callStatus === 'connecting' ? "#F59E0B" : "rgba(255,255,255,0.2)",
+                boxShadow: callStatus === 'connected' ? "0 0 6px #10B981" : "none",
+                transition: "background 0.3s, box-shadow 0.3s"
+              }
+            }),
+            React.createElement("div", { style: { fontSize: "9px", fontWeight: "800", color: "rgba(255,255,255,0.5)", letterSpacing: "2px" } }, "MINISTRY OF PROTECTION")
+          ),
+          // Controls: collapse + exit
+          React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "2px" } },
+            React.createElement("button", {
+              onClick: () => setCallPanelExpanded(e => !e),
+              title: callPanelExpanded ? "Collapse call controls" : "Expand call controls",
+              style: { background: "transparent", border: "none", color: "rgba(255,255,255,0.3)", fontSize: "14px", cursor: "pointer", padding: "1px 4px", lineHeight: 1, transition: "color 0.15s" },
+              onMouseEnter: e => e.currentTarget.style.color = "rgba(255,255,255,0.7)",
+              onMouseLeave: e => e.currentTarget.style.color = "rgba(255,255,255,0.3)"
+            }, callPanelExpanded ? "−" : "+"),
+            React.createElement("button", {
+              onClick: () => setView("dashboard"),
+              title: "Exit dial view",
+              style: { background: "transparent", border: "none", color: "rgba(255,255,255,0.35)", fontSize: "14px", cursor: "pointer", padding: "1px 4px", lineHeight: 1, transition: "color 0.15s" },
+              onMouseEnter: e => e.currentTarget.style.color = "rgba(255,255,255,0.8)",
+              onMouseLeave: e => e.currentTarget.style.color = "rgba(255,255,255,0.35)"
+            }, "✕")
+          )
+        )
+      ),
+
+      // ── SECTION 2: Call control panel (below header, collapsible) ──────────
+      callPanelExpanded && (() => {
+        const isLive = callStatus === 'connected';
+        const isConnecting = callStatus === 'connecting';
+        const timerStr = (isLive || isConnecting)
+          ? (Math.floor((callElapsed||0) / 60) + ':' + String((callElapsed||0) % 60).padStart(2, '0'))
+          : '--:--';
+        const leadName = isLive
+          ? ((activeCallLead||open)?.name || 'Unknown')
+          : (open?.name || '— idle —');
+        return React.createElement("div", {
+          style: {
+            padding: "10px 12px 12px",
+            borderBottom: "1px solid rgba(255,255,255,0.1)",
+            flexShrink: 0,
+            background: isLive ? "rgba(16,185,129,0.06)" : isConnecting ? "rgba(245,158,11,0.06)" : "rgba(0,0,0,0.12)",
+            transition: "background 0.4s"
+          }
+        },
+          // Lead name
+          React.createElement("div", {
+            title: leadName,
             style: {
-              background: "transparent", border: "none", color: "rgba(255,255,255,0.35)",
-              fontSize: "14px", cursor: "pointer", padding: "0 2px", lineHeight: 1,
-              transition: "color 0.15s"
-            },
-            onMouseEnter: e => e.currentTarget.style.color = "rgba(255,255,255,0.8)",
-            onMouseLeave: e => e.currentTarget.style.color = "rgba(255,255,255,0.35)"
-          }, "✕")
-        ),
+              fontSize: "12px", fontWeight: "800",
+              color: isLive ? "#f1f5f9" : "rgba(255,255,255,0.28)",
+              marginBottom: "1px",
+              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+              transition: "color 0.3s"
+            }
+          }, leadName),
+          // Timer
+          React.createElement("div", {
+            style: {
+              fontSize: "22px", fontWeight: "800",
+              fontFamily: "'JetBrains Mono', monospace",
+              color: isLive ? "#10B981" : isConnecting ? "#F59E0B" : "rgba(255,255,255,0.15)",
+              letterSpacing: "3px", marginBottom: "10px",
+              transition: "color 0.3s"
+            }
+          }, timerStr),
+          // MUTE | HOLD | END
+          React.createElement("div", { style: { display: "flex", gap: "4px" } },
+            React.createElement("button", {
+              onClick: isLive ? toggleMute : undefined,
+              title: callMuted ? "Unmute" : "Mute",
+              style: {
+                flex: 1, minHeight: "36px", borderRadius: "7px", fontSize: "9px", fontWeight: "800",
+                cursor: isLive ? "pointer" : "not-allowed",
+                background: callMuted ? "rgba(245,158,11,0.2)" : "rgba(255,255,255,0.07)",
+                color: callMuted ? "#F59E0B" : isLive ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.15)",
+                border: callMuted ? "1px solid rgba(245,158,11,0.5)" : "1px solid rgba(255,255,255,0.1)",
+                transition: "all 0.15s"
+              }
+            }, callMuted ? "🔇 MUTED" : "🎙 MUTE"),
+            React.createElement("button", {
+              onClick: isLive ? () => setOnHold(h => !h) : undefined,
+              title: onHold ? "Resume" : "Hold",
+              style: {
+                flex: 1, minHeight: "36px", borderRadius: "7px", fontSize: "9px", fontWeight: "800",
+                cursor: isLive ? "pointer" : "not-allowed",
+                background: onHold ? "rgba(99,102,241,0.2)" : "rgba(255,255,255,0.07)",
+                color: onHold ? "#818CF8" : isLive ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.15)",
+                border: onHold ? "1px solid rgba(99,102,241,0.5)" : "1px solid rgba(255,255,255,0.1)",
+                transition: "all 0.15s"
+              }
+            }, onHold ? "⏸ HOLD" : "⏸ HOLD"),
+            React.createElement("button", {
+              onClick: isLive ? hangUp : undefined,
+              title: "End call",
+              style: {
+                flex: 1, minHeight: "36px", borderRadius: "7px", fontSize: "9px", fontWeight: "800",
+                cursor: isLive ? "pointer" : "not-allowed",
+                background: isLive ? "rgba(220,38,38,0.2)" : "rgba(255,255,255,0.05)",
+                color: isLive ? "#EF4444" : "rgba(255,255,255,0.12)",
+                border: isLive ? "1px solid rgba(220,38,38,0.5)" : "1px solid rgba(255,255,255,0.07)",
+                transition: "all 0.15s"
+              }
+            }, "📵 END")
+          )
+        );
+      })(),
+
+      // ── SECTION 3: Power dial + session controls ────────────────────────────
+      React.createElement("div", { style: { padding: "10px 12px", borderBottom: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 } },
 
         // ── Power Dial buttons (no active session) ──────────────────
         !session && React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "5px", marginBottom: "8px" } },
@@ -316,7 +426,12 @@ export default function DialView({
           "aria-live": "polite",
           role: "status",
           style: { fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.85)", marginBottom: "8px" }
-        }, session ? (session.idx + 1) + " / " + session.total + " leads" : queue.length + " in queue"),
+        }, session
+          ? (session.idx + 1) + " / " + session.total + " leads"
+          : dialQueueFilter === "today"
+            ? (todayLeads || []).length + " due today"
+            : queue.length + " in queue"
+        ),
         session && React.createElement("div", {
           style: { height: "4px", background: "rgba(255,255,255,0.12)", borderRadius: "2px", overflow: "hidden", marginBottom: "8px" },
           role: "progressbar",
@@ -367,8 +482,53 @@ export default function DialView({
         )
       ),
 
-            // Sort selector
+      // ── QUEUE FILTER + SORT ──────────────────────────────────────────────────
       React.createElement("div", { style: { padding: "8px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 } },
+
+        // TODAY | ALL toggle
+        React.createElement("div", { style: { display: "flex", gap: "4px", marginBottom: "8px" } },
+          (() => {
+            const todayCount2 = (todayLeads || []).length;
+            const allCount = queue.length;
+            const btnBase = { flex: 1, minHeight: "26px", borderRadius: "5px", fontSize: "9px", fontWeight: "800", letterSpacing: "0.8px", cursor: "pointer", border: "1px solid", transition: "all 0.15s" };
+            return [
+              React.createElement("button", {
+                key: "f-today",
+                onClick: () => setDialQueueFilter("today"),
+                title: "Show only leads due today per the Phase Engine",
+                style: {
+                  ...btnBase,
+                  background: dialQueueFilter === "today" ? "rgba(16,185,129,0.18)" : "rgba(255,255,255,0.05)",
+                  color: dialQueueFilter === "today" ? "#10B981" : "rgba(255,255,255,0.4)",
+                  borderColor: dialQueueFilter === "today" ? "rgba(16,185,129,0.45)" : "rgba(255,255,255,0.12)"
+                }
+              },
+                "TODAY",
+                React.createElement("span", {
+                  style: { marginLeft: "5px", fontSize: "8px", fontWeight: "800", background: dialQueueFilter === "today" ? "rgba(16,185,129,0.25)" : "rgba(255,255,255,0.1)", color: dialQueueFilter === "today" ? "#10B981" : "rgba(255,255,255,0.3)", borderRadius: "8px", padding: "1px 5px" }
+                }, todayCount2)
+              ),
+              React.createElement("button", {
+                key: "f-all",
+                onClick: () => setDialQueueFilter("all"),
+                title: "Show full queue",
+                style: {
+                  ...btnBase,
+                  background: dialQueueFilter === "all" ? "rgba(59,130,246,0.18)" : "rgba(255,255,255,0.05)",
+                  color: dialQueueFilter === "all" ? "#60A5FA" : "rgba(255,255,255,0.4)",
+                  borderColor: dialQueueFilter === "all" ? "rgba(59,130,246,0.45)" : "rgba(255,255,255,0.12)"
+                }
+              },
+                "ALL",
+                React.createElement("span", {
+                  style: { marginLeft: "5px", fontSize: "8px", fontWeight: "800", background: dialQueueFilter === "all" ? "rgba(59,130,246,0.25)" : "rgba(255,255,255,0.1)", color: dialQueueFilter === "all" ? "#60A5FA" : "rgba(255,255,255,0.3)", borderRadius: "8px", padding: "1px 5px" }
+                }, allCount)
+              )
+            ];
+          })()
+        ),
+
+        // Sort selector
         React.createElement("label", { htmlFor: "dial-sort-mode", style: { fontSize: "9px", fontWeight: "800", color: "rgba(255,255,255,0.4)", letterSpacing: "1.2px", display: "block", marginBottom: "4px" } }, "SORT"),
         React.createElement("select", {
           id: "dial-sort-mode",
@@ -379,7 +539,6 @@ export default function DialView({
           React.createElement("option", { value: "priority", style: { background: "#1e293b", color: "#f1f5f9" } }, "Priority Score"),
           React.createElement("option", { value: "phase", style: { background: "#1e293b", color: "#f1f5f9" } }, "Phase Engine"),
           React.createElement("option", { value: "overdue", style: { background: "#1e293b", color: "#f1f5f9" } }, "Overdue First")
-
         )
       ),
 
@@ -391,7 +550,8 @@ export default function DialView({
       },
         (() => {
           const now3 = new Date();
-          let sorted = [...queue];
+          const activeList = dialQueueFilter === "today" ? (todayLeads || []) : queue;
+          let sorted = [...activeList];
           if (dialSortMode === "phase") sorted.sort((a, b) => getPhasePriority(b) - getPhasePriority(a));
           else if (dialSortMode === "overdue") sorted.sort((a, b) => {
             const aOD = (a.nextCallback && new Date(a.nextCallback) < now3) ? 1 : 0;
@@ -434,7 +594,9 @@ export default function DialView({
             );
           });
         })(),
-        queue.length === 0 && React.createElement("li", { style: { padding: "40px 16px", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: "12px", listStyle: "none" } }, "✓ Queue empty")
+        (dialQueueFilter === "today" ? (todayLeads || []).length : queue.length) === 0 && React.createElement("li", { style: { padding: "40px 16px", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: "12px", listStyle: "none" } },
+          dialQueueFilter === "today" ? "No leads due today" : "✓ Queue empty"
+        )
       )
     ),
 
@@ -775,43 +937,41 @@ export default function DialView({
                         const body = tpl.text || "";
                         const msg = body.replace(/\{name\}/gi, first).replace(/\{firstname\}/gi, first);
                         try { navigator.clipboard.writeText(msg); } catch (err) { const ta = document.createElement("textarea"); ta.value = msg; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); }
+                        alert("📱 SMS copied — open your texting app and paste.");
                       },
-                      "aria-label": "Copy " + (tpl.name || key) + " template",
-                      style: { padding: "3px 9px", background: "var(--blue-dim)", color: "var(--blue)", border: "1px solid var(--blue-mid)", borderRadius: "5px", fontSize: "10px", fontWeight: "700", cursor: "pointer" }
-                    }, "Copy")
+                      style: { fontSize: "9px", padding: "3px 8px", borderRadius: "5px", background: "var(--blue)", color: "#fff", border: "none", cursor: "pointer", fontWeight: "800", letterSpacing: "0.5px" }
+                    }, "COPY")
                   ),
-                  React.createElement("div", { style: { fontSize: "11px", color: "var(--t3)", lineHeight: "1.5" } }, (tpl.text || "").length > 80 ? (tpl.text || "").slice(0, 80) + "\u2026" : (tpl.text || ""))
+                  React.createElement("div", { style: { fontSize: "11px", color: "var(--t2)", lineHeight: "1.5", whiteSpace: "pre-wrap", fontFamily: "'JetBrains Mono',monospace", background: "var(--surface-2)", padding: "8px", borderRadius: "5px", border: "1px solid var(--border)" } }, tpl.text || "")
                 )
               )
-            : React.createElement("div", { style: { textAlign: "center", padding: "24px 0", color: "var(--t4)", fontSize: "12px" } }, "No templates. Add them in the SMS tab.")
+            : React.createElement("div", { style: { textAlign: "center", padding: "32px 0", color: "var(--t4)", fontSize: "12px" } }, "No SMS templates configured.")
         ),
 
         // ACTIVITY tab
         dialRightTab === "activity" && React.createElement("div", {
           id: "dial-panel-activity", role: "tabpanel", "aria-labelledby": "dial-tab-activity", style: { padding: "12px" }
         },
-          React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.5px", marginBottom: "10px" } }, "CALL HISTORY"),
-          open && (open.notes || []).filter(n => n.type === "call").length > 0
+          React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.5px", marginBottom: "10px" } }, "ACTIVITY LOG"),
+          open && (open.notes || []).length > 0
             ? React.createElement("div", null,
-                ...(open.notes || []).filter(n => n.type === "call").slice().reverse().map((n, i) =>
-                  React.createElement("div", {
-                    key: n.id || i,
-                    style: { padding: "8px 0", borderBottom: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: "3px" }
-                  },
-                    React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "6px" } },
-                      React.createElement("span", { style: { fontSize: "11px", fontWeight: "700", color: "var(--t1)", flex: 1 } }, n.text || "Outbound Dial"),
-                      React.createElement("span", { style: { fontSize: "10px", color: "var(--t4)", whiteSpace: "nowrap" } },
-                        n.ts ? new Date(n.ts).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""
-                      )
+                (open.notes || []).slice().reverse().map((n, i) =>
+                  React.createElement("div", { key: n.ts || n.id || i, style: { marginBottom: "8px", padding: "8px 10px", background: "var(--surface)", borderRadius: "7px", border: "1px solid var(--border)", display: "flex", gap: "8px", alignItems: "flex-start" } },
+                    React.createElement("span", { "aria-hidden": "true", style: { fontSize: "14px", lineHeight: 1, flexShrink: 0, marginTop: "1px" } },
+                      n.type === "call" ? "📞" : n.type === "appointment" ? "📅" : "📝"
                     ),
-                    n.source && React.createElement("span", { style: { fontSize: "10px", color: "var(--t4)" } }, n.source)
+                    React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                      React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", marginBottom: "2px" } }, fmt(n.ts)),
+                      React.createElement("div", { style: { fontSize: "11px", color: "var(--t2)", lineHeight: "1.4", wordBreak: "break-word" } }, n.text)
+                    )
                   )
                 )
               )
-            : React.createElement("div", { style: { textAlign: "center", padding: "24px 0", color: "var(--t4)", fontSize: "12px" } }, "No calls logged yet.")
+            : React.createElement("div", { style: { textAlign: "center", padding: "32px 0", color: "var(--t4)", fontSize: "12px" } },
+                open ? "No activity logged yet." : "Select a lead to view activity."
+              )
         )
-
-      ) // end right panel
-    ) // end flex row
-  ); // end root div
+      )
+    )
+  );
 }

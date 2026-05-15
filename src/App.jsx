@@ -48,7 +48,7 @@
  * Calendly:  Popup widget injected via window.Calendly for appointment booking
  * ─────────────────────────────────────────
  */
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import LZString from 'lz-string';
 import { createClient } from '@supabase/supabase-js';
 import { Device } from '@twilio/voice-sdk';
@@ -1061,6 +1061,7 @@ const queue = useMemo(() => {
           openId, setOpenId, open, upd,
           dialLead, useTwilioCalling, twilioDevice,
           hangUp, callStatus,
+          activeCall, activeCallLead, callMuted, callElapsed, toggleMute,
           todayLeads,
           noteText, setNoteText, noteType, setNoteType, addNote,
           handleDisposition,
@@ -1161,7 +1162,7 @@ const queue = useMemo(() => {
 
 
         // ── FLOATING CALL CONTROL BAR ──
-    React.createElement(CallBar, {activeCall, callStatus, callElapsed, callMuted, activeCallLead, toggleMute, hangUp})
+    view !== 'dial' && React.createElement(CallBar, {activeCall, callStatus, callElapsed, callMuted, activeCallLead, toggleMute, hangUp})
   );
 }
 
