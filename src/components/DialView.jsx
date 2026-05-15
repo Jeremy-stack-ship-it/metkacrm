@@ -82,6 +82,7 @@ export default function DialView({
   logActivity,
   todayCount,
   setView,
+  callbackPresets,
 }) {
   // ── POWER DIALER ENGINE (18s/30s auto-hangup) ──────────────────
 
@@ -91,6 +92,10 @@ export default function DialView({
 
   // ── Queue filter: "today" shows only phase-engine due leads, "all" shows full queue ──
   const [dialQueueFilter, setDialQueueFilter] = useState('today');
+
+  // ── Callback scheduler popover ────────────────────────────────────────────
+  const [cbPopoverOpen, setCbPopoverOpen] = useState(false);
+  const [cbCustomTs,    setCbCustomTs]    = useState('');
 
   // ── Power Dial queue: intersection of current UI queue and phase-engine due-today ──
   // This is what Power Dial actually dials through — consistent with the TODAY badge.
@@ -139,21 +144,11 @@ export default function DialView({
         pdAdvanceRef.current = setTimeout(() => {
           setPdStatus('dialing');
           dialLead(nextLead);
-
-          let secs2 = ATTEMPT2_SEC;
-          setPdCountdown(secs2);
-          pdTimerRef.current = setInterval(() => { secs2 -= 1; setPdCountdown(secs2); }, 1000);
-          pdTimeoutRef.current = setTimeout(() => {
-            // Attempt 2 timeout — log no_answer, advance
-            if (hangUp) hangUp(); else if (twilioDevice) twilioDevice.disconnectAll();
-            pdClearTimers();
-            handleDisposition('no_answer');
-            pdAdvanceToNext(queue, nextIdx + 1);
-          }, ATTEMPT2_SEC * 1000);
+          setPdCountdown(null); // No timer — open-ended. User leaves VM, hangs up, then dispositions to advance.
         }, 1500);
       }, ATTEMPT1_SEC * 1000);
     }, 1500);
-  }, [dialLead, hangUp, twilioDevice, handleDisposition, setOpenId, pdClearTimers]);
+  }, [dialLead, hangUp, twilioDevice, setOpenId, pdClearTimers]);
 
   const pdStart = useCallback(() => {
     if (!pdQueue || !pdQueue.length) {
@@ -178,16 +173,7 @@ export default function DialView({
       pdAdvanceRef.current = setTimeout(() => {
         setPdStatus('dialing');
         dialLead(lead);
-
-        let secs2 = ATTEMPT2_SEC;
-        setPdCountdown(secs2);
-        pdTimerRef.current = setInterval(() => { secs2 -= 1; setPdCountdown(secs2); }, 1000);
-        pdTimeoutRef.current = setTimeout(() => {
-          if (hangUp) hangUp(); else if (twilioDevice) twilioDevice.disconnectAll();
-          pdClearTimers();
-          handleDisposition('no_answer');
-          pdAdvanceToNext(queue, 1);
-        }, ATTEMPT2_SEC * 1000);
+        setPdCountdown(null); // No timer — open-ended. User leaves VM, hangs up, then dispositions to advance.
       }, 1500);
     }, ATTEMPT1_SEC * 1000);
   }, [pdQueue, dialLead, hangUp, twilioDevice, handleDisposition, setOpenId, pdClearTimers, pdAdvanceToNext]);
@@ -557,11 +543,19 @@ export default function DialView({
           const now3 = new Date();
           const activeList = dialQueueFilter === "today" ? queue.filter(isDueToday) : queue;
           let sorted = [...activeList];
-          if (dialSortMode === "phase") sorted.sort((a, b) => getPhasePriority(b) - getPhasePriority(a));
+          if (dialSortMode === "priority") sorted.sort((a, b) => {
+            const overdueBonus = l => (l.nextCallback && new Date(l.nextCallback) < now3) ? 5000 : 0;
+            return (getPhasePriority(b) + overdueBonus(b)) - (getPhasePriority(a) + overdueBonus(a));
+          });
+          else if (dialSortMode === "phase") sorted.sort((a, b) => getPhasePriority(b) - getPhasePriority(a));
           else if (dialSortMode === "overdue") sorted.sort((a, b) => {
             const aOD = (a.nextCallback && new Date(a.nextCallback) < now3) ? 1 : 0;
             const bOD = (b.nextCallback && new Date(b.nextCallback) < now3) ? 1 : 0;
-            return bOD - aOD;
+            if (bOD !== aOD) return bOD - aOD;
+            // Secondary: overdue age (oldest first)
+            const aAge = aOD ? now3 - new Date(a.nextCallback) : 0;
+            const bAge = bOD ? now3 - new Date(b.nextCallback) : 0;
+            return bAge - aAge;
           });
 
           return sorted.map((lead, idx) => {
@@ -795,31 +789,120 @@ export default function DialView({
             { id: "hung_up", icon: "📵", label: "Hung Up" },
             { id: "follow_up", icon: "🔄", label: "Follow Up" }
           ];
+          // Callback preset compute helper
+          const presetToDate = (p) => {
+            if (p.minOffset != null) return new Date(Date.now() + p.minOffset * 60000);
+            const d = new Date();
+            d.setDate(d.getDate() + (p.daysAhead || 0));
+            d.setHours(p.hour || 9, 0, 0, 0);
+            return d;
+          };
+          const presets = callbackPresets || [
+            { id: "2h",     label: "2 Hours",     minOffset: 120, daysAhead: 0, hour: null },
+            { id: "tom_am", label: "Tomorrow AM", minOffset: null, daysAhead: 1, hour: 9  },
+            { id: "tom_pm", label: "Tomorrow PM", minOffset: null, daysAhead: 1, hour: 14 },
+            { id: "week",   label: "Next Week",   minOffset: null, daysAhead: 7, hour: 9  },
+          ];
+          const handleCbPreset = (p) => {
+            if (!open) return;
+            const ts = presetToDate(p).toISOString();
+            upd(open.id, {
+              nextCallback: ts,
+              notes: [{ ts: new Date().toISOString(), type: 'note', text: '📅 Callback scheduled: ' + p.label }, ...(open.notes || [])]
+            });
+            fireDisp('callback');
+            setCbPopoverOpen(false);
+          };
+          const handleCbCustom = () => {
+            if (!cbCustomTs || !open) return;
+            const ts = new Date(cbCustomTs).toISOString();
+            const label = new Date(cbCustomTs).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+            upd(open.id, {
+              nextCallback: ts,
+              notes: [{ ts: new Date().toISOString(), type: 'note', text: '📅 Callback scheduled: ' + label }, ...(open.notes || [])]
+            });
+            fireDisp('callback');
+            setCbPopoverOpen(false);
+            setCbCustomTs('');
+          };
+
           return React.createElement("div", {
-            style: { flexShrink: 0, padding: "8px 12px", borderTop: "2px solid var(--border)", background: "var(--surface)", display: "flex", gap: "5px", overflowX: "auto" }
+            style: { flexShrink: 0, padding: "8px 12px", borderTop: "2px solid var(--border)", background: "var(--surface)", display: "flex", gap: "5px", overflowX: "auto", position: "relative" }
           },
+            // ── Callback scheduler popover ──
+            cbPopoverOpen && React.createElement("div", {
+              style: {
+                position: "absolute", bottom: "calc(100% + 4px)", left: "8px", right: "8px", zIndex: 300,
+                background: "var(--surface)", border: "2px solid var(--navy)", borderRadius: "12px",
+                padding: "14px", boxShadow: "0 -6px 24px rgba(0,0,0,0.18)"
+              }
+            },
+              React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" } },
+                React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--navy)", letterSpacing: "1.5px" } }, "⏰ SCHEDULE CALLBACK"),
+                React.createElement("button", {
+                  onClick: () => setCbPopoverOpen(false),
+                  style: { background: "none", border: "none", cursor: "pointer", fontSize: "16px", color: "var(--t3)", padding: "0 2px", lineHeight: 1, fontWeight: "700" }
+                }, "✕")
+              ),
+              React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginBottom: "10px" } },
+                presets.map(p =>
+                  React.createElement("button", {
+                    key: p.id,
+                    onClick: () => handleCbPreset(p),
+                    style: {
+                      padding: "11px 8px", borderRadius: "8px", border: "1px solid var(--border)",
+                      background: "var(--surface-2)", color: "var(--t1)", cursor: "pointer",
+                      fontSize: "11px", fontWeight: "700", textAlign: "center", letterSpacing: "0.3px",
+                      transition: "all 0.1s"
+                    }
+                  }, p.label)
+                )
+              ),
+              React.createElement("div", { style: { display: "flex", gap: "6px", alignItems: "center" } },
+                React.createElement("input", {
+                  type: "datetime-local",
+                  value: cbCustomTs,
+                  onChange: e => setCbCustomTs(e.target.value),
+                  style: { flex: 1, fontSize: "11px", padding: "7px 8px", borderRadius: "7px", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--t2)", fontFamily: "inherit" }
+                }),
+                React.createElement("button", {
+                  onClick: handleCbCustom,
+                  disabled: !cbCustomTs,
+                  style: {
+                    padding: "7px 14px", borderRadius: "7px",
+                    background: cbCustomTs ? "var(--navy)" : "var(--border)",
+                    color: cbCustomTs ? "#fff" : "var(--t3)", border: "none",
+                    cursor: cbCustomTs ? "pointer" : "default",
+                    fontSize: "10px", fontWeight: "800", letterSpacing: "0.5px", whiteSpace: "nowrap"
+                  }
+                }, "SET")
+              )
+            ),
+
             gateActive
               ? React.createElement("div", { style: { width: "100%", textAlign: "center", fontSize: "11px", color: "var(--amber)", fontWeight: "700", padding: "8px 0" } }, "⚠ Complete appointment check-in above before logging a result")
-              : dispBar.map(d =>
-                  React.createElement("button", {
+              : dispBar.map(d => {
+                  const isCb = d.id === 'callback';
+                  const isActive = isCb ? (cbPopoverOpen || open.disposition === d.id) : open.disposition === d.id;
+                  return React.createElement("button", {
                     key: d.id,
-                    onClick: () => fireDisp(d.id),
+                    onClick: () => isCb ? setCbPopoverOpen(v => !v) : fireDisp(d.id),
                     "aria-label": "Log: " + d.label,
-                    "aria-pressed": open.disposition === d.id,
+                    "aria-pressed": isActive,
                     style: {
                       minHeight: "48px", flex: "1 1 0", minWidth: "58px", padding: "5px 2px",
-                      background: open.disposition === d.id ? "var(--navy)" : "var(--surface-2)",
-                      color: open.disposition === d.id ? "#fff" : "var(--t2)",
-                      border: "1px solid " + (open.disposition === d.id ? "var(--navy)" : "var(--border)"),
-                      borderRadius: "7px", fontSize: "9px", fontWeight: open.disposition === d.id ? "800" : "600",
+                      background: isActive ? "var(--navy)" : "var(--surface-2)",
+                      color: isActive ? "#fff" : "var(--t2)",
+                      border: "1px solid " + (isActive ? "var(--navy)" : "var(--border)"),
+                      borderRadius: "7px", fontSize: "9px", fontWeight: isActive ? "800" : "600",
                       cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center",
                       justifyContent: "center", gap: "3px", transition: "all 0.1s ease"
                     }
                   },
                     React.createElement("span", { "aria-hidden": "true", style: { fontSize: "14px", lineHeight: 1 } }, d.icon),
                     React.createElement("span", { style: { fontSize: "8px", lineHeight: 1.3, textAlign: "center", letterSpacing: "0.3px" } }, d.label)
-                  )
-                )
+                  );
+                })
           );
         })()
 
@@ -917,7 +1000,7 @@ export default function DialView({
                 (open.notes || []).map((n, i) =>
                   React.createElement("div", { key: n.ts || n.id || i, style: { marginBottom: "8px", padding: "8px 10px", background: "var(--surface)", borderRadius: "7px", border: "1px solid var(--border)" } },
                     React.createElement("div", { style: { fontSize: "10px", color: NC[n.type] || "var(--t3)", fontWeight: "800", marginBottom: "3px" } },
-                      n.type === "call" ? "📞 Call" : n.type === "appointment" ? "📅 Appt" : "📝 Note", " · " + fmt(n.ts)
+                      n.type === "call" ? "📞 Call" : n.type === "appointment" ? "📅 Appt" : "📝 Note", " \u00b7 " + fmt(n.ts)
                     ),
                     React.createElement("div", { style: { fontSize: "12px", color: "var(--t2)", lineHeight: "1.4" } }, n.text)
                   )
@@ -942,12 +1025,12 @@ export default function DialView({
                         const body = tpl.text || "";
                         const msg = body.replace(/\{name\}/gi, first).replace(/\{firstname\}/gi, first);
                         try { navigator.clipboard.writeText(msg); } catch (err) { const ta = document.createElement("textarea"); ta.value = msg; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); }
-                        alert("📱 SMS copied — open your texting app and paste.");
+                        alert("\ud83d\udcf1 SMS copied \u2014 open your texting app and paste.");
                       },
                       style: { fontSize: "9px", padding: "3px 8px", borderRadius: "5px", background: "var(--blue)", color: "#fff", border: "none", cursor: "pointer", fontWeight: "800", letterSpacing: "0.5px" }
                     }, "COPY")
                   ),
-                  React.createElement("div", { style: { fontSize: "11px", color: "var(--t2)", lineHeight: "1.5", whiteSpace: "pre-wrap", fontFamily: "'JetBrains Mono',monospace", background: "var(--surface-2)", padding: "8px", borderRadius: "5px", border: "1px solid var(--border)" } }, tpl.text || "")
+                  React.createElement("div", { style: { fontSize: "11px", color: "var(--t2)", lineHeight: "1.5", whiteSpace: "pre-wrap", fontFamily: "\'JetBrains Mono\',monospace", background: "var(--surface-2)", padding: "8px", borderRadius: "5px", border: "1px solid var(--border)" } }, tpl.text || "")
                 )
               )
             : React.createElement("div", { style: { textAlign: "center", padding: "32px 0", color: "var(--t4)", fontSize: "12px" } }, "No SMS templates configured.")
@@ -963,7 +1046,7 @@ export default function DialView({
                 (open.notes || []).slice().reverse().map((n, i) =>
                   React.createElement("div", { key: n.ts || n.id || i, style: { marginBottom: "8px", padding: "8px 10px", background: "var(--surface)", borderRadius: "7px", border: "1px solid var(--border)", display: "flex", gap: "8px", alignItems: "flex-start" } },
                     React.createElement("span", { "aria-hidden": "true", style: { fontSize: "14px", lineHeight: 1, flexShrink: 0, marginTop: "1px" } },
-                      n.type === "call" ? "📞" : n.type === "appointment" ? "📅" : "📝"
+                      n.type === "call" ? "\ud83d\udcde" : n.type === "appointment" ? "\ud83d\udcc5" : "\ud83d\udcdd"
                     ),
                     React.createElement("div", { style: { flex: 1, minWidth: 0 } },
                       React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", marginBottom: "2px" } }, fmt(n.ts)),

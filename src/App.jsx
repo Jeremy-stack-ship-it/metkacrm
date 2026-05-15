@@ -125,6 +125,14 @@ const LS_MAPPING   = "metka-field-mapping-v1";   // v2.6 saved CSV column mappin
 const LS_TWILIO    = "metka-twilio-config-v1";   // v3.0 Twilio credentials
 const LS_OPEN_ID   = "metka-open-id-v1";         // v3.0 persist queue position
 const LS_SESSION   = "metka-session-v1";          // v3.0 dialing session
+const LS_CB_PRESETS = "metka-cb-presets-v1";       // v3.8 callback scheduler presets
+
+const DEFAULT_CB_PRESETS = [
+  { id: "2h",     label: "2 Hours",     minOffset: 120, daysAhead: 0, hour: null },
+  { id: "tom_am", label: "Tomorrow AM", minOffset: null, daysAhead: 1, hour: 9   },
+  { id: "tom_pm", label: "Tomorrow PM", minOffset: null, daysAhead: 1, hour: 14  },
+  { id: "week",   label: "Next Week",   minOffset: null, daysAhead: 7, hour: 9   },
+];
 
 
 // ── CONSTANTS + HELPERS ← imported from ./constants.js ─────────────
@@ -238,6 +246,11 @@ function MetkaCRM(){
   const [callStatus,      setCallStatus]      = useState(null); // null | 'connecting' | 'connected'
   const [callMuted,       setCallMuted]       = useState(false);
   const [callElapsed,     setCallElapsed]     = useState(0);
+  // v3.8 — Callback scheduler presets
+  const [callbackPresets, setCallbackPresets] = useState(() => {
+    try { const s = localStorage.getItem(LS_CB_PRESETS); return s ? JSON.parse(s) : DEFAULT_CB_PRESETS; } catch { return DEFAULT_CB_PRESETS; }
+  });
+
   // v3.0 — Dialing session
   const [session, setSession]                 = useState(()=>{ try{ const s=localStorage.getItem(LS_SESSION); return s?JSON.parse(s):null; }catch{ return null; }});
   const [sessionPaused, setSessionPaused]     = useState(false);
@@ -301,7 +314,22 @@ function MetkaCRM(){
       twilioDevice.connect({ params: { To: '+1' + phoneClean } })
         .then(call => {
           setActiveCall(call);
-          call.on('accept',     () => setCallStatus('connected'));
+          call.on('accept',     () => {
+            setCallStatus('connected');
+            // Auto-clear callback badge when call connects
+            if (lead.nextCallback) {
+              const cb = new Date(lead.nextCallback);
+              const endToday = new Date(); endToday.setHours(23, 59, 59, 999);
+              if (cb <= endToday) {
+                // Overdue or due today — clear it (we're on the call now)
+                upd(lead.id, { nextCallback: null });
+              } else {
+                // Future callback — roll forward 24hrs so it stays on the schedule
+                const rolled = new Date(cb.getTime() + 24 * 60 * 60 * 1000);
+                upd(lead.id, { nextCallback: rolled.toISOString() });
+              }
+            }
+          });
           call.on('disconnect', () => { setActiveCall(null); setActiveCallLead(null); setCallStatus(null); setCallElapsed(0); setCallMuted(false); });
           call.on('error',      () => { setActiveCall(null); setActiveCallLead(null); setCallStatus(null); setCallElapsed(0); setCallMuted(false); });
         });
@@ -1074,6 +1102,7 @@ const queue = useMemo(() => {
           refreshQueueOrder, openCalendlyPopup, logActivity,
           todayCount,
           setView,
+          callbackPresets, setCallbackPresets,
         }),
 
 
