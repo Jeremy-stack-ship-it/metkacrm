@@ -841,7 +841,23 @@ const saveLeads = useCallback((next, opts = {}) => {
     const stagePatch = DISP_STAGE_MAP[dispId] ? { stage: DISP_STAGE_MAP[dispId] } : {};
     // v3.1 — apply phase lifecycle transition
     const phasePatch = applyPhaseTransition(open, dispId);
-    upd(open.id, {disposition: dispId, lastContact: new Date().toISOString().split("T")[0], ...stagePatch, ...phasePatch, ...cbPatch});
+
+    // v3.7 — auto-log disposition as a note (callback already logged by handleCbPreset/Custom in DialView)
+    const DISP_NOTE_TEXT = {
+      no_answer:      "📵 No Answer — dialed, no response",
+      vm_left:        "📬 Voicemail Left",
+      follow_up:      "🔄 Follow Up flagged",
+      not_interested: "🚫 Not Interested",
+      hung_up:        "📴 Hung Up",
+      dnc:            "⛔ Do Not Call — file closed",
+      no_show:        "❌ No-Show — appointment missed",
+    };
+    const noteText = DISP_NOTE_TEXT[dispId];
+    const notePatch = noteText
+      ? { notes: [{ ts: new Date().toISOString(), type: "call", text: noteText }, ...(open.notes || [])] }
+      : {};
+
+    upd(open.id, {disposition: dispId, lastContact: new Date().toISOString().split("T")[0], ...stagePatch, ...phasePatch, ...cbPatch, ...notePatch});
 
     // v3.4 — advance to next lead (nextId captured pre-upd, no index-jump risk)
     if (inDialer) {

@@ -103,6 +103,10 @@ export default function DialView({
   const [cbPopoverOpen, setCbPopoverOpen] = useState(false);
   const [cbCustomTs,    setCbCustomTs]    = useState('');
 
+  // ── Manual appointment booking popover ───────────────────────────────────
+  const [manualApptOpen, setManualApptOpen] = useState(false);
+  const [manualApptTs,   setManualApptTs]   = useState('');
+
   // ── Power Dial queue: intersection of current UI queue and phase-engine due-today ──
   // This is what Power Dial actually dials through — consistent with the TODAY badge.
   const pdQueue = React.useMemo(() => queue.filter(isDueToday), [queue]);
@@ -750,16 +754,86 @@ export default function DialView({
             : React.createElement(React.Fragment, null,
 
                 // Calendly CTA
-                React.createElement("button", {
-                  onClick: () => openCalendlyPopup(open, calendlyUrl, setCalendlyTargetId),
-                  style: {
-                    display: "block", width: "100%", minHeight: "44px", padding: "10px 12px", marginBottom: "10px",
-                    background: open.disposition === "appointment_booked" ? "#8B5CF6" : "transparent",
-                    color: open.disposition === "appointment_booked" ? "#fff" : "#8B5CF6",
-                    border: "1.5px solid " + (open.disposition === "appointment_booked" ? "#8B5CF6" : "#C4B5FD"),
-                    borderRadius: "8px", fontSize: "13px", fontWeight: "800", cursor: "pointer", textAlign: "center"
-                  }
-                }, open.disposition === "appointment_booked" ? "📅 BOOKED · " + fmt(open.nextCallback) : "📅 BOOK → CALENDLY"),
+                // ── Appointment booking row: Calendly + Manual ───────────────
+                React.createElement("div", { style: { marginBottom: "10px", position: "relative" } },
+                  // Manual appt popover
+                  manualApptOpen && React.createElement("div", {
+                    style: {
+                      position: "absolute", bottom: "calc(100% + 6px)", left: 0, right: 0, zIndex: 200,
+                      background: "var(--surface)", border: "2px solid #8B5CF6", borderRadius: "12px",
+                      padding: "14px", boxShadow: "0 -6px 24px rgba(0,0,0,0.18)"
+                    }
+                  },
+                    React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" } },
+                      React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "#6D28D9", letterSpacing: "0.08em" } }, "📋 MANUAL APPOINTMENT"),
+                      React.createElement("button", {
+                        onClick: () => { setManualApptOpen(false); setManualApptTs(''); },
+                        style: { background: "none", border: "none", cursor: "pointer", fontSize: "16px", color: "var(--t3)", padding: "0 2px", lineHeight: 1, fontWeight: "700" }
+                      }, "✕")
+                    ),
+                    React.createElement("div", { style: { fontSize: "11px", color: "var(--t3)", marginBottom: "8px" } }, "Book directly — bypasses Calendly buffer"),
+                    React.createElement("input", {
+                      type: "datetime-local",
+                      value: manualApptTs,
+                      onChange: e => setManualApptTs(e.target.value),
+                      style: { width: "100%", fontSize: "12px", padding: "8px 10px", borderRadius: "7px", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--t1)", fontFamily: "inherit", boxSizing: "border-box", marginBottom: "8px" }
+                    }),
+                    React.createElement("button", {
+                      onClick: () => {
+                        if (!manualApptTs || !open) return;
+                        const ts = new Date(manualApptTs).toISOString();
+                        const label = new Date(manualApptTs).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+                        upd(open.id, {
+                          disposition: 'appointment_booked',
+                          stage: 'appointment_set',
+                          nextCallback: ts,
+                          apptConfirmed: false,
+                          notes: [{ ts: new Date().toISOString(), type: 'appointment', text: '📋 Manual Appt Booked — ' + label }, ...(open.notes || [])]
+                        });
+                        // Open Google Calendar pre-fill
+                        const toGCalTs = ms => new Date(ms).toISOString().replace(/[-:.]/g,'').slice(0,15)+'Z';
+                        const startMs = new Date(manualApptTs).getTime();
+                        const endMs   = startMs + 30 * 60000;
+                        const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('🛡 Protection Audit — ' + (open.name || 'Household'))}&dates=${toGCalTs(startMs)}/${toGCalTs(endMs)}&details=${encodeURIComponent('Ministry of Protection — Household Protection Audit\n\nLead: ' + (open.name || '') + '\nPhone: ' + (open.phone || '') + '\n\nLogged via Metka Field Ops CRM')}`;
+                        window.open(gcalUrl, '_blank');
+                        setManualApptOpen(false);
+                        setManualApptTs('');
+                      },
+                      disabled: !manualApptTs,
+                      style: {
+                        width: "100%", minHeight: "40px", borderRadius: "8px", border: "none",
+                        background: manualApptTs ? "#7C3AED" : "var(--border)",
+                        color: manualApptTs ? "#fff" : "var(--t3)",
+                        fontSize: "12px", fontWeight: "800", letterSpacing: "0.5px",
+                        cursor: manualApptTs ? "pointer" : "default"
+                      }
+                    }, "✓ BOOK & ADD TO GOOGLE CALENDAR")
+                  ),
+                  // Button row
+                  React.createElement("div", { style: { display: "flex", gap: "6px" } },
+                    React.createElement("button", {
+                      onClick: () => openCalendlyPopup(open, calendlyUrl, setCalendlyTargetId),
+                      style: {
+                        flex: 1, minHeight: "44px", padding: "10px 8px",
+                        background: open.disposition === "appointment_booked" ? "#8B5CF6" : "transparent",
+                        color: open.disposition === "appointment_booked" ? "#fff" : "#8B5CF6",
+                        border: "1.5px solid " + (open.disposition === "appointment_booked" ? "#8B5CF6" : "#C4B5FD"),
+                        borderRadius: "8px", fontSize: "12px", fontWeight: "800", cursor: "pointer", textAlign: "center"
+                      }
+                    }, open.disposition === "appointment_booked" ? "📅 BOOKED · " + fmt(open.nextCallback) : "📅 CALENDLY"),
+                    React.createElement("button", {
+                      onClick: () => { setManualApptOpen(v => !v); setCbPopoverOpen(false); },
+                      title: "Book appointment manually (bypasses Calendly buffer)",
+                      style: {
+                        flexShrink: 0, minHeight: "44px", padding: "10px 12px",
+                        background: manualApptOpen ? "#7C3AED" : "transparent",
+                        color: manualApptOpen ? "#fff" : "#7C3AED",
+                        border: "1.5px solid " + (manualApptOpen ? "#7C3AED" : "#C4B5FD"),
+                        borderRadius: "8px", fontSize: "12px", fontWeight: "800", cursor: "pointer", whiteSpace: "nowrap"
+                      }
+                    }, "📋 MANUAL")
+                  )
+                ),
 
                 // Ghost Protocol
                 React.createElement("button", {
@@ -1141,52 +1215,180 @@ export default function DialView({
 
         // Q's tab — Qualification checklist
         dialRightTab === "quals" && React.createElement("div", {
-          id: "dial-panel-quals", role: "tabpanel", "aria-labelledby": "dial-tab-quals", style: { padding: "12px" }
+          id: "dial-panel-quals", role: "tabpanel", "aria-labelledby": "dial-tab-quals", style: { padding: "12px", display: "flex", flexDirection: "column", gap: "10px" }
         },
-          React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "10px" } }, "\u2705 QUALIFICATION CHECKLIST"),
-
-          // Mortgage / debt fields
-          React.createElement("div", { style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "8px", padding: "12px", marginBottom: "8px" } },
-            React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "8px" } }, "\ud83c\udfe0 MORTGAGE / DEBT"),
-            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginBottom: "6px" } },
+          React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "4px" } }, "📋 CLIENT QUALIFICATION FORM"),
+          // 1. FINANCIAL & LIFESTYLE
+          React.createElement("div", { style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "8px", padding: "12px" } },
+            React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "10px" } }, "💼 FINANCIAL & LIFESTYLE"),
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "8px" } },
               React.createElement("div", null,
-                React.createElement("label", { htmlFor: "q-mort-bal", style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "BALANCE"),
+                React.createElement("label", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "OCCUPATION / RETIRED"),
                 React.createElement("input", {
-                  id: "q-mort-bal", type: "text", placeholder: "$250,000",
-                  key: "mort-bal-" + (open ? open.id : "none"),
-                  defaultValue: open ? (open.mortgageBalance || "") : "",
+                  type: "text", placeholder: "e.g., Retired (2018)", defaultValue: open ? (open.occupation || "") : "",
+                  onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.occupation || "")) upd(open.id, { occupation: v }); } },
+                  style: { ...inp(), width: "100%", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box" }
+                })
+              ),
+              React.createElement("div", null,
+                React.createElement("label", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "EST. ANNUAL INCOME"),
+                React.createElement("input", {
+                  type: "text", placeholder: "$50,000", defaultValue: open ? (open.annualIncome || "") : "",
+                  onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.annualIncome || "")) upd(open.id, { annualIncome: v }); } },
+                  style: { ...inp(), width: "100%", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box" }
+                })
+              ),
+              React.createElement("div", null,
+                React.createElement("label", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "MORTGAGE BALANCE"),
+                React.createElement("input", {
+                  type: "text", placeholder: "$250,000", defaultValue: open ? (open.mortgageBalance || "") : "",
                   onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.mortgageBalance || "")) upd(open.id, { mortgageBalance: v }); } },
                   style: { ...inp(), width: "100%", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box" }
                 })
               ),
               React.createElement("div", null,
-                React.createElement("label", { htmlFor: "q-mort-term", style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "TERM LEFT"),
+                React.createElement("label", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "MONTHLY PAYMENT"),
                 React.createElement("input", {
-                  id: "q-mort-term", type: "text", placeholder: "20 yrs",
-                  key: "mort-term-" + (open ? open.id : "none"),
-                  defaultValue: open ? (open.mortgageTerm || "") : "",
+                  type: "text", placeholder: "$1,500", defaultValue: open ? (open.mortgagePayment || "") : "",
+                  onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.mortgagePayment || "")) upd(open.id, { mortgagePayment: v }); } },
+                  style: { ...inp(), width: "100%", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box" }
+                })
+              ),
+              React.createElement("div", null,
+                React.createElement("label", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "TERM LEFT"),
+                React.createElement("input", {
+                  type: "text", placeholder: "20 yrs", defaultValue: open ? (open.mortgageTerm || "") : "",
                   onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.mortgageTerm || "")) upd(open.id, { mortgageTerm: v }); } },
+                  style: { ...inp(), width: "100%", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box" }
+                })
+              ),
+              React.createElement("div", null,
+                React.createElement("label", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "PRIMARY BENEFICIARY"),
+                React.createElement("input", {
+                  type: "text", placeholder: "Name & Relationship", defaultValue: open ? (open.beneficiary || "") : "",
+                  onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.beneficiary || "")) upd(open.id, { beneficiary: v }); } },
                   style: { ...inp(), width: "100%", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box" }
                 })
               )
             ),
+            React.createElement("div", { style: { marginBottom: "8px" } },
+              React.createElement("label", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "EXISTING LIFE INSURANCE"),
+              React.createElement("textarea", {
+                placeholder: "Company, Type, Death Benefit...", defaultValue: open ? (open.existingInsurance || "") : "",
+                onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.existingInsurance || "")) upd(open.id, { existingInsurance: v }); } },
+                style: { ...inp(), width: "100%", minHeight: "36px", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box", resize: "vertical" }
+              })
+            ),
             React.createElement("div", null,
-              React.createElement("label", { htmlFor: "q-primary", style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "PRIMARY BORROWER"),
+              React.createElement("label", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "FINANCIAL CONCERNS / GOALS"),
+              React.createElement("textarea", {
+                placeholder: "What do they want to address with this coverage?", defaultValue: open ? (open.financialGoals || "") : "",
+                onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.financialGoals || "")) upd(open.id, { financialGoals: v }); } },
+                style: { ...inp(), width: "100%", minHeight: "36px", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box", resize: "vertical" }
+              })
+            )
+          ),
+          // 2. HEALTH CONDITIONS
+          React.createElement("div", { style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "8px", padding: "12px" } },
+            React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "10px" } }, "❤️ HEALTH CONDITIONS"),
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginBottom: "10px" } },
+              ...[
+                { id: "heart",         label: "Heart Disease/Attack" },
+                { id: "cancer",        label: "Cancer or Tumors" },
+                { id: "stroke",        label: "Stroke or TIA" },
+                { id: "diabetes",      label: "Diabetes" },
+                { id: "lung",          label: "Lung Disease/COPD" },
+                { id: "kidney_liver",  label: "Kidney/Liver Disease" },
+                { id: "mental",        label: "Mental Health (Dep/Anx)" },
+                { id: "neuro",         label: "Neurological (MS/Park)" },
+              ].map(flag =>
+                React.createElement("label", { key: flag.id, style: { display: "flex", alignItems: "flex-start", gap: "6px", cursor: "pointer", padding: "5px 7px", borderRadius: "5px", background: (open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)) ? "rgba(239,68,68,0.12)" : "transparent", border: "1px solid " + ((open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)) ? "var(--red)" : "var(--border)") } },
+                  React.createElement("input", {
+                    type: "checkbox",
+                    checked: !!(open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)),
+                    onChange: e => {
+                      if (!open) return;
+                      const cur = Array.isArray(open.healthFlags) ? [...open.healthFlags] : [];
+                      const next = e.target.checked ? [...new Set([...cur, flag.id])] : cur.filter(f => f !== flag.id);
+                      upd(open.id, { healthFlags: next });
+                    },
+                    style: { accentColor: "var(--red)", cursor: "pointer", marginTop: "2px" }
+                  }),
+                  React.createElement("span", {
+                    style: {
+                      fontSize: "10px", lineHeight: "1.3",
+                      color: (open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)) ? "var(--red)" : "var(--t2)",
+                      fontWeight: (open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)) ? "800" : "600"
+                    }
+                  }, flag.label)
+                )
+              )
+            ),
+            React.createElement("div", { style: { marginBottom: "8px" } },
+              React.createElement("label", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "PRESCRIPTION MEDICATIONS"),
+              React.createElement("textarea", {
+                placeholder: "Names, dosages, frequencies, reasons...", defaultValue: open ? (open.medicationsDetail || "") : "",
+                onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.medicationsDetail || "")) upd(open.id, { medicationsDetail: v }); } },
+                style: { ...inp(), width: "100%", minHeight: "45px", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box", resize: "vertical" }
+              })
+            ),
+            React.createElement("div", null,
+              React.createElement("label", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "HOSPITALIZATIONS / SURGERIES (PAST 5 YRS)"),
+              React.createElement("textarea", {
+                placeholder: "Dates and reasons...", defaultValue: open ? (open.surgeries5yr || "") : "",
+                onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.surgeries5yr || "")) upd(open.id, { surgeries5yr: v }); } },
+                style: { ...inp(), width: "100%", minHeight: "36px", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box", resize: "vertical" }
+              })
+            )
+          ),
+          // 3. BACKGROUND & LIFESTYLE
+          React.createElement("div", { style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "8px", padding: "12px" } },
+            React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "10px" } }, "⚠️ BACKGROUND & LIFESTYLE"),
+            React.createElement("div", { style: { marginBottom: "8px" } },
+              React.createElement("label", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "TOBACCO / NICOTINE USE"),
               React.createElement("input", {
-                id: "q-primary", type: "text", placeholder: "Name on mortgage",
-                key: "q-primary-" + (open ? open.id : "none"),
-                defaultValue: open ? (open.primaryBorrower || "") : "",
-                onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.primaryBorrower || "")) upd(open.id, { primaryBorrower: v }); } },
+                type: "text", placeholder: "Type and frequency (e.g., Cigarettes, 1 pack/day)", defaultValue: open ? (open.tobaccoUseDetails || "") : "",
+                onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.tobaccoUseDetails || "")) upd(open.id, { tobaccoUseDetails: v }); } },
+                style: { ...inp(), width: "100%", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box" }
+              })
+            ),
+            React.createElement("div", { style: { marginBottom: "8px" } },
+              React.createElement("label", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "DRUG OR ALCOHOL ABUSE HISTORY"),
+              React.createElement("input", {
+                type: "text", placeholder: "Treatment dates/details...", defaultValue: open ? (open.substanceAbuse || "") : "",
+                onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.substanceAbuse || "")) upd(open.id, { substanceAbuse: v }); } },
+                style: { ...inp(), width: "100%", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box" }
+              })
+            ),
+            React.createElement("div", null,
+              React.createElement("label", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "DRIVING RECORD (Valid license? DUIs?)"),
+              React.createElement("input", {
+                type: "text", placeholder: "License status, DUIs, suspensions...", defaultValue: open ? (open.drivingRecord || "") : "",
+                onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.drivingRecord || "")) upd(open.id, { drivingRecord: v }); } },
                 style: { ...inp(), width: "100%", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box" }
               })
             )
           ),
-
-          // Health flags
-          React.createElement("div", { style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "8px", padding: "12px", marginBottom: "8px" } },
-            React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "8px" } }, "\u2764 HEALTH FLAGS"),
-            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" } },
-              ...[
-                { id: "diabetes", label: "Diabetes" },
-                { id: "heart",    label: "Heart Condition" },
-          
+          // Auto-qualification signal
+          (() => {
+            if (!open) return React.createElement("div", { style: { textAlign: "center", padding: "12px 0", color: "var(--t4)", fontSize: "12px" } }, "Select a lead to qualify.");
+            const flags = Array.isArray(open.healthFlags) ? open.healthFlags : [];
+            const pivot      = flags.length >= 2;
+            const tableRate  = !pivot && (!!open.tobacco || flags.length === 1);
+            const signal = pivot
+              ? { label: "PIVOT",      color: "var(--red)",   bg: "rgba(239,68,68,0.08)",   border: "var(--red)",   action: "→ Graded / Guaranteed Issue FE", icon: "⚠️" }
+              : tableRate
+              ? { label: "TABLE RATE", color: "var(--amber)", bg: "rgba(245,158,11,0.08)",  border: "var(--amber)", action: "→ Run quoted products · flag rate class", icon: "⚡" }
+              : { label: "CLEAN",      color: "var(--green)", bg: "rgba(16,185,129,0.08)",  border: "var(--green)", action: "→ Book Household Protection Audit", icon: "✅" };
+            return React.createElement("div", {
+              style: { background: signal.bg, border: `1px solid ${signal.border}`, borderRadius: "8px", padding: "14px", textAlign: "center" }
+            },
+              React.createElement("div", { style: { fontSize: "13px", fontWeight: "800", color: signal.color, letterSpacing: "0.08em", marginBottom: "5px" } }, signal.icon + " " + signal.label),
+              React.createElement("div", { style: { fontSize: "11px", color: signal.color, fontWeight: "600" } }, signal.action)
+            );
+          })()
+        )
+      )
+    )
+  );
+}
