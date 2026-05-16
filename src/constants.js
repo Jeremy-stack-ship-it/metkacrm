@@ -21,6 +21,7 @@ export const STAGES = [
   {id:"app_submitted",   label:"App Submitted",    color:"#0EA5E9"},
   {id:"underwriting",    label:"Underwriting",     color:"#0284C7"},
   {id:"issued",          label:"Issue Paid",       color:"#059669"},
+  {id:"removed",         label:"Removed",           color:"#6B7280"},
 ];
 
 // ── DISPOSITIONS ──────────────────────────────────────────────────
@@ -96,7 +97,7 @@ export const chip = (sel, c) => ({
 export const inp = () => ({
   background:"var(--surface)", border:"1px solid var(--border)",
   borderRadius:"7px", padding:"8px 11px", fontSize:"12px",
-  color:"var(--t1)", fontFamily:"'DM Sans',sans-serif"
+  color:"var(--t1)", fontFamily:"'Inter',sans-serif"
 });
 
 export const FIELD_MAP_DEFS = [

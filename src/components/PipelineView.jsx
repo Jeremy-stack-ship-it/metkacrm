@@ -12,8 +12,13 @@ export default function PipelineView({
 }) {
   return React.createElement("div",{style:{flex:1,overflowX:"auto",display:"flex",padding:"24px",gap:"16px",background:"var(--surface-2)"}},
     STAGES.map(stage=>{
-      const TERMINAL_DISPS = ['dnc','not_interested','invalid','archive'];
-      const sl=leads.filter(l=>l.stage===stage.id && !TERMINAL_DISPS.includes(l.disposition));
+      const TERMINAL_DISPS = ['dnc','not_interested','withdrawn','chargeback','invalid','archive'];
+      // Removed column: show all — they're already archived. Other columns: filter terminal disps defensively.
+      const sl=leads.filter(l=>{
+        if(l.stage!==stage.id) return false;
+        if(stage.id==='removed') return true;
+        return !TERMINAL_DISPS.includes(l.disposition);
+      });
       const stuckCount = sl.filter(l=>isUWStuck(l)).length;
       return React.createElement("div",{key:stage.id,style:{minWidth:"230px",maxWidth:"230px",display:"flex",flexDirection:"column"}},
         React.createElement("div",{style:{padding:"14px 16px",background:"var(--surface)",borderTop:`4px solid ${stage.color}`,border:"1px solid var(--border)",borderTopWidth:"4px",borderRadius:"12px 12px 0 0",borderBottom:"none"}},

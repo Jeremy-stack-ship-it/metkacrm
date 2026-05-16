@@ -29,7 +29,7 @@ export default function ActivityDashboard({
   const inp = () => ({
     padding: "8px 12px", fontSize: "13px", borderRadius: "8px",
     border: "1px solid var(--border)", background: "var(--surface)",
-    color: "var(--t1)", outline: "none", fontFamily: "'DM Sans',system-ui,sans-serif",
+    color: "var(--t1)", outline: "none", fontFamily: "'Inter',system-ui,sans-serif",
   });
 
   return React.createElement("div", { style: { flex: 1, overflowY: "auto", padding: "24px 32px", background: "var(--surface-2)" } },
@@ -69,7 +69,7 @@ export default function ActivityDashboard({
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a"); a.href = url; a.download = "ministry-activity-" + new Date().toISOString().split("T")[0] + ".csv"; a.click(); URL.revokeObjectURL(url);
             },
-            style: { marginLeft: "4px", padding: "7px 14px", fontSize: "11px", fontWeight: "700", borderRadius: "8px", cursor: "pointer", background: "var(--green-dim)", color: "var(--green)", border: "1px solid #6EE7B7", letterSpacing: "0.5px", fontFamily: "'DM Sans',sans-serif" }
+            style: { marginLeft: "4px", padding: "7px 14px", fontSize: "11px", fontWeight: "700", borderRadius: "8px", cursor: "pointer", background: "var(--green-dim)", color: "var(--green)", border: "1px solid #6EE7B7", letterSpacing: "0.5px", fontFamily: "'Inter',sans-serif" }
           }, "📥 Export CSV")
         )
       ),

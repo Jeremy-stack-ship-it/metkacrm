@@ -37,7 +37,7 @@ export default function ContactsView({
         React.createElement("button",{
           onClick:()=>setShowFilters(v=>!v),
           style:{
-            padding:"9px 16px",borderRadius:"8px",fontWeight:"700",fontSize:"12px",cursor:"pointer",whiteSpace:"nowrap",
+            padding:"9px 16px",borderRadius:"var(--radius-md)",fontWeight:"700",fontSize:"12px",cursor:"pointer",whiteSpace:"nowrap",
             border:"1px solid var(--border)",
             background:(filterBucket!=="all"||filterStage!=="all"||filterDisp!=="all"||filterState!=="all"||filterTimezone!=="all"||filterMonth!=="all")?"var(--blue)":"var(--surface-2)",
             color:(filterBucket!=="all"||filterStage!=="all"||filterDisp!=="all"||filterState!=="all"||filterTimezone!=="all"||filterMonth!=="all")?"#fff":"var(--t2)"
@@ -45,13 +45,13 @@ export default function ContactsView({
         },(()=>{const a=[filterBucket,filterStage,filterDisp,filterState,filterTimezone,filterMonth].filter(v=>v!=="all").length;return(showFilters?"▲ ":"▼ ")+"Filters"+(a>0?" ("+a+")":"");})()),
         React.createElement("button",{
           onClick:()=>setQueueMode(q=>!q),
-          style:{padding:"9px 16px",borderRadius:"8px",fontWeight:"700",fontSize:"12px",cursor:"pointer",border:"none",whiteSpace:"nowrap",
+          style:{padding:"9px 16px",borderRadius:"var(--radius-md)",fontWeight:"700",fontSize:"12px",cursor:"pointer",border:"none",whiteSpace:"nowrap",
             background:queueMode?"#2563EB":"var(--surface-2)",color:queueMode?"#fff":"var(--t2)",
             boxShadow:queueMode?"0 0 0 2px #2563EB44":"none",transition:"all 0.2s"}
         },queueMode?"🎯 QUEUE ON":"🎯 QUEUE"),
         (searchQuery||filterBucket!=="all"||filterStage!=="all"||filterDisp!=="all"||filterState!=="all"||filterTimezone!=="all"||filterMonth!=="all")&&React.createElement("button",{
           onClick:()=>{setSearchQuery("");setFilterBucket("all");setFilterStage("all");setFilterDisp("all");setFilterState("all");setFilterTimezone("all");setFilterMonth("all");setPage(1);},
-          style:{padding:"9px 14px",borderRadius:"8px",fontWeight:"700",fontSize:"12px",cursor:"pointer",border:"1px solid #FCA5A5",background:"var(--red-dim)",color:"var(--red)",whiteSpace:"nowrap"}
+          style:{padding:"9px 14px",borderRadius:"var(--radius-md)",fontWeight:"700",fontSize:"12px",cursor:"pointer",border:"1px solid #FCA5A5",background:"var(--red-dim)",color:"var(--red)",whiteSpace:"nowrap"}
         },"✕ Clear"),
         React.createElement("button",{
           onClick:()=>{
@@ -62,7 +62,7 @@ export default function ContactsView({
             try{localStorage.setItem('metka-session-v1',JSON.stringify(s));}catch{}
             setOpenId(ids[0]); setView("queue"); setDetailTab("live");
           },
-          style:{padding:"9px 16px",borderRadius:"8px",fontWeight:"700",fontSize:"12px",cursor:"pointer",border:"none",whiteSpace:"nowrap",
+          style:{padding:"9px 16px",borderRadius:"var(--radius-md)",fontWeight:"700",fontSize:"12px",cursor:"pointer",border:"none",whiteSpace:"nowrap",
             background:"var(--green)",color:"#fff",transition:"all 0.2s"}
         },"▶ Start Session"),
         React.createElement("div",{style:{fontSize:"11px",color:"var(--t3)",fontWeight:"600",whiteSpace:"nowrap"}},filteredContacts.length.toLocaleString()+" leads"+(queueMode?" · priority":""))
@@ -93,7 +93,7 @@ export default function ContactsView({
           availableMonths.map(m=>{const[yr,mo]=m.split("-");const label=new Date(+yr,+mo-1,1).toLocaleString("default",{month:"long",year:"numeric"});return React.createElement("option",{key:m,value:m},label);})
         ),
         React.createElement("div",{style:{width:"100%",display:"flex",gap:"8px",flexWrap:"wrap",paddingTop:"8px",borderTop:"1px dashed var(--border)",marginTop:"4px",alignItems:"center"}},
-          React.createElement("span",{style:{fontSize:"10px",fontWeight:"800",color:"var(--red)",letterSpacing:"1px",whiteSpace:"nowrap"}},"≠ EXCLUDE:"),
+          React.createElement("span",{style:{fontSize: "11px",fontWeight:"800",color:"var(--red)",letterSpacing:"1px",whiteSpace:"nowrap"}},"≠ EXCLUDE:"),
           React.createElement("select",{value:exclBucket,onChange:e=>setExclBucket(e.target.value),style:{...inp(),padding:"6px 8px",fontSize:"11px",fontWeight:"600",color:"var(--red)",border:"1px solid #FCA5A5"}},
             React.createElement("option",{value:"none"},"Bucket"),
             ["A","B","C"].map(b=>React.createElement("option",{key:b,value:b},"≠ "+BL[b]))
@@ -110,7 +110,7 @@ export default function ContactsView({
         ),
         React.createElement("button",{
           onClick:()=>{const emailList=window.prompt("Paste opener email list (one per line or comma-separated):");if(!emailList)return;const openers=new Set(emailList.split(/[\n,]+/).map(e=>e.trim().toLowerCase()).filter(Boolean));let matched=0;const updated=leads.map(l=>{if(l.email&&openers.has(l.email.toLowerCase())){matched++;return{...l,emailOpener:true};}return l;});saveLeads(updated);alert(matched+" leads flagged as Email Openers.");},
-          style:{padding:"8px 14px",borderRadius:"8px",fontWeight:"700",fontSize:"12px",cursor:"pointer",border:"1px solid var(--amber)",background:"var(--amber-dim)",color:"var(--amber)",whiteSpace:"nowrap"}
+          style:{padding:"8px 14px",borderRadius:"var(--radius-md)",fontWeight:"700",fontSize:"12px",cursor:"pointer",border:"1px solid var(--amber)",background:"var(--amber-dim)",color:"var(--amber)",whiteSpace:"nowrap"}
         },"📧 Flag Openers")
       )
     ),
@@ -120,7 +120,7 @@ export default function ContactsView({
          React.createElement("thead", null,
            React.createElement("tr", {style: {background: "var(--surface-2)", borderBottom: "1px solid var(--border)", textAlign: "left"}},
               ["NAME", "PHONE", "LOCATION", "BUCKET", "STAGE", "DISPOSITION"].map(h =>
-                React.createElement("th", {key: h, style: {padding: "14px 20px", fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1px"}}, h)
+                React.createElement("th", {key: h, style: {padding: "14px 20px", fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.06em"}}, h)
               )
            )
          ),
@@ -144,13 +144,13 @@ export default function ContactsView({
                  background: queueMode && _gi <= 3 ? "rgba(37,99,235,0.04)" : undefined}
              },
                React.createElement("td", {style: {padding: "14px 20px", fontSize: "14px", fontWeight: "700", color: "var(--t1)"}},
-                 queueMode && React.createElement("span",{style:{marginRight:"8px",fontSize:"10px",padding:"2px 7px",borderRadius:"20px",background:"var(--surface-2)",color:"var(--t3)",fontWeight:"800",fontFamily:"monospace"}},"#"+_gi),
+                 queueMode && React.createElement("span",{style:{marginRight:"8px",fontSize: "11px",padding:"2px 7px",borderRadius:"var(--radius-pill)",background:"var(--surface-2)",color:"var(--t3)",fontWeight:"800",fontFamily:"monospace"}},"#"+_gi),
                  lead.name,
-                 stuck && React.createElement("span",{style:{marginLeft:"8px",fontSize:"9px",padding:"2px 8px",borderRadius:"20px",background:"var(--red-dim)",color:"var(--red)",fontWeight:"800",border:"1px solid #FCA5A5"}}, "⚠ UW " + daysInUW(lead) + "d"),
-                 _cbod && React.createElement("span",{style:{marginLeft:"6px",fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"#FEF9C3",color:"#CA8A04",fontWeight:"800"}},"📞 CB OD"),
-                 _due && React.createElement("span",{style:{marginLeft:"6px",fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"#FEE2E2",color:"#DC2626",fontWeight:"800"}},"🔴 DUE"),
-                 _undialed && !_due && React.createElement("span",{style:{marginLeft:"6px",fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"#ECFDF5",color:"#059669",fontWeight:"800"}},"● NEW"),
-                 lead.emailOpener && React.createElement("span",{style:{marginLeft:"6px",fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"var(--amber-dim)",color:"var(--amber)",fontWeight:"800",border:"1px solid var(--amber)"}},"📧 OPENER")
+                 stuck && React.createElement("span",{style:{marginLeft:"8px",fontSize: "11px",padding:"2px 8px",borderRadius:"var(--radius-pill)",background:"var(--red-dim)",color:"var(--red)",fontWeight:"800",border:"1px solid #FCA5A5"}}, "⚠ UW " + daysInUW(lead) + "d"),
+                 _cbod && React.createElement("span",{style:{marginLeft:"6px",fontSize: "11px",padding:"2px 7px",borderRadius:"var(--radius-pill)",background:"#FEF9C3",color:"#CA8A04",fontWeight:"800"}},"📞 CB OD"),
+                 _due && React.createElement("span",{style:{marginLeft:"6px",fontSize: "11px",padding:"2px 7px",borderRadius:"var(--radius-pill)",background:"#FEE2E2",color:"#DC2626",fontWeight:"800"}},"🔴 DUE"),
+                 _undialed && !_due && React.createElement("span",{style:{marginLeft:"6px",fontSize: "11px",padding:"2px 7px",borderRadius:"var(--radius-pill)",background:"#ECFDF5",color:"#059669",fontWeight:"800"}},"● NEW"),
+                 lead.emailOpener && React.createElement("span",{style:{marginLeft:"6px",fontSize: "11px",padding:"2px 7px",borderRadius:"var(--radius-pill)",background:"var(--amber-dim)",color:"var(--amber)",fontWeight:"800",border:"1px solid var(--amber)"}},"📧 OPENER")
                ),
                // Dial — Twilio if enabled, tel: fallback
                React.createElement("td", {style: {padding: "14px 20px"}},
@@ -162,13 +162,13 @@ export default function ContactsView({
                ),
                React.createElement("td", {style: {padding: "14px 20px", fontSize: "13px", color: "var(--t2)", fontWeight: "500"}}, lead.city ? `${lead.city}, ${lead.state}` : lead.state),
                React.createElement("td", {style: {padding: "14px 20px"}},
-                  React.createElement("span", {style: {fontSize: "10px", padding: "4px 10px", borderRadius: "20px", background: BC[lead.bucket]+"18", color: BC[lead.bucket], fontWeight: "800"}}, BL[lead.bucket])
+                  React.createElement("span", {style: {fontSize: "11px", padding: "4px 10px", borderRadius: "var(--radius-pill)", background: BC[lead.bucket]+"18", color: BC[lead.bucket], fontWeight: "800"}}, BL[lead.bucket])
                ),
                React.createElement("td", {style: {padding: "14px 20px"}},
-                  React.createElement("span", {style: {fontSize: "10px", padding: "4px 10px", borderRadius: "20px", background: stageObj.color+"18", color: stageObj.color, fontWeight: "700"}}, stageObj.label)
+                  React.createElement("span", {style: {fontSize: "11px", padding: "4px 10px", borderRadius: "var(--radius-pill)", background: stageObj.color+"18", color: stageObj.color, fontWeight: "700"}}, stageObj.label)
                ),
                React.createElement("td", {style: {padding: "14px 20px"}},
-                  React.createElement("span", {style: {fontSize: "10px", padding: "4px 10px", borderRadius: "20px", background: dispObj.color+"18", color: dispObj.color, fontWeight: "700"}}, dispObj.label)
+                  React.createElement("span", {style: {fontSize: "11px", padding: "4px 10px", borderRadius: "var(--radius-pill)", background: dispObj.color+"18", color: dispObj.color, fontWeight: "700"}}, dispObj.label)
                )
              );
            }),
@@ -178,9 +178,9 @@ export default function ContactsView({
          )
        ),
       totalPages > 1 && React.createElement("div", {style: {display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 0", borderTop: "1px solid var(--border)", marginTop: "12px"}},
-         React.createElement("button", {onClick: () => setPage(p => Math.max(1, p - 1)), disabled: page === 1, style: {padding: "8px 16px", borderRadius: "8px", border: "1px solid var(--border)", background: page === 1 ? "transparent" : "var(--surface)", color: page === 1 ? "var(--t4)" : "var(--t2)", cursor: page === 1 ? "not-allowed" : "pointer", fontSize: "12px", fontWeight: "600"}}, "← Previous"),
+         React.createElement("button", {onClick: () => setPage(p => Math.max(1, p - 1)), disabled: page === 1, style: {padding: "8px 16px", borderRadius: "var(--radius-md)", border: "1px solid var(--border)", background: page === 1 ? "transparent" : "var(--surface)", color: page === 1 ? "var(--t4)" : "var(--t2)", cursor: page === 1 ? "not-allowed" : "pointer", fontSize: "12px", fontWeight: "600"}}, "← Previous"),
          React.createElement("span", {style: {fontSize: "12px", color: "var(--t3)", fontWeight: "600"}}, `Page ${page} of ${totalPages}`),
-         React.createElement("button", {onClick: () => setPage(p => Math.min(totalPages, p + 1)), disabled: page === totalPages, style: {padding: "8px 16px", borderRadius: "8px", border: "1px solid var(--border)", background: page === totalPages ? "transparent" : "var(--surface)", color: page === totalPages ? "var(--t4)" : "var(--t2)", cursor: page === totalPages ? "not-allowed" : "pointer", fontSize: "12px", fontWeight: "600"}}, "Next →")
+         React.createElement("button", {onClick: () => setPage(p => Math.min(totalPages, p + 1)), disabled: page === totalPages, style: {padding: "8px 16px", borderRadius: "var(--radius-md)", border: "1px solid var(--border)", background: page === totalPages ? "transparent" : "var(--surface)", color: page === totalPages ? "var(--t4)" : "var(--t2)", cursor: page === totalPages ? "not-allowed" : "pointer", fontSize: "12px", fontWeight: "600"}}, "Next →")
        )
     )
   );

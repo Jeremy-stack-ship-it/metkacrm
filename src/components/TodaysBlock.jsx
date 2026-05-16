@@ -347,7 +347,7 @@ export default function TodaysBlock({
 
           {!blockActive
             ? <button onClick={() => { setBlockActive(true); setBlockStart(Date.now()); setElapsed(0); }}
-                style={{ padding:'8px 20px', background:'#10B981', color:'#fff', border:'none', borderRadius:'8px', fontSize:'12px', fontWeight:'800', cursor:'pointer', letterSpacing:'0.5px', flexShrink:0 }}>
+                style={{ padding:'8px 20px', background:'#2563EB', color:'#fff', border:'none', borderRadius:'8px', fontSize:'12px', fontWeight:'800', cursor:'pointer', letterSpacing:'0.5px', flexShrink:0 }}>
                 ▶ START BLOCK
               </button>
             : <button onClick={() => { setBlockActive(false); setBlockStart(null); setElapsed(0); }}
@@ -521,7 +521,7 @@ export default function TodaysBlock({
                           style={{ flex:1, padding:'7px', background:copiedId===i?'var(--green-dim)':'var(--blue-dim)', color:copiedId===i?'var(--green)':'var(--blue)', border:`1px solid ${copiedId===i?'#6EE7B7':'var(--blue-mid)'}`, borderRadius:'7px', fontSize:'11px', fontWeight:'700', cursor:'pointer' }}
                         >{copiedId===i ? '✓ Copied!' : '📋 Copy'}</button>
                         <a href={`sms:${lead.phone?.replace(/\D/g,'')}?body=${encodeURIComponent(t.body)}`}
-                          style={{ flex:1, padding:'7px', background:'#10B981', color:'#fff', border:'none', borderRadius:'7px', fontSize:'11px', fontWeight:'700', cursor:'pointer', textDecoration:'none', textAlign:'center', display:'block' }}
+                          style={{ flex:1, padding:'7px', background:'#2563EB', color:'#fff', border:'none', borderRadius:'7px', fontSize:'11px', fontWeight:'700', cursor:'pointer', textDecoration:'none', textAlign:'center', display:'block' }}
                         >📱 Open SMS</a>
                       </div>
                     </div>
@@ -573,7 +573,7 @@ export default function TodaysBlock({
                       style={{ flex:1, padding:'9px', background:copiedId==='seq'?'var(--green-dim)':'var(--blue-dim)', color:copiedId==='seq'?'var(--green)':'var(--blue)', border:`1px solid ${copiedId==='seq'?'#6EE7B7':'var(--blue-mid)'}`, borderRadius:'8px', fontSize:'11px', fontWeight:'700', cursor:'pointer' }}
                     >{copiedId==='seq' ? '✓ Copied!' : '📋 Copy'}</button>
                     <a href={`sms:${lead.phone?.replace(/\D/g,'')}?body=${encodeURIComponent(bodyText)}`}
-                      style={{ flex:1, padding:'9px', background:'#10B981', color:'#fff', border:'none', borderRadius:'8px', fontSize:'11px', fontWeight:'700', cursor:'pointer', textDecoration:'none', textAlign:'center', display:'block' }}
+                      style={{ flex:1, padding:'9px', background:'#2563EB', color:'#fff', border:'none', borderRadius:'8px', fontSize:'11px', fontWeight:'700', cursor:'pointer', textDecoration:'none', textAlign:'center', display:'block' }}
                     >📱 Open SMS</a>
                   </div>
                   <button onClick={doMarkSent}

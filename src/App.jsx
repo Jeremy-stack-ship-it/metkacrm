@@ -224,7 +224,7 @@ function ApptModal({ open, upd, logActivity, fmt,
       },
         React.createElement("div", { style: { fontSize: "28px", lineHeight: 1 } }, "📅"),
         React.createElement("div", null,
-          React.createElement("div", { style: { fontSize: "9px", fontWeight: "800", color: "var(--navy)", letterSpacing: "2px", textTransform: "uppercase" } }, "Ministry of Protection"),
+          React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--navy)", letterSpacing: "0.08em", textTransform: "uppercase" } }, "Ministry of Protection"),
           React.createElement("div", { style: { fontSize: "14px", fontWeight: "800", color: "var(--t1)", marginTop: "2px" } }, "Appointment Check-In")
         )
       ),
@@ -245,7 +245,7 @@ function ApptModal({ open, upd, logActivity, fmt,
       // Button group or reschedule picker
       confirmReschedule
         ? React.createElement("div", null,
-            React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.5px", marginBottom: "10px" } }, "SET NEW DATE & TIME"),
+            React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "10px" } }, "SET NEW DATE & TIME"),
             React.createElement("div", { style: { display: "flex", gap: "8px", marginBottom: "12px" } },
               React.createElement("input", {
                 type: "date",
@@ -825,7 +825,7 @@ const saveLeads = useCallback((next, opts = {}) => {
   // Active session: re-sorts all leads fresh, updates session.ids, keeps current lead at top.
   const refreshQueueOrder = () => {
     const freshSorted = [...leads]
-      .filter(l => !['dnc','not_interested'].includes(l.disposition))
+      .filter(l => l.stage !== 'removed' && !['dnc','not_interested','withdrawn','chargeback'].includes(l.disposition))
       .sort((a, b) => priority(b) - priority(a))
       .slice(0, ITEMS_PER_PAGE)
       .map(l => l.id);
@@ -888,10 +888,20 @@ const saveLeads = useCallback((next, opts = {}) => {
     const followUpDate = dispId !== 'callback' ? autoFollowUp(dispId) : undefined;
     const cbPatch = followUpDate !== undefined ? { nextCallback: followUpDate } : {};
 
-    // Save the disposition — appointment_booked advances stage; no_show rolls back to contacted
-    const stagePatch =
-      dispId === "appointment_booked" ? {stage:"appointment_set"} :
-      dispId === "no_show"            ? {stage:"contacted"}        : {};
+    // Save the disposition — full stage map wired to every disposition
+    const DISP_STAGE_MAP = {
+      vm_left:            "contacted",
+      callback:           "contacted",
+      hung_up:            "contacted",
+      no_show:            "contacted",
+      appointment_booked: "appointment_set",
+      follow_up_needed:   "follow_up",
+      not_interested:     "removed",
+      dnc:                "removed",
+      withdrawn:          "removed",
+      chargeback:         "removed",
+    };
+    const stagePatch = DISP_STAGE_MAP[dispId] ? { stage: DISP_STAGE_MAP[dispId] } : {};
     // v3.1 — apply phase lifecycle transition
     const phasePatch = applyPhaseTransition(open, dispId);
     upd(open.id, {disposition: dispId, lastContact: new Date().toISOString().split("T")[0], ...stagePatch, ...phasePatch, ...cbPatch});
@@ -926,8 +936,9 @@ const queue = useMemo(() => {
     l.lastContact && new Date(l.lastContact).toDateString() === todayStr;
 
   const filtered = [...leads].filter(l => {
-    // Ghost Protocol: hard-remove only DNC and Not Interested
-    if(['dnc','not_interested'].includes(l.disposition)) return false;
+    // Ghost Protocol: hard-remove all terminal dispositions + removed stage
+    if(l.stage === 'removed') return false;
+    if(['dnc','not_interested','withdrawn','chargeback'].includes(l.disposition)) return false;
     // Hide leads that were dispositioned today with a far-out callback (no_answer, vm_left, etc.)
     // Leads that were merely dialed (no disposition yet) stay in queue — dial click alone is not enough.
     if(dispositionedToday(l)) return false;
@@ -992,7 +1003,7 @@ const queue = useMemo(() => {
       const qs = (lead) => {
         const bkt = lead.bucket || "C";
         const dp = lead.disposition || "not_called";
-        if (["dnc","not_interested"].includes(dp)) return -9999;
+        if (lead.stage === 'removed' || ["dnc","not_interested","withdrawn","chargeback"].includes(dp)) return -9999;
         const lc = lead.lastContact ? new Date(lead.lastContact).getTime() : 0;
         const am = lead.assignDate  ? new Date(lead.assignDate).getTime()  : 0;
         const ms = lc ? _n - lc : Infinity;
@@ -1115,7 +1126,7 @@ const queue = useMemo(() => {
     const now=new Date();
     return{
       total:leads.length,
-      hot:leads.filter(l=>l.bucket==="A"&&!["dnc","not_interested"].includes(l.disposition)).length,
+      hot:leads.filter(l=>l.bucket==="A"&&l.stage!=="removed"&&!["dnc","not_interested","withdrawn","chargeback"].includes(l.disposition)).length,
       cbToday:leads.filter(l=>l.nextCallback&&new Date(l.nextCallback).toDateString()===todayStr()).length,
       overdue:leads.filter(l=>l.nextCallback&&new Date(l.nextCallback)<now&&new Date(l.nextCallback).toDateString()!==todayStr()).length,
       pipe:leads.filter(l=>["appointment_set","follow_up","app_submitted","underwriting"].includes(l.stage)).length,
@@ -1147,7 +1158,7 @@ const queue = useMemo(() => {
     return { today, week, month, last7, last7Agg, view, days, contactRate, setRate };
   },[activity, activityRange]);
 
-  if(loading) return React.createElement("div",{style:{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:"13px",fontFamily:"'DM Sans',sans-serif"}},"Loading Metka Field Ops…");
+  if(loading) return React.createElement("div",{style:{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:"13px",fontFamily:"'Inter',sans-serif"}},"Loading Metka Field Ops…");
 
   // ── ScriptPanel → components/ScriptPanel.jsx ─────────────────────────
   // StageStepper ← moved to components/ContactDetail.jsx
@@ -1155,7 +1166,7 @@ const queue = useMemo(() => {
   // UnderwritingCard ← moved to components/ContactDetail.jsx
 
   // ── APP RENDER ───────────────────────────────────────────────────
-  return React.createElement("div",{style:{display:"flex",height:"100vh",background:"var(--bg)",color:"var(--t1)",fontFamily:"'DM Sans',system-ui,sans-serif",overflow:"hidden"}},
+  return React.createElement("div",{style:{display:"flex",height:"100vh",background:"var(--bg)",color:"var(--t1)",fontFamily:"'Inter',system-ui,sans-serif",overflow:"hidden"}},
 
     // ── 1. DARK SIDEBAR (hamburger-controlled on dial view) ──
     React.createElement(NavSidebar, { view, setView, navOpen }),
@@ -1206,9 +1217,19 @@ const queue = useMemo(() => {
             // Compute phase transition patch
             const lead = leads.find(l => l.id === id);
             const phasePatch = lead ? applyPhaseTransition(lead, dispId) : {};
-            const stagePatch =
-              dispId === "appointment_booked" ? {stage:"appointment_set"} :
-              dispId === "no_show"            ? {stage:"contacted"}        : {};
+            const DISP_STAGE_MAP = {
+              vm_left:            "contacted",
+              callback:           "contacted",
+              hung_up:            "contacted",
+              no_show:            "contacted",
+              appointment_booked: "appointment_set",
+              follow_up_needed:   "follow_up",
+              not_interested:     "removed",
+              dnc:                "removed",
+              withdrawn:          "removed",
+              chargeback:         "removed",
+            };
+            const stagePatch = DISP_STAGE_MAP[dispId] ? { stage: DISP_STAGE_MAP[dispId] } : {};
             upd(id, { disposition: dispId, lastContact: new Date().toISOString().split("T")[0], ...stagePatch, ...phasePatch });
           },
           onOpen: (id) => { setOpenId(id); setPrevView("today"); setView("contact"); setDetailTab("activity"); },

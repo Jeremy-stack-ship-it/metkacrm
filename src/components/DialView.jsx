@@ -55,6 +55,9 @@ function renderLiveTokens(text, lead, upd) {
 const ATTEMPT1_SEC = 18;
 const ATTEMPT2_SEC = 30;
 
+// Dispositions that keep the call live (no auto-hang-up on fire)
+const KEEP_CALL_DISPS = new Set(['callback', 'appointment_booked']);
+
 export default function DialView({
   queue, session, setSession, sessionPaused, setSessionPaused, setDialSessionActive,
   dialSortMode, setDialSortMode,
@@ -141,12 +144,12 @@ export default function DialView({
       pdTimerRef.current = setInterval(() => { secs -= 1; setPdCountdown(secs); }, 1000);
       pdTimeoutRef.current = setTimeout(() => {
         // Attempt 1 timeout — hang up, set pending flag; useEffect fires attempt 2 once callStatus hits null
-        if (hangUp) hangUp(); else if (twilioDevice) twilioDevice.disconnectAll();
+        if (twilioDevice) twilioDevice.disconnectAll();
         pdClearTimers();
         setPdAttempt(2); setPdStatus('pausing'); setPdPendingAttempt2(true);
       }, ATTEMPT1_SEC * 1000);
     }, 1500);
-  }, [dialLead, hangUp, twilioDevice, setOpenId, pdClearTimers]);
+  }, [dialLead, twilioDevice, setOpenId, pdClearTimers]);
 
   const pdStart = useCallback(() => {
     if (!pdQueue || !pdQueue.length) {
@@ -165,17 +168,17 @@ export default function DialView({
     setPdCountdown(secs);
     pdTimerRef.current = setInterval(() => { secs -= 1; setPdCountdown(secs); }, 1000);
     pdTimeoutRef.current = setTimeout(() => {
-      if (hangUp) hangUp(); else if (twilioDevice) twilioDevice.disconnectAll();
+      if (twilioDevice) twilioDevice.disconnectAll();
       pdClearTimers();
       setPdAttempt(2); setPdStatus('pausing'); setPdPendingAttempt2(true);
     }, ATTEMPT1_SEC * 1000);
-  }, [pdQueue, dialLead, hangUp, twilioDevice, handleDisposition, setOpenId, pdClearTimers, pdAdvanceToNext]);
+  }, [pdQueue, dialLead, twilioDevice, handleDisposition, setOpenId, pdClearTimers, pdAdvanceToNext]);
 
   const pdStop = useCallback(() => {
     pdClearTimers();
-    if (hangUp) hangUp(); else if (twilioDevice) twilioDevice.disconnectAll();
+    if (twilioDevice) twilioDevice.disconnectAll();
     setPdStatus('idle'); setPdIdx(0); setPdAttempt(1); setPdPendingAttempt2(false); setPdLockedQueue([]); setPdMode(false);
-  }, [hangUp, twilioDevice, pdClearTimers]);
+  }, [twilioDevice, pdClearTimers]);
 
   // Detect answered call — stop countdown, mark as answered
   useEffect(() => {
@@ -201,25 +204,29 @@ export default function DialView({
   // Internal PD timeout paths (no_answer) still call handleDisposition directly
   // because they already invoke pdAdvanceToNext immediately after.
   const fireDisp = useCallback((dispId) => {
+    // Hang up on all dispositions except ones where the user explicitly keeps the call alive
+    if (!KEEP_CALL_DISPS.has(dispId) && twilioDevice) {
+      twilioDevice.disconnectAll();
+    }
     handleDisposition(dispId);
     if (pdMode && (pdStatus === 'answered' || pdStatus === 'dialing')) {
       pdClearTimers();
       pdAdvanceToNext(pdLockedQueue, pdIdx + 1);
     }
-  }, [handleDisposition, pdMode, pdStatus, pdClearTimers, pdAdvanceToNext, pdLockedQueue, pdIdx]);
+  }, [handleDisposition, twilioDevice, pdMode, pdStatus, pdClearTimers, pdAdvanceToNext, pdLockedQueue, pdIdx]);
 
   // Cleanup on unmount
   useEffect(() => () => pdClearTimers(), [pdClearTimers]);
 
   // PD display helpers
   const currentPdLead = pdMode && pdLockedQueue.length > 0 ? pdLockedQueue[pdIdx] : null;
-  const pdBg     = pdStatus === 'answered' ? '#064E3B' : pdStatus === 'pausing' ? '#1e293b' : '#0F172A';
-  const pdAccent = pdStatus === 'answered' ? '#10B981' : pdStatus === 'pausing' ? '#64748B' : '#3B82F6';
+  const pdBg     = pdStatus === 'answered' ? '#1A3A5C' : pdStatus === 'pausing' ? '#252D3D' : '#171E2D';
+  const pdAccent = pdStatus === 'answered' ? '#3B82F6' : pdStatus === 'pausing' ? '#64748B' : '#3B82F6';
 
     return React.createElement("div", { style: { display: "flex", flex: 1, height: "100%", minWidth: 0, overflow: "hidden" } },
 
     // ── LEFT: Dark sidebar queue (210px) ──
-    React.createElement("div", { style: { width: "210px", flexShrink: 0, background: "#0d3d2e", display: "flex", flexDirection: "column", overflow: "hidden", borderRight: "1px solid rgba(0,0,0,0.3)" } },
+    React.createElement("div", { style: { width: "240px", flexShrink: 0, background: "#1E2433", display: "flex", flexDirection: "column", overflow: "hidden", borderRight: "1px solid rgba(0,0,0,0.3)" } },
 
       // ── SECTION 1: Header — MINISTRY OF PROTECTION (unchanged) ──────────────
       React.createElement("div", { style: { padding: "10px 12px 8px", borderBottom: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 } },
@@ -234,23 +241,23 @@ export default function DialView({
                 transition: "background 0.3s, box-shadow 0.3s"
               }
             }),
-            React.createElement("div", { style: { fontSize: "9px", fontWeight: "800", color: "rgba(255,255,255,0.5)", letterSpacing: "2px" } }, "MINISTRY OF PROTECTION")
+            React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "rgba(255,255,255,0.5)", letterSpacing: "0.08em" } }, "MINISTRY OF PROTECTION")
           ),
           // Controls: collapse + exit
           React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "2px" } },
             React.createElement("button", {
               onClick: () => setCallPanelExpanded(e => !e),
               title: callPanelExpanded ? "Collapse call controls" : "Expand call controls",
-              style: { background: "transparent", border: "none", color: "rgba(255,255,255,0.3)", fontSize: "14px", cursor: "pointer", padding: "1px 4px", lineHeight: 1, transition: "color 0.15s" },
+              style: { background: "transparent", border: "none", color: "rgba(255,255,255,0.5)", fontSize: "14px", cursor: "pointer", padding: "1px 4px", lineHeight: 1, transition: "color 0.15s" },
               onMouseEnter: e => e.currentTarget.style.color = "rgba(255,255,255,0.7)",
-              onMouseLeave: e => e.currentTarget.style.color = "rgba(255,255,255,0.3)"
+              onMouseLeave: e => e.currentTarget.style.color = "rgba(255,255,255,0.5)"
             }, callPanelExpanded ? "−" : "+"),
             React.createElement("button", {
               onClick: () => setView("dashboard"),
               title: "Exit dial view",
-              style: { background: "transparent", border: "none", color: "rgba(255,255,255,0.35)", fontSize: "14px", cursor: "pointer", padding: "1px 4px", lineHeight: 1, transition: "color 0.15s" },
+              style: { background: "transparent", border: "none", color: "rgba(255,255,255,0.55)", fontSize: "14px", cursor: "pointer", padding: "1px 4px", lineHeight: 1, transition: "color 0.15s" },
               onMouseEnter: e => e.currentTarget.style.color = "rgba(255,255,255,0.8)",
-              onMouseLeave: e => e.currentTarget.style.color = "rgba(255,255,255,0.35)"
+              onMouseLeave: e => e.currentTarget.style.color = "rgba(255,255,255,0.55)"
             }, "✕")
           )
         )
@@ -291,8 +298,8 @@ export default function DialView({
             style: {
               fontSize: "22px", fontWeight: "800",
               fontFamily: "'JetBrains Mono', monospace",
-              color: isLive ? "#10B981" : isConnecting ? "#F59E0B" : "rgba(255,255,255,0.15)",
-              letterSpacing: "3px", marginBottom: "10px",
+              color: isLive ? "#10B981" : isConnecting ? "#F59E0B" : "rgba(255,255,255,0.4)",
+              letterSpacing: "0.08em", marginBottom: "10px",
               transition: "color 0.3s"
             }
           }, timerStr),
@@ -302,10 +309,10 @@ export default function DialView({
               onClick: isLive ? toggleMute : undefined,
               title: callMuted ? "Unmute" : "Mute",
               style: {
-                flex: 1, minHeight: "36px", borderRadius: "7px", fontSize: "9px", fontWeight: "800",
+                flex: 1, minHeight: "36px", borderRadius: "7px", fontSize: "11px", fontWeight: "800",
                 cursor: isLive ? "pointer" : "not-allowed",
                 background: callMuted ? "rgba(245,158,11,0.2)" : "rgba(255,255,255,0.07)",
-                color: callMuted ? "#F59E0B" : isLive ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.15)",
+                color: callMuted ? "#F59E0B" : isLive ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.4)",
                 border: callMuted ? "1px solid rgba(245,158,11,0.5)" : "1px solid rgba(255,255,255,0.1)",
                 transition: "all 0.15s"
               }
@@ -314,10 +321,10 @@ export default function DialView({
               onClick: isLive ? () => setOnHold(h => !h) : undefined,
               title: onHold ? "Resume" : "Hold",
               style: {
-                flex: 1, minHeight: "36px", borderRadius: "7px", fontSize: "9px", fontWeight: "800",
+                flex: 1, minHeight: "36px", borderRadius: "7px", fontSize: "11px", fontWeight: "800",
                 cursor: isLive ? "pointer" : "not-allowed",
                 background: onHold ? "rgba(99,102,241,0.2)" : "rgba(255,255,255,0.07)",
-                color: onHold ? "#818CF8" : isLive ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.15)",
+                color: onHold ? "#818CF8" : isLive ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.4)",
                 border: onHold ? "1px solid rgba(99,102,241,0.5)" : "1px solid rgba(255,255,255,0.1)",
                 transition: "all 0.15s"
               }
@@ -326,7 +333,7 @@ export default function DialView({
               onClick: isLive ? hangUp : undefined,
               title: "End call",
               style: {
-                flex: 1, minHeight: "36px", borderRadius: "7px", fontSize: "9px", fontWeight: "800",
+                flex: 1, minHeight: "36px", borderRadius: "7px", fontSize: "11px", fontWeight: "800",
                 cursor: isLive ? "pointer" : "not-allowed",
                 background: isLive ? "rgba(220,38,38,0.2)" : "rgba(255,255,255,0.05)",
                 color: isLive ? "#EF4444" : "rgba(255,255,255,0.12)",
@@ -351,17 +358,17 @@ export default function DialView({
                 title: "Stop Power Dial",
                 style: {
                   width: "100%", minHeight: "34px", padding: "0 8px",
-                  fontSize: "10px", fontWeight: "800", letterSpacing: "0.8px",
+                  fontSize: "11px", fontWeight: "800", letterSpacing: "0.8px",
                   background: "rgba(220,38,38,0.22)", color: "#EF4444",
                   border: "1px solid rgba(220,38,38,0.45)",
-                  borderRadius: "6px", cursor: "pointer",
+                  borderRadius: "4px", cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: "5px"
                 }
               },
                 React.createElement("span", null, "■"),
                 React.createElement("span", null, "STOP POWER DIAL"),
                 React.createElement("span", {
-                  style: { fontSize: "9px", fontWeight: "800", background: "rgba(220,38,38,0.3)", color: "#EF4444", borderRadius: "10px", padding: "1px 7px" }
+                  style: { fontSize: "11px", fontWeight: "800", background: "rgba(220,38,38,0.3)", color: "#EF4444", borderRadius: "8px", padding: "1px 7px" }
                 }, (pdIdx + 1) + "/" + pdLockedQueue.length)
               )
             : React.createElement("button", {
@@ -369,11 +376,11 @@ export default function DialView({
                 title: "Auto-dial: 18s attempt 1, 30s attempt 2, then advance to next lead",
                 style: {
                   width: "100%", minHeight: "34px", padding: "0 8px",
-                  fontSize: "10px", fontWeight: "800", letterSpacing: "0.8px",
+                  fontSize: "11px", fontWeight: "800", letterSpacing: "0.8px",
                   background: pdQueue.length > 0 ? "rgba(16,185,129,0.22)" : "rgba(255,255,255,0.06)",
-                  color: pdQueue.length > 0 ? "#10B981" : "rgba(255,255,255,0.35)",
+                  color: pdQueue.length > 0 ? "#3B82F6" : "rgba(255,255,255,0.55)",
                   border: "1px solid " + (pdQueue.length > 0 ? "rgba(16,185,129,0.45)" : "rgba(255,255,255,0.12)"),
-                  borderRadius: "6px", cursor: pdQueue.length > 0 ? "pointer" : "default",
+                  borderRadius: "4px", cursor: pdQueue.length > 0 ? "pointer" : "default",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: "5px"
                 }
               },
@@ -381,10 +388,10 @@ export default function DialView({
                 React.createElement("span", null, "POWER DIAL"),
                 React.createElement("span", {
                   style: {
-                    fontSize: "9px", fontWeight: "800",
+                    fontSize: "11px", fontWeight: "800",
                     background: pdQueue.length > 0 ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.1)",
-                    color: pdQueue.length > 0 ? "#10B981" : "rgba(255,255,255,0.3)",
-                    borderRadius: "10px", padding: "1px 7px"
+                    color: pdQueue.length > 0 ? "#3B82F6" : "rgba(255,255,255,0.5)",
+                    borderRadius: "8px", padding: "1px 7px"
                   }
                 }, pdQueue.length)
               ),
@@ -401,9 +408,9 @@ export default function DialView({
             title: "Manual dial: step through the queue one lead at a time",
             style: {
               width: "100%", minHeight: "28px", padding: "0 8px",
-              fontSize: "9px", fontWeight: "700", letterSpacing: "0.5px",
+              fontSize: "11px", fontWeight: "700", letterSpacing: "0.5px",
               background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.55)",
-              border: "1px solid rgba(255,255,255,0.13)", borderRadius: "6px", cursor: "pointer",
+              border: "1px solid rgba(255,255,255,0.13)", borderRadius: "4px", cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: "5px"
             }
           },
@@ -411,8 +418,8 @@ export default function DialView({
             React.createElement("span", null, "MANUAL DIAL"),
             React.createElement("span", {
               style: {
-                fontSize: "9px", fontWeight: "700", background: "rgba(255,255,255,0.1)",
-                color: "rgba(255,255,255,0.4)", borderRadius: "10px", padding: "1px 6px"
+                fontSize: "11px", fontWeight: "700", background: "rgba(255,255,255,0.1)",
+                color: "rgba(255,255,255,0.4)", borderRadius: "8px", padding: "1px 6px"
               }
             }, queue.length)
           )
@@ -429,31 +436,31 @@ export default function DialView({
             : queue.length + " in queue"
         ),
         session && React.createElement("div", {
-          style: { height: "4px", background: "rgba(255,255,255,0.12)", borderRadius: "2px", overflow: "hidden", marginBottom: "8px" },
+          style: { height: "4px", background: "rgba(255,255,255,0.12)", borderRadius: "4px", overflow: "hidden", marginBottom: "8px" },
           role: "progressbar",
           "aria-valuenow": session.idx + 1,
           "aria-valuemin": 1,
           "aria-valuemax": session.total,
           "aria-label": "Session progress"
         },
-          React.createElement("div", { style: { height: "100%", width: Math.round(((session.idx + 1) / session.total) * 100) + "%", background: sessionPaused ? "#F59E0B" : "#10B981", borderRadius: "2px", transition: "width 0.3s" } })
+          React.createElement("div", { style: { height: "100%", width: Math.round(((session.idx + 1) / session.total) * 100) + "%", background: sessionPaused ? "#F59E0B" : "#10B981", borderRadius: "4px", transition: "width 0.3s" } })
         ),
         React.createElement("div", { style: { display: "flex", gap: "4px" } },
           session && React.createElement("button", {
             onClick: () => setSessionPaused(p => !p),
             "aria-label": sessionPaused ? "Resume dial session" : "Pause dial session",
-            style: { flex: 1, minHeight: "30px", fontSize: "9px", fontWeight: "700", background: sessionPaused ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.1)", color: sessionPaused ? "#F59E0B" : "rgba(255,255,255,0.8)", border: "1px solid " + (sessionPaused ? "#F59E0B" : "rgba(255,255,255,0.18)"), borderRadius: "5px", cursor: "pointer" }
+            style: { flex: 1, minHeight: "30px", fontSize: "11px", fontWeight: "700", background: sessionPaused ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.1)", color: sessionPaused ? "#F59E0B" : "rgba(255,255,255,0.8)", border: "1px solid " + (sessionPaused ? "#F59E0B" : "rgba(255,255,255,0.18)"), borderRadius: "4px", cursor: "pointer" }
           }, sessionPaused ? "▶ RESUME" : "⏸ PAUSE"),
           session && React.createElement("button", {
             onClick: () => { setSession(null); setSessionPaused(false); setDialSessionActive(false); try { localStorage.removeItem(LS_SESSION); } catch {} },
             "aria-label": "End session",
-            style: { minHeight: "30px", padding: "0 7px", fontSize: "11px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.55)", borderRadius: "5px", cursor: "pointer" }
+            style: { minHeight: "30px", padding: "0 7px", fontSize: "11px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.55)", borderRadius: "4px", cursor: "pointer" }
           }, "⏹"),
           React.createElement("button", {
             onClick: refreshQueueOrder,
             "aria-label": "Refresh queue order",
             title: "Re-sort by live priority",
-            style: { minHeight: "30px", padding: "0 7px", fontSize: "11px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.55)", borderRadius: "5px", cursor: "pointer" }
+            style: { minHeight: "30px", padding: "0 7px", fontSize: "11px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.55)", borderRadius: "4px", cursor: "pointer" }
           }, "🔄")
         )
       ),
@@ -466,15 +473,15 @@ export default function DialView({
           React.createElement("div", { style: { width: 8, height: 8, borderRadius: "50%", background: pdAccent, flexShrink: 0, boxShadow: "0 0 6px " + pdAccent } }),
           React.createElement("div", { style: { flex: 1, minWidth: 0 } },
             React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, currentPdLead.name || "Unknown"),
-            React.createElement("div", { style: { fontSize: "9px", color: "#64748b", fontFamily: "'JetBrains Mono',monospace" } }, currentPdLead.phone)
+            React.createElement("div", { style: { fontSize: "11px", color: "#64748b", fontFamily: "'JetBrains Mono',monospace" } }, currentPdLead.phone)
           ),
-          React.createElement("div", { style: { fontSize: "9px", fontWeight: "800", color: pdAttempt === 2 ? "#F59E0B" : "#94a3b8", background: pdAttempt === 2 ? "#F59E0B22" : "#1e293b", border: "1px solid " + (pdAttempt === 2 ? "#F59E0B" : "#334155"), borderRadius: "4px", padding: "2px 6px" } }, "ATT " + pdAttempt),
+          React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: pdAttempt === 2 ? "#F59E0B" : "#94a3b8", background: pdAttempt === 2 ? "#F59E0B22" : "var(--navy-2)", border: "1px solid " + (pdAttempt === 2 ? "#F59E0B" : "#334155"), borderRadius: "4px", padding: "2px 6px" } }, "ATT " + pdAttempt),
           React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: pdAccent, minWidth: "50px", textAlign: "right" } },
             pdStatus === 'answered' ? "✓ LIVE" : pdStatus === 'pausing' ? "…" : pdCountdown !== null ? pdCountdown + "s" : "Dialing"
           )
         ),
-        pdCountdown !== null && pdStatus === 'dialing' && React.createElement("div", { style: { marginTop: "6px", background: "#1e293b", borderRadius: "3px", height: "3px", overflow: "hidden" } },
-          React.createElement("div", { style: { width: (pdCountdown / (pdAttempt === 1 ? 18 : 30) * 100) + "%", height: "100%", background: pdAccent, borderRadius: "3px", transition: "width 1s linear" } })
+        pdCountdown !== null && pdStatus === 'dialing' && React.createElement("div", { style: { marginTop: "6px", background: "var(--navy-2)", borderRadius: "4px", height: "3px", overflow: "hidden" } },
+          React.createElement("div", { style: { width: (pdCountdown / (pdAttempt === 1 ? 18 : 30) * 100) + "%", height: "100%", background: pdAccent, borderRadius: "4px", transition: "width 1s linear" } })
         )
       ),
 
@@ -486,7 +493,7 @@ export default function DialView({
           (() => {
             const todayCount2 = queue.filter(isDueToday).length;
             const allCount = queue.length;
-            const btnBase = { flex: 1, minHeight: "26px", borderRadius: "5px", fontSize: "9px", fontWeight: "800", letterSpacing: "0.8px", cursor: "pointer", border: "1px solid", transition: "all 0.15s" };
+            const btnBase = { flex: 1, minHeight: "26px", borderRadius: "4px", fontSize: "11px", fontWeight: "800", letterSpacing: "0.8px", cursor: "pointer", border: "1px solid", transition: "all 0.15s" };
             return [
               React.createElement("button", {
                 key: "f-today",
@@ -495,13 +502,13 @@ export default function DialView({
                 style: {
                   ...btnBase,
                   background: dialQueueFilter === "today" ? "rgba(16,185,129,0.18)" : "rgba(255,255,255,0.05)",
-                  color: dialQueueFilter === "today" ? "#10B981" : "rgba(255,255,255,0.4)",
+                  color: dialQueueFilter === "today" ? "#3B82F6" : "rgba(255,255,255,0.4)",
                   borderColor: dialQueueFilter === "today" ? "rgba(16,185,129,0.45)" : "rgba(255,255,255,0.12)"
                 }
               },
                 "TODAY",
                 React.createElement("span", {
-                  style: { marginLeft: "5px", fontSize: "8px", fontWeight: "800", background: dialQueueFilter === "today" ? "rgba(16,185,129,0.25)" : "rgba(255,255,255,0.1)", color: dialQueueFilter === "today" ? "#10B981" : "rgba(255,255,255,0.3)", borderRadius: "8px", padding: "1px 5px" }
+                  style: { marginLeft: "5px", fontSize: "11px", fontWeight: "800", background: dialQueueFilter === "today" ? "rgba(37,99,235,0.25)" : "rgba(255,255,255,0.1)", color: dialQueueFilter === "today" ? "#3B82F6" : "rgba(255,255,255,0.5)", borderRadius: "8px", padding: "1px 5px" }
                 }, todayCount2)
               ),
               React.createElement("button", {
@@ -517,7 +524,7 @@ export default function DialView({
               },
                 "ALL",
                 React.createElement("span", {
-                  style: { marginLeft: "5px", fontSize: "8px", fontWeight: "800", background: dialQueueFilter === "all" ? "rgba(59,130,246,0.25)" : "rgba(255,255,255,0.1)", color: dialQueueFilter === "all" ? "#60A5FA" : "rgba(255,255,255,0.3)", borderRadius: "8px", padding: "1px 5px" }
+                  style: { marginLeft: "5px", fontSize: "11px", fontWeight: "800", background: dialQueueFilter === "all" ? "rgba(59,130,246,0.25)" : "rgba(255,255,255,0.1)", color: dialQueueFilter === "all" ? "#60A5FA" : "rgba(255,255,255,0.5)", borderRadius: "8px", padding: "1px 5px" }
                 }, allCount)
               )
             ];
@@ -525,16 +532,16 @@ export default function DialView({
         ),
 
         // Sort selector
-        React.createElement("label", { htmlFor: "dial-sort-mode", style: { fontSize: "9px", fontWeight: "800", color: "rgba(255,255,255,0.4)", letterSpacing: "1.2px", display: "block", marginBottom: "4px" } }, "SORT"),
+        React.createElement("label", { htmlFor: "dial-sort-mode", style: { fontSize: "11px", fontWeight: "800", color: "rgba(255,255,255,0.4)", letterSpacing: "1.2px", display: "block", marginBottom: "4px" } }, "SORT"),
         React.createElement("select", {
           id: "dial-sort-mode",
           value: dialSortMode,
           onChange: e => setDialSortMode(e.target.value),
-          style: { width: "100%", background: "#1e293b", border: "1px solid rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.85)", borderRadius: "5px", padding: "5px 7px", fontSize: "10px", fontWeight: "600", cursor: "pointer" }
+          style: { width: "100%", background: "var(--navy-2)", border: "1px solid rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.85)", borderRadius: "4px", padding: "5px 7px", fontSize: "11px", fontWeight: "600", cursor: "pointer" }
         },
-          React.createElement("option", { value: "priority", style: { background: "#1e293b", color: "#f1f5f9" } }, "Priority Score"),
-          React.createElement("option", { value: "phase", style: { background: "#1e293b", color: "#f1f5f9" } }, "Phase Engine"),
-          React.createElement("option", { value: "overdue", style: { background: "#1e293b", color: "#f1f5f9" } }, "Overdue First")
+          React.createElement("option", { value: "priority", style: { background: "var(--navy-2)", color: "#f1f5f9" } }, "Priority Score"),
+          React.createElement("option", { value: "phase", style: { background: "var(--navy-2)", color: "#f1f5f9" } }, "Phase Engine"),
+          React.createElement("option", { value: "overdue", style: { background: "var(--navy-2)", color: "#f1f5f9" } }, "Overdue First")
         )
       ),
 
@@ -586,19 +593,19 @@ export default function DialView({
               }
             },
               React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "5px", marginBottom: "2px" } },
-                React.createElement("span", { "aria-hidden": "true", style: { fontSize: "9px", color: "rgba(255,255,255,0.3)", minWidth: "15px", fontFamily: "'JetBrains Mono',monospace", lineHeight: 1 } }, idx + 1),
+                React.createElement("span", { "aria-hidden": "true", style: { fontSize: "11px", color: "rgba(255,255,255,0.5)", minWidth: "15px", fontFamily: "'JetBrains Mono',monospace", lineHeight: 1 } }, idx + 1),
                 React.createElement("span", { style: { fontSize: "12px", fontWeight: "700", color: isActive ? "#5DCAA5" : "rgba(255,255,255,0.88)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, lead.name),
-                React.createElement("span", { "aria-hidden": "true", style: { fontSize: "8px", padding: "1px 5px", borderRadius: "8px", background: BC[lead.bucket] + "28", color: BC[lead.bucket], fontWeight: "800", flexShrink: 0 } }, lead.bucket)
+                React.createElement("span", { "aria-hidden": "true", style: { fontSize: "11px", padding: "1px 5px", borderRadius: "8px", background: BC[lead.bucket] + "28", color: BC[lead.bucket], fontWeight: "800", flexShrink: 0 } }, lead.bucket)
               ),
               React.createElement("div", { style: { paddingLeft: "20px", display: "flex", gap: "6px", alignItems: "center" } },
-                React.createElement("span", { style: { fontSize: "9px", color: "rgba(255,255,255,0.45)", fontFamily: "'JetBrains Mono',monospace", fontWeight: "500" } }, lead.phone),
-                isOD && React.createElement("span", { style: { fontSize: "8px", color: "#EF4444", fontWeight: "800", marginLeft: "auto" } }, "OD"),
-                stuck && React.createElement("span", { style: { fontSize: "8px", color: "#FBBF24", fontWeight: "800", marginLeft: "auto" } }, "UW")
+                React.createElement("span", { style: { fontSize: "11px", color: "rgba(255,255,255,0.45)", fontFamily: "'JetBrains Mono',monospace", fontWeight: "500" } }, lead.phone),
+                isOD && React.createElement("span", { style: { fontSize: "11px", color: "#EF4444", fontWeight: "800", marginLeft: "auto" } }, "OD"),
+                stuck && React.createElement("span", { style: { fontSize: "11px", color: "#FBBF24", fontWeight: "800", marginLeft: "auto" } }, "UW")
               )
             );
           });
         })(),
-        (dialQueueFilter === "today" ? queue.filter(isDueToday).length : queue.length) === 0 && React.createElement("li", { style: { padding: "40px 16px", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: "12px", listStyle: "none" } },
+        (dialQueueFilter === "today" ? queue.filter(isDueToday).length : queue.length) === 0 && React.createElement("li", { style: { padding: "40px 16px", textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: "12px", listStyle: "none" } },
           dialQueueFilter === "today" ? "No leads due today" : "✓ Queue empty"
         )
       )
@@ -627,17 +634,17 @@ export default function DialView({
               href: (useTwilioCalling && twilioDevice) ? "#" : "tel:" + open.phone.replace(/\D/g, ""),
               onClick: e => { e.preventDefault(); dialLead(open); },
               "aria-label": "Dial " + open.phone,
-              style: { fontSize: "13px", color: "var(--blue)", fontFamily: "'JetBrains Mono',monospace", fontWeight: "700", padding: "4px 10px", background: "var(--blue-dim)", borderRadius: "6px", border: "1px solid var(--blue-mid)", textDecoration: "none" }
+              style: { fontSize: "13px", color: "var(--blue)", fontFamily: "'JetBrains Mono',monospace", fontWeight: "700", padding: "4px 10px", background: "var(--blue-dim)", borderRadius: "4px", border: "1px solid var(--blue-mid)", textDecoration: "none" }
             }, open.phone),
             tcpaInfo && React.createElement("span", {
               role: "status",
               title: "Local time — TCPA safe hours 8AM-9PM",
-              style: { fontSize: "11px", fontWeight: "700", padding: "3px 9px", borderRadius: "6px", background: tcpaInfo.safe ? "var(--green-dim)" : "var(--red-dim)", color: tcpaInfo.safe ? "var(--green)" : "var(--red)", border: "1px solid " + (tcpaInfo.safe ? "#6EE7B7" : "#FCA5A5") }
+              style: { fontSize: "11px", fontWeight: "700", padding: "3px 9px", borderRadius: "4px", background: tcpaInfo.safe ? "var(--green-dim)" : "var(--red-dim)", color: tcpaInfo.safe ? "var(--green)" : "var(--red)", border: "1px solid " + (tcpaInfo.safe ? "#6EE7B7" : "#FCA5A5") }
             }, (tcpaInfo.safe ? "🟢 " : "🔴 ") + tcpaInfo.timeStr + " " + tcpaInfo.ltz),
-            React.createElement("span", { style: { fontSize: "10px", padding: "3px 9px", borderRadius: "20px", background: BC[open.bucket] + "18", color: BC[open.bucket], fontWeight: "800" } }, BL[open.bucket]),
-            open.leadType && React.createElement("span", { style: { fontSize: "10px", padding: "3px 9px", borderRadius: "20px", background: "var(--blue-mid)", color: "#1D4ED8", fontWeight: "700" } }, open.leadType),
-            open.city && open.state && React.createElement("span", { style: { fontSize: "10px", color: "var(--t3)" } }, "📍 " + open.city + ", " + open.state),
-            isUWStuck(open) && React.createElement("span", { className: "pulse-red", style: { fontSize: "10px", padding: "3px 9px", borderRadius: "20px", background: "var(--red-dim)", color: "var(--red)", fontWeight: "800", border: "1px solid #FCA5A5" } }, "⚠ UW " + daysInUW(open) + "d")
+            React.createElement("span", { style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: BC[open.bucket] + "18", color: BC[open.bucket], fontWeight: "800" } }, BL[open.bucket]),
+            open.leadType && React.createElement("span", { style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--blue-mid)", color: "#1D4ED8", fontWeight: "700" } }, open.leadType),
+            open.city && open.state && React.createElement("span", { style: { fontSize: "11px", color: "var(--t3)" } }, "📍 " + open.city + ", " + open.state),
+            isUWStuck(open) && React.createElement("span", { className: "pulse-red", style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--red-dim)", color: "var(--red)", fontWeight: "800", border: "1px solid #FCA5A5" } }, "⚠ UW " + daysInUW(open) + "d")
           )
         ),
 
@@ -647,13 +654,13 @@ export default function DialView({
           // Appointment gate
           (open.disposition === "appointment_booked" && open.nextCallback && new Date(open.nextCallback) < new Date() && !open.apptConfirmed)
             ? React.createElement("div", { style: { background: "#F5F3FF", border: "2px solid #C4B5FD", borderRadius: "12px", padding: "16px", marginBottom: "14px" } },
-                React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "#4C1D95", letterSpacing: "1.5px", marginBottom: "8px" } }, "📅 APPOINTMENT CHECK-IN"),
+                React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "#4C1D95", letterSpacing: "0.08em", marginBottom: "8px" } }, "📅 APPOINTMENT CHECK-IN"),
                 React.createElement("div", { style: { fontSize: "13px", color: "#4C1D95", lineHeight: "1.6", marginBottom: "12px" } },
                   "Did " + (open.name || "").split(" ")[0] + " show for their appointment on " + fmt(open.nextCallback) + "? Confirm before logging."
                 ),
                 confirmReschedule
                   ? React.createElement("div", null,
-                      React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.2px", marginBottom: "8px" } }, "SET NEW DATE & TIME"),
+                      React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.2px", marginBottom: "8px" } }, "SET NEW DATE & TIME"),
                       React.createElement("div", { style: { display: "flex", gap: "6px", marginBottom: "10px" } },
                         React.createElement("label", { htmlFor: "gate-cb-date", className: "sr-only" }, "New appointment date"),
                         React.createElement("input", { id: "gate-cb-date", type: "date", value: confirmCbDate, onChange: e => setConfirmCbDate(e.target.value), style: { ...inp(), flex: 1, fontSize: "12px", padding: "7px 8px" } }),
@@ -680,15 +687,15 @@ export default function DialView({
                   : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "8px" } },
                       React.createElement("button", {
                         onClick: () => { upd(open.id, { apptConfirmed: true, notes: [{ ts: new Date().toISOString(), type: "appointment", text: "✅ Showed for appointment — " + fmt(open.nextCallback) }, ...(open.notes || [])] }); logActivity("appointment", open.id, "auto"); },
-                        style: { minHeight: "48px", padding: "12px", background: "#ECFDF5", color: "#065F46", border: "2px solid #6EE7B7", borderRadius: "9px", fontSize: "13px", fontWeight: "800", cursor: "pointer", textAlign: "left" }
+                        style: { minHeight: "48px", padding: "12px", background: "#ECFDF5", color: "#065F46", border: "2px solid #6EE7B7", borderRadius: "8px", fontSize: "13px", fontWeight: "800", cursor: "pointer", textAlign: "left" }
                       }, "✅  Showed — They Made It"),
                       React.createElement("button", {
                         onClick: () => { upd(open.id, { disposition: "no_show", stage: "contacted", nextCallback: null, apptConfirmed: true, notes: [{ ts: new Date().toISOString(), type: "call", text: "❌ No-show — appointment was " + fmt(open.nextCallback) }, ...(open.notes || [])] }); },
-                        style: { minHeight: "48px", padding: "12px", background: "#FEF3C7", color: "#92400E", border: "2px solid #FCD34D", borderRadius: "9px", fontSize: "13px", fontWeight: "800", cursor: "pointer", textAlign: "left" }
+                        style: { minHeight: "48px", padding: "12px", background: "#FEF3C7", color: "#92400E", border: "2px solid #FCD34D", borderRadius: "8px", fontSize: "13px", fontWeight: "800", cursor: "pointer", textAlign: "left" }
                       }, "❌  No-Show — They Ghosted"),
                       React.createElement("button", {
                         onClick: () => { setConfirmReschedule(true); setConfirmCbDate(""); setConfirmCbTime(""); },
-                        style: { minHeight: "48px", padding: "12px", background: "var(--blue-dim)", color: "#1D4ED8", border: "2px solid var(--blue-mid)", borderRadius: "9px", fontSize: "13px", fontWeight: "800", cursor: "pointer", textAlign: "left" }
+                        style: { minHeight: "48px", padding: "12px", background: "var(--blue-dim)", color: "#1D4ED8", border: "2px solid var(--blue-mid)", borderRadius: "8px", fontSize: "13px", fontWeight: "800", cursor: "pointer", textAlign: "left" }
                       }, "🔄  Rescheduled — Set New Time")
                     )
               )
@@ -718,12 +725,12 @@ export default function DialView({
                 }, "👻 GHOST PROTOCOL — Copy to clipboard"),
 
                 // Quick Capture
-                React.createElement("div", { style: { background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "10px", padding: "12px", marginBottom: "10px" } },
-                  React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.5px", marginBottom: "10px" } }, "🩺 QUICK CAPTURE"),
+                React.createElement("div", { style: { background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "8px", padding: "12px", marginBottom: "10px" } },
+                  React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "10px" } }, "🩺 QUICK CAPTURE"),
                   React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px", marginBottom: "8px" } },
                     [["Age", "age", "54"], ["Height", "height", "5'10\""], ["Weight", "weight", "180"], ["DOB", "dob", "1970-01-01"]].map(([lbl, field, ph]) =>
                       React.createElement("div", { key: field },
-                        React.createElement("label", { htmlFor: "qc-" + field + "-" + open.id, style: { fontSize: "9px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.5px", display: "block", marginBottom: "3px" } }, lbl.toUpperCase()),
+                        React.createElement("label", { htmlFor: "qc-" + field + "-" + open.id, style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.5px", display: "block", marginBottom: "3px" } }, lbl.toUpperCase()),
                         React.createElement("input", {
                           id: "qc-" + field + "-" + open.id, key: field + "-dial-" + open.id, placeholder: ph, defaultValue: open[field] || "",
                           onBlur: e => { const v = e.target.value.trim(); if (v !== (open[field] || "")) upd(open.id, { [field]: v }); },
@@ -733,27 +740,27 @@ export default function DialView({
                     )
                   ),
                   React.createElement("div", {
-                    style: { display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", borderRadius: "6px", background: open.tobacco ? "#FEF3C7" : "var(--surface)", border: "1px solid " + (open.tobacco ? "#FCD34D" : "var(--border)"), cursor: "pointer", marginBottom: "8px" },
+                    style: { display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", borderRadius: "4px", background: open.tobacco ? "#FEF3C7" : "var(--surface)", border: "1px solid " + (open.tobacco ? "#FCD34D" : "var(--border)"), cursor: "pointer", marginBottom: "8px" },
                     onClick: () => upd(open.id, { tobacco: !open.tobacco })
                   },
                     React.createElement("input", { type: "checkbox", id: "qc-tobacco-" + open.id, checked: !!open.tobacco, onChange: () => upd(open.id, { tobacco: !open.tobacco }), style: { width: "14px", height: "14px", cursor: "pointer", accentColor: "#D97706" } }),
                     React.createElement("label", { htmlFor: "qc-tobacco-" + open.id, style: { fontSize: "11px", fontWeight: "700", color: open.tobacco ? "#D97706" : "var(--t2)", cursor: "pointer" } }, "🚬 Tobacco User"),
-                    open.tobacco && React.createElement("span", { style: { fontSize: "9px", fontWeight: "800", color: "#D97706", marginLeft: "auto" } }, "TABLE RATING")
+                    open.tobacco && React.createElement("span", { style: { fontSize: "11px", fontWeight: "800", color: "#D97706", marginLeft: "auto" } }, "TABLE RATING")
                   ),
-                  React.createElement("label", { htmlFor: "qc-meds-" + open.id, style: { fontSize: "9px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.5px", display: "block", marginBottom: "3px" } }, "MEDICATIONS / CONDITIONS"),
+                  React.createElement("label", { htmlFor: "qc-meds-" + open.id, style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.5px", display: "block", marginBottom: "3px" } }, "MEDICATIONS / CONDITIONS"),
                   React.createElement("textarea", {
                     id: "qc-meds-" + open.id, key: "meds-dial-" + open.id, placeholder: "Meds, conditions...", defaultValue: open.medications || "",
                     onBlur: e => { const v = e.target.value.trim(); if (v !== (open.medications || "")) upd(open.id, { medications: v }); },
                     style: { ...inp(), width: "100%", fontSize: "12px", resize: "none", minHeight: "44px", lineHeight: "1.4", boxSizing: "border-box", padding: "6px 8px" }
                   }),
-                  React.createElement("div", { style: { marginTop: "8px", padding: "8px 10px", background: "#ECFDF5", border: "1px solid #6EE7B7", borderRadius: "6px", fontSize: "11px", color: "#065F46", fontWeight: "600" } },
+                  React.createElement("div", { style: { marginTop: "8px", padding: "8px 10px", background: "#ECFDF5", border: "1px solid #6EE7B7", borderRadius: "4px", fontSize: "11px", color: "#065F46", fontWeight: "600" } },
                     "💚 Living Benefits — money that pays while ALIVE. Always lead with this."
                   )
                 ),
 
                 // Set Callback
-                React.createElement("div", { style: { background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "10px", padding: "12px" } },
-                  React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.5px", marginBottom: "8px" } }, "SET CALLBACK"),
+                React.createElement("div", { style: { background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "8px", padding: "12px" } },
+                  React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "8px" } }, "SET CALLBACK"),
                   open.nextCallback && React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", padding: "8px 10px", background: "var(--sky-dim)", borderRadius: "7px", border: "1px solid #BAE6FD" } },
                     React.createElement("span", { style: { fontSize: "12px", color: "var(--sky)", fontWeight: "700", flex: 1 } }, "📅 " + fmt(open.nextCallback)),
                     React.createElement("button", { onClick: () => upd(open.id, { nextCallback: null }), "aria-label": "Clear callback", style: { background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: "16px", lineHeight: 1 } }, "×")
@@ -769,11 +776,11 @@ export default function DialView({
               ),
 
           // Recent notes — always visible below actions
-          (open.notes || []).length > 0 && React.createElement("div", { style: { marginTop: "12px", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "10px", padding: "12px" } },
-            React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.5px", marginBottom: "8px" } }, "RECENT — " + (open.notes || []).length + " ENTRIES"),
+          (open.notes || []).length > 0 && React.createElement("div", { style: { marginTop: "12px", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "8px", padding: "12px" } },
+            React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "8px" } }, "RECENT — " + (open.notes || []).length + " ENTRIES"),
             (open.notes || []).slice(0, 4).map((n, i) =>
               React.createElement("div", { key: n.ts || n.id || i, style: { marginBottom: "8px", padding: "8px 10px", background: "var(--surface)", borderRadius: "7px", border: "1px solid var(--border)" } },
-                React.createElement("div", { style: { fontSize: "10px", color: NC[n.type] || "var(--t3)", fontWeight: "800", marginBottom: "3px" } },
+                React.createElement("div", { style: { fontSize: "11px", color: NC[n.type] || "var(--t3)", fontWeight: "800", marginBottom: "3px" } },
                   n.type === "call" ? "📞 Call" : n.type === "appointment" ? "📅 Appt" : "📝 Note", " · " + fmt(n.ts)
                 ),
                 React.createElement("div", { style: { fontSize: "12px", color: "var(--t2)", lineHeight: "1.4" } }, n.text)
@@ -785,14 +792,18 @@ export default function DialView({
         // Pinned disposition bar
         (() => {
           const gateActive = open.disposition === "appointment_booked" && open.nextCallback && new Date(open.nextCallback) < new Date() && !open.apptConfirmed;
-          const dispBar = [
-            { id: "no_answer", icon: "📵", label: "No Answer" },
-            { id: "vm_left", icon: "📬", label: "VM Left" },
-            { id: "callback", icon: "📅", label: "Callback" },
+          // Primary (most-used daily) — large, prominent
+          const primaryDisps = [
+            { id: "no_answer",  icon: "📵", label: "No Answer" },
+            { id: "vm_left",    icon: "📬", label: "VM Left"   },
+            { id: "callback",   icon: "📅", label: "Callback"  },
+            { id: "follow_up",  icon: "🔄", label: "Follow Up" },
+          ];
+          // Secondary (less frequent) — smaller, muted
+          const secondaryDisps = [
             { id: "not_interested", icon: "🚫", label: "Not Int." },
-            { id: "dnc", icon: "⛔", label: "DNC" },
-            { id: "hung_up", icon: "📵", label: "Hung Up" },
-            { id: "follow_up", icon: "🔄", label: "Follow Up" }
+            { id: "hung_up",        icon: "📴", label: "Hung Up"  },
+            { id: "dnc",            icon: "⛔", label: "DNC"      },
           ];
           // Callback preset compute helper
           const presetToDate = (p) => {
@@ -843,7 +854,7 @@ export default function DialView({
               }
             },
               React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" } },
-                React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--navy)", letterSpacing: "1.5px" } }, "⏰ SCHEDULE CALLBACK"),
+                React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--navy)", letterSpacing: "0.08em" } }, "⏰ SCHEDULE CALLBACK"),
                 React.createElement("button", {
                   onClick: () => setCbPopoverOpen(false),
                   style: { background: "none", border: "none", cursor: "pointer", fontSize: "16px", color: "var(--t3)", padding: "0 2px", lineHeight: 1, fontWeight: "700" }
@@ -878,36 +889,66 @@ export default function DialView({
                     background: cbCustomTs ? "var(--navy)" : "var(--border)",
                     color: cbCustomTs ? "#fff" : "var(--t3)", border: "none",
                     cursor: cbCustomTs ? "pointer" : "default",
-                    fontSize: "10px", fontWeight: "800", letterSpacing: "0.5px", whiteSpace: "nowrap"
+                    fontSize: "11px", fontWeight: "800", letterSpacing: "0.5px", whiteSpace: "nowrap"
                   }
                 }, "SET")
               )
             ),
 
             gateActive
-              ? React.createElement("div", { style: { width: "100%", textAlign: "center", fontSize: "11px", color: "var(--amber)", fontWeight: "700", padding: "8px 0" } }, "⚠ Complete appointment check-in above before logging a result")
-              : dispBar.map(d => {
-                  const isCb = d.id === 'callback';
-                  const isActive = isCb ? (cbPopoverOpen || open.disposition === d.id) : open.disposition === d.id;
-                  return React.createElement("button", {
-                    key: d.id,
-                    onClick: () => isCb ? setCbPopoverOpen(v => !v) : fireDisp(d.id),
-                    "aria-label": "Log: " + d.label,
-                    "aria-pressed": isActive,
-                    style: {
-                      minHeight: "48px", flex: "1 1 0", minWidth: "58px", padding: "5px 2px",
-                      background: isActive ? "var(--navy)" : "var(--surface-2)",
-                      color: isActive ? "#fff" : "var(--t2)",
-                      border: "1px solid " + (isActive ? "var(--navy)" : "var(--border)"),
-                      borderRadius: "7px", fontSize: "9px", fontWeight: isActive ? "800" : "600",
-                      cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center",
-                      justifyContent: "center", gap: "3px", transition: "all 0.1s ease"
-                    }
-                  },
-                    React.createElement("span", { "aria-hidden": "true", style: { fontSize: "14px", lineHeight: 1 } }, d.icon),
-                    React.createElement("span", { style: { fontSize: "8px", lineHeight: 1.3, textAlign: "center", letterSpacing: "0.3px" } }, d.label)
-                  );
-                })
+              ? React.createElement("div", { style: { width: "100%", textAlign: "center", fontSize: "11px", color: "var(--amber)", fontWeight: "600", padding: "8px 0" } }, "⚠ Complete appointment check-in above before logging a result")
+              : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "5px", width: "100%" } },
+                  // ── Primary row ─────────────────────────────────────────
+                  React.createElement("div", { style: { display: "flex", gap: "5px" } },
+                    primaryDisps.map(d => {
+                      const isCb = d.id === 'callback';
+                      const isActive = isCb ? (cbPopoverOpen || open.disposition === d.id) : open.disposition === d.id;
+                      return React.createElement("button", {
+                        key: d.id,
+                        onClick: () => isCb ? setCbPopoverOpen(v => !v) : fireDisp(d.id),
+                        "aria-label": "Log: " + d.label,
+                        "aria-pressed": isActive,
+                        style: {
+                          minHeight: "52px", flex: "1 1 0", padding: "6px 4px",
+                          background: isActive ? "var(--blue)" : "var(--surface-2)",
+                          color: isActive ? "#fff" : "var(--t1)",
+                          border: "1.5px solid " + (isActive ? "var(--blue)" : "var(--border)"),
+                          borderRadius: "8px", fontSize: "11px", fontWeight: isActive ? "700" : "500",
+                          cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center",
+                          justifyContent: "center", gap: "4px", transition: "all 0.1s ease",
+                          boxShadow: isActive ? "0 0 0 2px rgba(37,99,235,0.2)" : "none",
+                        }
+                      },
+                        React.createElement("span", { "aria-hidden": "true", style: { fontSize: "16px", lineHeight: 1 } }, d.icon),
+                        React.createElement("span", { style: { fontSize: "11px", fontWeight: "600", lineHeight: 1.2, textAlign: "center" } }, d.label)
+                      );
+                    })
+                  ),
+                  // ── Secondary row ───────────────────────────────────────
+                  React.createElement("div", { style: { display: "flex", gap: "5px" } },
+                    secondaryDisps.map(d => {
+                      const isActive = open.disposition === d.id;
+                      return React.createElement("button", {
+                        key: d.id,
+                        onClick: () => fireDisp(d.id),
+                        "aria-label": "Log: " + d.label,
+                        "aria-pressed": isActive,
+                        style: {
+                          minHeight: "36px", flex: "1 1 0", padding: "4px 4px",
+                          background: isActive ? "var(--navy)" : "transparent",
+                          color: isActive ? "#fff" : "var(--t3)",
+                          border: "1px solid " + (isActive ? "var(--navy)" : "var(--border)"),
+                          borderRadius: "8px", fontSize: "11px", fontWeight: isActive ? "600" : "400",
+                          cursor: "pointer", display: "flex", flexDirection: "row", alignItems: "center",
+                          justifyContent: "center", gap: "5px", transition: "all 0.1s ease",
+                        }
+                      },
+                        React.createElement("span", { "aria-hidden": "true", style: { fontSize: "12px", lineHeight: 1 } }, d.icon),
+                        React.createElement("span", { style: { fontSize: "11px", lineHeight: 1.2 } }, d.label)
+                      );
+                    })
+                  )
+                )
           );
         })()
 
@@ -944,7 +985,7 @@ export default function DialView({
               border: "none",
               borderBottom: dialRightTab === tab ? "2px solid var(--blue)" : "2px solid transparent",
               cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center",
-              gap: "2px", fontSize: "9px", fontWeight: "700", letterSpacing: "0.5px", transition: "all 0.1s"
+              gap: "2px", fontSize: "11px", fontWeight: "700", letterSpacing: "0.5px", transition: "all 0.1s"
             }
           },
             React.createElement("span", { "aria-hidden": "true", style: { fontSize: "14px" } }, icon),
@@ -972,18 +1013,18 @@ export default function DialView({
               Object.keys(scripts[(open && open.leadType && scripts[open.leadType]) ? open.leadType : scriptType] || {}).map(s =>
                 React.createElement("button", {
                   key: s, onClick: () => setScriptSection(s),
-                  style: { ...chip(scriptSection === s, "#2563EB"), fontSize: "9px", padding: "4px 8px", textTransform: "capitalize", margin: 0 }
+                  style: { ...chip(scriptSection === s, "#2563EB"), fontSize: "11px", padding: "4px 8px", textTransform: "capitalize", margin: 0 }
                 }, s)
               )
             )
           ),
-          React.createElement("div", { style: { fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: "12px", color: "#334155", lineHeight: "2.0", whiteSpace: "pre-wrap", background: "var(--surface)", padding: "14px", borderRadius: "10px", border: "1px solid var(--border)" } },
+          React.createElement("div", { style: { fontFamily: "'Inter',system-ui,sans-serif", fontSize: "12px", color: "#334155", lineHeight: "2.0", whiteSpace: "pre-wrap", background: "var(--surface)", padding: "14px", borderRadius: "8px", border: "1px solid var(--border)" } },
             ...(open
               ? renderLiveTokens((scripts[(open.leadType && scripts[open.leadType]) ? open.leadType : scriptType] || {})[scriptSection] || "Select a section above.", open, upd)
               : ["Select a lead to load script."]
             )
           ),
-          open && React.createElement("div", { style: { fontSize: "9px", color: "var(--t3)", textAlign: "center", marginTop: "6px", fontWeight: "500" } }, "🟡 Yellow = missing · 🟢 Green = on file")
+          open && React.createElement("div", { style: { fontSize: "11px", color: "var(--t3)", textAlign: "center", marginTop: "6px", fontWeight: "500" } }, "🟡 Yellow = missing · 🟢 Green = on file")
         ),
 
         // NOTES tab
@@ -995,16 +1036,16 @@ export default function DialView({
             React.createElement("textarea", {
               id: "dial-note-text", value: noteText, onChange: e => setNoteText(e.target.value),
               placeholder: "What happened, next step...",
-              style: { flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--t1)", padding: "8px 10px", fontSize: "12px", fontFamily: "'DM Sans',sans-serif", resize: "none", minHeight: "60px", lineHeight: "1.5" }
+              style: { flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--t1)", padding: "8px 10px", fontSize: "12px", fontFamily: "'Inter',sans-serif", resize: "none", minHeight: "60px", lineHeight: "1.5" }
             }),
             React.createElement("button", { onClick: () => { if (open) addNote(open.id); }, "aria-label": "Save note", style: { padding: "0 12px", background: "var(--blue)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "18px", cursor: "pointer", alignSelf: "stretch" } }, "→")
           ),
           open && (open.notes || []).length > 0
             ? React.createElement("div", null,
-                React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.5px", marginBottom: "8px" } }, "HISTORY — " + (open.notes || []).length + " ENTRIES"),
+                React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "8px" } }, "HISTORY — " + (open.notes || []).length + " ENTRIES"),
                 (open.notes || []).map((n, i) =>
                   React.createElement("div", { key: n.ts || n.id || i, style: { marginBottom: "8px", padding: "8px 10px", background: "var(--surface)", borderRadius: "7px", border: "1px solid var(--border)" } },
-                    React.createElement("div", { style: { fontSize: "10px", color: NC[n.type] || "var(--t3)", fontWeight: "800", marginBottom: "3px" } },
+                    React.createElement("div", { style: { fontSize: "11px", color: NC[n.type] || "var(--t3)", fontWeight: "800", marginBottom: "3px" } },
                       n.type === "call" ? "📞 Call" : n.type === "appointment" ? "📅 Appt" : "📝 Note", " \u00b7 " + fmt(n.ts)
                     ),
                     React.createElement("div", { style: { fontSize: "12px", color: "var(--t2)", lineHeight: "1.4" } }, n.text)
@@ -1018,7 +1059,7 @@ export default function DialView({
         dialRightTab === "sms" && React.createElement("div", {
           id: "dial-panel-sms", role: "tabpanel", "aria-labelledby": "dial-tab-sms", style: { padding: "12px" }
         },
-          React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.5px", marginBottom: "10px" } }, "SMS TEMPLATES"),
+          React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "10px" } }, "SMS TEMPLATES"),
           open && Object.entries(templates || {}).length > 0
             ? Object.entries(templates || {}).map(([key, tpl]) =>
                 React.createElement("div", { key: key, style: { marginBottom: "8px", padding: "10px 12px", background: "var(--surface)", borderRadius: "8px", border: "1px solid var(--border)" } },
@@ -1032,10 +1073,10 @@ export default function DialView({
                         try { navigator.clipboard.writeText(msg); } catch (err) { const ta = document.createElement("textarea"); ta.value = msg; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); }
                         alert("\ud83d\udcf1 SMS copied \u2014 open your texting app and paste.");
                       },
-                      style: { fontSize: "9px", padding: "3px 8px", borderRadius: "5px", background: "var(--blue)", color: "#fff", border: "none", cursor: "pointer", fontWeight: "800", letterSpacing: "0.5px" }
+                      style: { fontSize: "11px", padding: "3px 8px", borderRadius: "4px", background: "var(--blue)", color: "#fff", border: "none", cursor: "pointer", fontWeight: "800", letterSpacing: "0.5px" }
                     }, "COPY")
                   ),
-                  React.createElement("div", { style: { fontSize: "11px", color: "var(--t2)", lineHeight: "1.5", whiteSpace: "pre-wrap", fontFamily: "\'JetBrains Mono\',monospace", background: "var(--surface-2)", padding: "8px", borderRadius: "5px", border: "1px solid var(--border)" } }, tpl.text || "")
+                  React.createElement("div", { style: { fontSize: "11px", color: "var(--t2)", lineHeight: "1.5", whiteSpace: "pre-wrap", fontFamily: "\'JetBrains Mono\',monospace", background: "var(--surface-2)", padding: "8px", borderRadius: "4px", border: "1px solid var(--border)" } }, tpl.text || "")
                 )
               )
             : React.createElement("div", { style: { textAlign: "center", padding: "32px 0", color: "var(--t4)", fontSize: "12px" } }, "No SMS templates configured.")
@@ -1045,7 +1086,7 @@ export default function DialView({
         dialRightTab === "activity" && React.createElement("div", {
           id: "dial-panel-activity", role: "tabpanel", "aria-labelledby": "dial-tab-activity", style: { padding: "12px" }
         },
-          React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.5px", marginBottom: "10px" } }, "ACTIVITY LOG"),
+          React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "10px" } }, "ACTIVITY LOG"),
           open && (open.notes || []).length > 0
             ? React.createElement("div", null,
                 (open.notes || []).slice().reverse().map((n, i) =>
@@ -1054,7 +1095,7 @@ export default function DialView({
                       n.type === "call" ? "\ud83d\udcde" : n.type === "appointment" ? "\ud83d\udcc5" : "\ud83d\udcdd"
                     ),
                     React.createElement("div", { style: { flex: 1, minWidth: 0 } },
-                      React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", marginBottom: "2px" } }, fmt(n.ts)),
+                      React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", marginBottom: "2px" } }, fmt(n.ts)),
                       React.createElement("div", { style: { fontSize: "11px", color: "var(--t2)", lineHeight: "1.4", wordBreak: "break-word" } }, n.text)
                     )
                   )

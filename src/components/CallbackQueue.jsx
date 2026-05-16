@@ -49,25 +49,25 @@ export default function CallbackQueue({
     },
       React.createElement("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minWidth: "44px", background: isOverdue ? "#FEF2F2" : "var(--sky-dim,#E0F2FE)", borderRadius: "8px", padding: "6px 4px" } },
         React.createElement("span", { style: { fontSize: "18px", lineHeight: 1 } }, isOverdue ? "⚠️" : "📅"),
-        React.createElement("span", { style: { fontSize: "9px", fontWeight: "800", color: isOverdue ? "var(--red)" : "var(--sky)", marginTop: "3px", textAlign: "center", lineHeight: 1.1 } }, fmtCB(lead.nextCallback))
+        React.createElement("span", { style: { fontSize: "11px", fontWeight: "800", color: isOverdue ? "var(--red)" : "var(--sky)", marginTop: "3px", textAlign: "center", lineHeight: 1.1 } }, fmtCB(lead.nextCallback))
       ),
       React.createElement("div", { style: { flex: 1, minWidth: 0 } },
         React.createElement("div", { style: { fontSize: "13px", fontWeight: "700", color: "var(--t1)", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, lead.name || "Unknown"),
         React.createElement("div", { style: { fontSize: "11px", color: "var(--t3)", display: "flex", gap: "8px", alignItems: "center" } },
           React.createElement("span", null, lead.phone || "—"),
-          lead.leadType && React.createElement("span", { style: { fontSize: "10px", background: "var(--navy-3,#1e293b22)", color: "var(--navy)", borderRadius: "4px", padding: "1px 6px", fontWeight: "600" } }, lead.leadType)
+          lead.leadType && React.createElement("span", { style: { fontSize: "11px", background: "var(--navy-3,#1e293b22)", color: "var(--navy)", borderRadius: "4px", padding: "1px 6px", fontWeight: "600" } }, lead.leadType)
         )
       ),
       React.createElement("div", { style: { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px", flexShrink: 0 } },
-        React.createElement("span", { style: { fontSize: "10px", fontWeight: "800", color: bucketColor(lead.bucket), background: bucketColor(lead.bucket) + "22", borderRadius: "4px", padding: "2px 7px" } }, lead.bucket || "?"),
-        lead.disposition && React.createElement("span", { style: { fontSize: "9px", color: "var(--t4)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" } }, lead.disposition.replace(/_/g, " "))
+        React.createElement("span", { style: { fontSize: "11px", fontWeight: "800", color: bucketColor(lead.bucket), background: bucketColor(lead.bucket) + "22", borderRadius: "4px", padding: "2px 7px" } }, lead.bucket || "?"),
+        lead.disposition && React.createElement("span", { style: { fontSize: "11px", color: "var(--t4)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" } }, lead.disposition.replace(/_/g, " "))
       )
     );
 
   const SectionHeader = ({ label, count, color }) =>
     React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px", padding: "6px 0", marginBottom: "8px" } },
-      React.createElement("span", { style: { fontSize: "10px", fontWeight: "800", letterSpacing: "1.5px", color } }, label),
-      React.createElement("span", { style: { fontSize: "10px", fontWeight: "700", background: color + "22", color, borderRadius: "10px", padding: "2px 8px" } }, count),
+      React.createElement("span", { style: { fontSize: "11px", fontWeight: "800", letterSpacing: "0.08em", color } }, label),
+      React.createElement("span", { style: { fontSize: "11px", fontWeight: "700", background: color + "22", color, borderRadius: "10px", padding: "2px 8px" } }, count),
       React.createElement("div", { style: { flex: 1, height: "1px", background: "var(--border)" } })
     );
 

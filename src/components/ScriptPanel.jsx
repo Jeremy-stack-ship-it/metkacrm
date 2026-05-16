@@ -33,7 +33,7 @@ export default function ScriptPanel({
       ),
       lead && React.createElement("span", {
         style: {
-          fontSize: "11px", fontWeight: "700", padding: "4px 12px", borderRadius: "20px",
+          fontSize: "11px", fontWeight: "700", padding: "4px 12px", borderRadius: "var(--radius-pill)",
           background: type.includes("Mortgage") ? "var(--blue-mid)" : "var(--green-dim)",
           color: type.includes("Mortgage") ? "#1D4ED8" : "var(--green)",
         }
@@ -44,7 +44,7 @@ export default function ScriptPanel({
           React.createElement("button", {
             key: s,
             onClick: () => setScriptSection(s),
-            style: { ...chip(scriptSection === s, "#2563EB"), fontSize: "10px", padding: "5px 14px", textTransform: "capitalize", margin: 0 },
+            style: { ...chip(scriptSection === s, "#2563EB"), fontSize: "11px", padding: "5px 14px", textTransform: "capitalize", margin: 0 },
           }, s)
         )
       )
@@ -77,7 +77,7 @@ export default function ScriptPanel({
         : React.createElement("div", null,
             React.createElement("pre", {
               style: {
-                fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: "13px", color: "#334155",
+                fontFamily: "'Inter',system-ui,sans-serif", fontSize: "13px", color: "#334155",
                 lineHeight: "1.9", whiteSpace: "pre-wrap", background: "var(--surface-2)",
                 padding: "24px", borderRadius: "12px", border: "1px solid var(--border)",
                 maxHeight: "460px", overflowY: "auto",

@@ -90,7 +90,7 @@ export const applyPhaseTransition = (lead, dispId) => {
   const patch = {};
   const now = new Date().toISOString();
 
-  if (['dnc', 'not_interested'].includes(dispId)) {
+  if (['dnc', 'not_interested', 'withdrawn', 'chargeback'].includes(dispId)) {
     patch.phase = 'EXIT';
     patch.next_dial = null;
     SCHED_COLS.forEach(k => { patch[k] = null; });
@@ -131,7 +131,8 @@ export const getPhasePriority = (lead) => {
 
 export const isDueToday = (lead) => {
   if (lead.phase === 'EXIT') return false;
-  if (['dnc', 'not_interested', 'appointment_booked'].includes(lead.disposition)) return false;
+  if (lead.stage === 'removed') return false;
+  if (['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked'].includes(lead.disposition)) return false;
   if (lead.next_dial) {
     const due = new Date(lead.next_dial);
     const endOfDay = new Date();

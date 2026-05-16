@@ -29,11 +29,11 @@ export default function AppHeader({
         }
       }, navOpen ? "✕" : "☰"),
       React.createElement("span", {
-        style: { fontFamily: "'Syne',sans-serif", fontWeight: "800", fontSize: "18px", color: "var(--navy)", letterSpacing: "2px" }
+        style: { fontFamily: "'Syne',sans-serif", fontWeight: "800", fontSize: "18px", color: "var(--navy)", letterSpacing: "0.08em" }
       }, "METKA"),
       React.createElement("span", { style: { width: "1px", height: "18px", background: "var(--border)", display: "inline-block" } }),
       React.createElement("span", {
-        style: { fontSize: "10px", color: "var(--t3)", letterSpacing: "2px", fontWeight: "600" }
+        style: { fontSize: "11px", color: "var(--t3)", letterSpacing: "0.08em", fontWeight: "600" }
       }, "FIELD OPS"),
     ),
 
@@ -56,17 +56,17 @@ export default function AppHeader({
           style: {
             display: "flex", alignItems: "center", gap: "8px", padding: "6px 14px",
             borderRadius: "8px", background: tone.bg, border: `1px solid ${tone.border}`,
-            cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
+            cursor: "pointer", fontFamily: "'Inter',sans-serif",
           }
         },
           React.createElement("span", {
             style: { fontSize: "16px", fontWeight: "800", color: tone.c, lineHeight: 1, fontFamily: "'JetBrains Mono',monospace" }
           }, "" + t.val),
           React.createElement("span", {
-            style: { fontSize: "10px", color: tone.c, fontWeight: "700", lineHeight: 1, fontFamily: "'JetBrains Mono',monospace", opacity: 0.7 }
+            style: { fontSize: "11px", color: tone.c, fontWeight: "700", lineHeight: 1, fontFamily: "'JetBrains Mono',monospace", opacity: 0.7 }
           }, "/" + t.goal),
           React.createElement("span", {
-            style: { fontSize: "9px", color: tone.c, letterSpacing: "1px", fontWeight: "700", lineHeight: "1" }
+            style: { fontSize: "11px", color: tone.c, letterSpacing: "0.06em", fontWeight: "700", lineHeight: "1" }
           }, t.label)
         );
       }),
@@ -91,10 +91,10 @@ export default function AppHeader({
           }
         },
           React.createElement("span", {
-            style: { fontSize: "16px", fontWeight: "800", color: c, lineHeight: 1, fontFamily: "'DM Sans',sans-serif" }
+            style: { fontSize: "16px", fontWeight: "800", color: c, lineHeight: 1, fontFamily: "'Inter',sans-serif" }
           }, "" + v),
           React.createElement("span", {
-            style: { fontSize: "9px", color: c, letterSpacing: "1px", fontWeight: "700", lineHeight: "1" }
+            style: { fontSize: "11px", color: c, letterSpacing: "0.06em", fontWeight: "700", lineHeight: "1" }
           }, l)
         )
       ),
@@ -113,10 +113,10 @@ export default function AppHeader({
           cursor: "default",
         }
       },
-        React.createElement("span", { style: { fontSize: "10px" } }, "☁"),
+        React.createElement("span", { style: { fontSize: "11px" } }, "☁"),
         React.createElement("span", {
           style: {
-            fontSize: "10px", fontWeight: "700", letterSpacing: "0.4px",
+            fontSize: "11px", fontWeight: "700", letterSpacing: "0.4px",
             color: supaStatus === "ok" ? "var(--green)" : supaStatus === "syncing" ? "var(--blue)" : supaStatus === "error" ? "var(--red)" : "var(--t3)",
           }
         }, supaStatus === "ok" ? "CLOUD OK" : supaStatus === "syncing" ? "SYNCING…" : supaStatus === "error" ? "CLOUD ERR" : "CLOUD")

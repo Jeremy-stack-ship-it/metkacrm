@@ -19,31 +19,33 @@ export default function NavSidebar({ view, setView, navOpen }) {
   return React.createElement("aside", {
     style: {
       width: "68px", background: "var(--navy)", display: "flex", flexDirection: "column",
-      alignItems: "center", padding: "24px 0", gap: "32px", zIndex: 20,
+      alignItems: "center", padding: "24px 0", gap: "28px", zIndex: 20,
       borderRight: "1px solid var(--navy-3)", flexShrink: 0,
     }
   },
     React.createElement("div", {
-      style: { color: "#fff", fontWeight: "800", fontSize: "12px", letterSpacing: "1.5px", fontFamily: "'Syne',sans-serif" }
+      style: { color: "#fff", fontWeight: "700", fontSize: "11px", letterSpacing: "0.08em", fontFamily: "'Inter',sans-serif" }
     }, "CRM"),
 
     React.createElement("div", {
-      style: { display: "flex", flexDirection: "column", gap: "12px", width: "100%", padding: "0 8px" }
+      style: { display: "flex", flexDirection: "column", gap: "4px", width: "100%", padding: "0 8px" }
     },
       ...NAV_ITEMS.map(v =>
         React.createElement("button", {
           key: v.id,
           onClick: () => setView(v.id),
           style: {
-            width: "100%", padding: "12px 0", borderRadius: "10px", border: "none",
+            width: "100%", padding: "10px 0", borderRadius: "8px", border: "none",
             background: view === v.id ? "var(--blue)" : "transparent",
-            color: view === v.id ? "#fff" : "var(--t3)",
-            cursor: "pointer", transition: "0.15s ease",
-            display: "flex", flexDirection: "column", alignItems: "center", gap: "6px",
-          }
+            color: view === v.id ? "#fff" : "rgba(255,255,255,0.5)",
+            cursor: "pointer", transition: "background 0.15s, color 0.15s",
+            display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
+          },
+          onMouseEnter: e => { if (view !== v.id) e.currentTarget.style.color = "rgba(255,255,255,0.85)"; },
+          onMouseLeave: e => { if (view !== v.id) e.currentTarget.style.color = "rgba(255,255,255,0.5)"; },
         },
-          React.createElement("span", { style: { fontSize: "16px", lineHeight: 1 } }, v.icon),
-          React.createElement("span", { style: { fontSize: "8px", fontWeight: "700", letterSpacing: "1px" } }, v.label)
+          React.createElement("span", { style: { fontSize: "15px", lineHeight: 1 } }, v.icon),
+          React.createElement("span", { style: { fontSize: "9px", fontWeight: "600", letterSpacing: "0.06em" } }, v.label)
         )
       )
     )
