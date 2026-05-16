@@ -1209,7 +1209,6 @@ const queue = useMemo(() => {
           todayLeads,
           noteText, setNoteText, noteType, setNoteType, addNote,
           handleDisposition,
-          lockCB, cbDate, setCbDate, cbTime, setCbTime,
           confirmCbDate, setConfirmCbDate, confirmCbTime, setConfirmCbTime,
           confirmReschedule, setConfirmReschedule,
           tcpaInfo, detailTab, setDetailTab,
@@ -1217,7 +1216,7 @@ const queue = useMemo(() => {
           templates, calendlyUrl, setCalendlyTargetId,
           refreshQueueOrder, openCalendlyPopup, logActivity,
           todayCount,
-          setView,
+          setView, setPrevView,
           callbackPresets, setCallbackPresets,
         }),
 
@@ -1327,4 +1326,4 @@ function App() {
   return React.createElement(MetkaCRM);
 }
 
-export default App;
+export 

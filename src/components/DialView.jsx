@@ -72,7 +72,6 @@ export default function DialView({
   noteType, setNoteType,
   addNote,
   handleDisposition,
-  lockCB, cbDate, setCbDate, cbTime, setCbTime,
   confirmCbDate, setConfirmCbDate, confirmCbTime, setConfirmCbTime,
   confirmReschedule, setConfirmReschedule,
   tcpaInfo,
@@ -85,6 +84,7 @@ export default function DialView({
   logActivity,
   todayCount,
   setView,
+  setPrevView,
   callbackPresets,
 }) {
   // ── POWER DIALER ENGINE (18s/30s auto-hangup) ──────────────────
@@ -627,7 +627,14 @@ export default function DialView({
               style: { fontFamily: "'Syne',sans-serif", fontWeight: "800", fontSize: "20px", color: "var(--t1)", lineHeight: 1.2, background: "transparent", border: "none", outline: "none", borderBottom: "2px solid transparent", padding: "0", flex: 1, cursor: "text", transition: "border-color 0.15s" },
               onFocus: e => { e.target.style.borderBottomColor = "var(--blue)"; },
               title: "Click to edit name"
-            })
+            }),
+            React.createElement("button", {
+              onClick: () => { setPrevView("dial"); setView("contact"); },
+              title: "View full contact card",
+              style: { flexShrink: 0, display: "flex", alignItems: "center", gap: "4px", padding: "5px 10px", background: "var(--navy)", color: "#fff", border: "none", borderRadius: "6px", fontSize: "11px", fontWeight: "800", cursor: "pointer", letterSpacing: "0.05em", whiteSpace: "nowrap", transition: "opacity 0.15s" },
+              onMouseEnter: e => e.currentTarget.style.opacity = "0.85",
+              onMouseLeave: e => e.currentTarget.style.opacity = "1"
+            }, "↗ VIEW LEAD")
           ),
           React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" } },
             React.createElement("a", {
@@ -758,21 +765,6 @@ export default function DialView({
                   )
                 ),
 
-                // Set Callback
-                React.createElement("div", { style: { background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "8px", padding: "12px" } },
-                  React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "8px" } }, "SET CALLBACK"),
-                  open.nextCallback && React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", padding: "8px 10px", background: "var(--sky-dim)", borderRadius: "7px", border: "1px solid #BAE6FD" } },
-                    React.createElement("span", { style: { fontSize: "12px", color: "var(--sky)", fontWeight: "700", flex: 1 } }, "📅 " + fmt(open.nextCallback)),
-                    React.createElement("button", { onClick: () => upd(open.id, { nextCallback: null }), "aria-label": "Clear callback", style: { background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: "16px", lineHeight: 1 } }, "×")
-                  ),
-                  React.createElement("div", { style: { display: "flex", gap: "6px" } },
-                    React.createElement("label", { htmlFor: "dial-cb-date", className: "sr-only" }, "Callback date"),
-                    React.createElement("input", { id: "dial-cb-date", type: "date", value: cbDate, onChange: e => setCbDate(e.target.value), style: { ...inp(), flex: 1, fontSize: "11px", padding: "6px 8px" } }),
-                    React.createElement("label", { htmlFor: "dial-cb-time", className: "sr-only" }, "Callback time"),
-                    React.createElement("input", { id: "dial-cb-time", type: "time", value: cbTime, onChange: e => setCbTime(e.target.value), style: { ...inp(), width: "88px", fontSize: "11px", padding: "6px 8px" } }),
-                    React.createElement("button", { onClick: () => lockCB(open.id), style: { minHeight: "36px", padding: "6px 12px", background: "var(--sky)", color: "#fff", border: "none", borderRadius: "7px", fontSize: "11px", fontWeight: "700", cursor: "pointer" } }, "Set")
-                  )
-                )
               ),
 
           // Recent notes — always visible below actions
@@ -843,7 +835,7 @@ export default function DialView({
           };
 
           return React.createElement("div", {
-            style: { flexShrink: 0, padding: "8px 12px", borderTop: "2px solid var(--border)", background: "var(--surface)", display: "flex", gap: "5px", overflowX: "auto", position: "relative" }
+            style: { flexShrink: 0, padding: "8px 12px", borderTop: "2px solid var(--border)", background: "var(--surface)", display: "flex", gap: "5px", overflow: "visible", position: "relative" }
           },
             // ── Callback scheduler popover ──
             cbPopoverOpen && React.createElement("div", {
@@ -1195,16 +1187,4 @@ export default function DialView({
               ? { label: "PIVOT",      color: "var(--red)",   bg: "rgba(239,68,68,0.08)",   border: "var(--red)",   action: "\u2192 Graded / Guaranteed Issue FE", icon: "\u26a0" }
               : tableRate
               ? { label: "TABLE RATE", color: "var(--amber)", bg: "rgba(245,158,11,0.08)",  border: "var(--amber)", action: "\u2192 Run quoted products \u00b7 flag rate class", icon: "\u26a1" }
-              : { label: "CLEAN",      color: "var(--green)", bg: "rgba(16,185,129,0.08)",  border: "var(--green)", action: "\u2192 Book Household Protection Audit", icon: "\u2705" };
-            return React.createElement("div", {
-              style: { background: signal.bg, border: `1px solid ${signal.border}`, borderRadius: "8px", padding: "14px", textAlign: "center" }
-            },
-              React.createElement("div", { style: { fontSize: "13px", fontWeight: "800", color: signal.color, letterSpacing: "0.08em", marginBottom: "5px" } }, signal.icon + " " + signal.label),
-              React.createElement("div", { style: { fontSize: "11px", color: signal.color, fontWeight: "600" } }, signal.action)
-            );
-          })()
-        )
-      )
-    )
-  );
-}
+              : { label: "CLEAN",      color: "var(--green)", bg: "rgba(16,185,129,0.08)",  bor
