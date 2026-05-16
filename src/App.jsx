@@ -51,7 +51,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import LZString from 'lz-string';
 import { createClient } from '@supabase/supabase-js';
-import { Device } from '@twilio/voice-sdk';
+// Device imported inside lib/useTwilioDevice.js
 import TodaysBlock, {
   buildSchedule, computeNextDial, applyPhaseTransition,
   getPhasePriority, isDueToday, SCHED_COLS
@@ -88,6 +88,8 @@ import AppHeader from './components/AppHeader.jsx';
 import AddLeadForm from './components/AddLeadForm.jsx';
 import ScriptPanel from './components/ScriptPanel.jsx';
 import { priority, autoFollowUp, openCalendlyPopup } from './lib/leadScoring.js';
+import { useContactFilters } from './lib/useContactFilters.js';
+import { useTwilioDevice } from './lib/useTwilioDevice.js';
 
 // ── SUPABASE CLIENT ──────────────────────────────────────────────
 // (All Supabase functions imported from lib/supabaseSync.js v3.6)
@@ -355,16 +357,19 @@ function MetkaCRM(){
   const [goalsDraft,setGoalsDraft]=useState(DEFAULT_GOALS);
   const fileRef=useRef();
 
-  // Contacts Search & Filter State
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterBucket, setFilterBucket] = useState("all");
-  const [filterStage, setFilterStage] = useState("all");
-  const [filterDisp, setFilterDisp] = useState("all");
-  const [queueMode, setQueueMode] = useState(false);
-  const [filterState, setFilterState] = useState("all");
-  const [filterTimezone, setFilterTimezone] = useState("all");
-  const [filterMonth, setFilterMonth] = useState("all");
-  const [showFilters, setShowFilters] = useState(false);
+  // Contacts Search & Filter State (extracted → lib/useContactFilters.js)
+  const {
+    searchQuery, setSearchQuery,
+    filterBucket, setFilterBucket,
+    filterStage, setFilterStage,
+    filterDisp, setFilterDisp,
+    queueMode, setQueueMode,
+    filterState, setFilterState,
+    filterTimezone, setFilterTimezone,
+    filterMonth, setFilterMonth,
+    showFilters, setShowFilters,
+    page, setPage,
+  } = useContactFilters();
   const [prevView, setPrevView] = useState("contacts");
   const [healthOpen, setHealthOpen] = useState(false);
   const [clockNow, setClockNow]     = useState(new Date());
@@ -393,18 +398,7 @@ function MetkaCRM(){
   const [twilioSaved, setTwilioSaved]         = useState(false);
   const [commsCache, setCommsCache]           = useState({}); // {leadId: [{id,ts,type,direction,body,status}]}
   const [commsLoading, setCommsLoading]       = useState(false);
-  // v4.0 — Twilio Voice SDK (browser calling)
-  const [twilioDevice,      setTwilioDevice]      = useState(null);
-  const [useTwilioCalling,  setUseTwilioCalling]  = useState(() => localStorage.getItem('metka-use-twilio-calling') === 'true');
-  const [tokenServiceUrl,   setTokenServiceUrl]   = useState(() => localStorage.getItem('metka-twilio-token-url') || '');
-  const [tokenUrlDraft,     setTokenUrlDraft]     = useState(() => localStorage.getItem('metka-twilio-token-url') || '');
-  const [voiceDeviceStatus, setVoiceDeviceStatus] = useState('idle'); // idle | registering | ready | error
-  // v4.0 — Global call state (floats above all tabs)
-  const [activeCall,      setActiveCall]      = useState(null);
-  const [activeCallLead,  setActiveCallLead]  = useState(null);
-  const [callStatus,      setCallStatus]      = useState(null); // null | 'connecting' | 'connected'
-  const [callMuted,       setCallMuted]       = useState(false);
-  const [callElapsed,     setCallElapsed]     = useState(0);
+  // v4.0 — Twilio Voice state (extracted → lib/useTwilioDevice.js, wired after leadMgr)
   // v3.8 — Callback scheduler presets
   const [callbackPresets, setCallbackPresets] = useState(() => {
     try { const s = localStorage.getItem(LS_CB_PRESETS); return s ? JSON.parse(s) : DEFAULT_CB_PRESETS; } catch { return DEFAULT_CB_PRESETS; }
@@ -419,87 +413,10 @@ function MetkaCRM(){
   const [exclStage, setExclStage]             = useState("none");
   const [exclDisp, setExclDisp]               = useState("none");
 
-  // Page state — declared after all filter deps to avoid TDZ error in strict mode
-  const [page, setPage] = useState(1);
-  useEffect(() => { setPage(1); }, [searchQuery, filterBucket, filterStage, filterDisp, queueMode, filterState, filterTimezone, filterMonth]);
+  // Page state + reset-on-filter-change lives in useContactFilters hook
   useEffect(() => { try{ if(openId) localStorage.setItem(LS_OPEN_ID,openId); else localStorage.removeItem(LS_OPEN_ID); }catch{} }, [openId]);
 
-  // v4.0 — Twilio Voice Device lifecycle
-  useEffect(() => {
-    if (!useTwilioCalling || !tokenServiceUrl) {
-      if (twilioDevice) { try { twilioDevice.destroy(); } catch(e){} setTwilioDevice(null); }
-      setVoiceDeviceStatus('idle');
-      return;
-    }
-    setVoiceDeviceStatus('registering');
-    fetch(tokenServiceUrl)
-      .then(r => r.json())
-      .then(data => {
-        const token = data.token || data.accessToken || data.access_token;
-        if (!token) throw new Error('No token in response');
-        const device = new Device(token, { logLevel: 1 });
-        device.on('ready',        () => setVoiceDeviceStatus('ready'));
-        device.on('registered',   () => setVoiceDeviceStatus('ready'));
-        device.on('error',        () => setVoiceDeviceStatus('error'));
-        device.on('tokenWillExpire', () => {
-          fetch(tokenServiceUrl).then(r=>r.json()).then(d => {
-            const t = d.token || d.accessToken || d.access_token;
-            if(t) device.updateToken(t);
-          }).catch(()=>{});
-        });
-        device.register();
-        setTwilioDevice(device);
-      })
-      .catch(() => setVoiceDeviceStatus('error'));
-    return () => { if (twilioDevice) { try { twilioDevice.destroy(); } catch(e){} } };
-  }, [useTwilioCalling, tokenServiceUrl]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Call elapsed timer
-  useEffect(() => {
-    if (callStatus !== 'connected') return;
-    const iv = setInterval(() => setCallElapsed(n => n + 1), 1000);
-    return () => clearInterval(iv);
-  }, [callStatus]);
-
-  // Central dial function — Twilio if enabled, tel: fallback
-  const dialLead = (lead) => {
-    const phoneClean = (lead.phone || '').replace(/\D/g, '');
-    if (!phoneClean) return;
-    if (useTwilioCalling && twilioDevice) {
-      setActiveCallLead(lead);
-      setCallStatus('connecting');
-      setCallElapsed(0);
-      setCallMuted(false);
-      twilioDevice.connect({ params: { To: '+1' + phoneClean } })
-        .then(call => {
-          setActiveCall(call);
-          call.on('accept',     () => {
-            setCallStatus('connected');
-            // Auto-clear callback badge when call connects
-            if (lead.nextCallback) {
-              const cb = new Date(lead.nextCallback);
-              const endToday = new Date(); endToday.setHours(23, 59, 59, 999);
-              if (cb <= endToday) {
-                // Overdue or due today — clear it (we're on the call now)
-                upd(lead.id, { nextCallback: null });
-              } else {
-                // Future callback — roll forward 24hrs so it stays on the schedule
-                const rolled = new Date(cb.getTime() + 24 * 60 * 60 * 1000);
-                upd(lead.id, { nextCallback: rolled.toISOString() });
-              }
-            }
-          });
-          call.on('disconnect', () => { setActiveCall(null); setActiveCallLead(null); setCallStatus(null); setCallElapsed(0); setCallMuted(false); });
-          call.on('error',      () => { setActiveCall(null); setActiveCallLead(null); setCallStatus(null); setCallElapsed(0); setCallMuted(false); });
-        });
-      logDial(lead.id);
-    } else {
-      window.location.href = 'tel:' + phoneClean;
-      logDial(lead.id);
-    }
-  };
-  const hangUp = () => { if (activeCall) activeCall.disconnect(); };
-  const toggleMute = () => { if (activeCall) { const m = !callMuted; activeCall.mute(m); setCallMuted(m); } };
+  // v4.0 — Twilio Voice Device/Call state lives in useTwilioDevice hook (wired after leadMgr below)
 
  useEffect(()=>{
     try{
@@ -653,7 +570,8 @@ const saveLeads = useCallback((next, opts = {}) => {
 
   // v2.6 — push to Supabase (bulk upsert, non-blocking)
   if (!opts.skipSupa) {
-    sbUpsertAll(next).then(() => setSupaStatus("ok")).catch(() => setSupaStatus("error"));
+    setSupaStatus("syncing");
+    sbUpsertAll(next).then(() => setSupaStatus("ok")).catch(e => { console.warn('[Supabase] saveLeads error:', e.message); setSupaStatus("error"); });
   }
 // eslint-disable-next-line react-hooks/exhaustive-deps
 }, []);
@@ -692,6 +610,25 @@ const saveLeads = useCallback((next, opts = {}) => {
   );
   const { undoLastActivity, logActivity } = activityMgr;
   const { upd, addNote, logDial, lockCB, deleteLead, addLead } = leadMgr;
+
+  // v4.0 — Twilio Voice SDK (extracted → lib/useTwilioDevice.js)
+  // Called here so upd + logDial are already resolved from leadMgr above.
+  const {
+    twilioDevice,      setTwilioDevice,
+    useTwilioCalling,  setUseTwilioCalling,
+    tokenServiceUrl,   setTokenServiceUrl,
+    tokenUrlDraft,     setTokenUrlDraft,
+    voiceDeviceStatus, setVoiceDeviceStatus,
+    activeCall,        setActiveCall,
+    activeCallLead,    setActiveCallLead,
+    callStatus,        setCallStatus,
+    callMuted,         setCallMuted,
+    callElapsed,       setCallElapsed,
+    dialLead,
+    hangUp,
+    toggleMute,
+  } = useTwilioDevice({ upd, logDial });
+
   const handleFile=e=>{
     const file=e.target.files?.[0]; if(!file) return;
     const reader=new FileReader();

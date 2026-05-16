@@ -6,20 +6,22 @@ const SUPA_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIs
 const supabase  = createClient(SUPA_URL, SUPA_KEY);
 window.supabase = supabase; // expose for console debugging
 
-// Upsert a single lead to Supabase (non-blocking)
-export const sbUpsertLead = (lead) => {
-  supabase.from('leads').upsert({ id: lead.id, data: lead, updated_at: new Date().toISOString() }).then(({error}) => {
-    if (error) console.warn('[Supabase] upsert error:', error.message);
-  });
-};
+// Upsert a single lead to Supabase (non-blocking).
+// Returns a promise that rejects on error so callers can update sync status.
+export const sbUpsertLead = (lead) =>
+  supabase.from('leads')
+    .upsert({ id: lead.id, data: lead, updated_at: new Date().toISOString() })
+    .then(({ error }) => {
+      if (error) throw new Error(error.message);
+    });
 
-// Upsert all leads to Supabase (bulk)
+// Upsert all leads to Supabase (bulk).
+// Throws on first batch error so saveLeads .catch() can set supaStatus -> "error".
 export const sbUpsertAll = async (leads) => {
   const rows = leads.map(l => ({ id: l.id, data: l, updated_at: new Date().toISOString() }));
-  // Supabase upsert in batches of 500
   for (let i = 0; i < rows.length; i += 500) {
     const { error } = await supabase.from('leads').upsert(rows.slice(i, i + 500));
-    if (error) console.warn('[Supabase] bulk upsert error:', error.message);
+    if (error) throw new Error(`[Supabase] bulk upsert batch ${i}–${i+500}: ${error.message}`);
   }
 };
 
