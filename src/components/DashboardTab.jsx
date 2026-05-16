@@ -84,6 +84,18 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
     return (!den || den === 0) ? null : Math.round((num / den) * 100);
   }
 
+  // Lead intake windows (uses assignDate as "received date")
+  function daysAgoISO(n) {
+    const d = new Date(now); d.setDate(now.getDate() - n);
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+  const D7  = daysAgoISO(7);
+  const D30 = daysAgoISO(30);
+  const MTD_START = `${now.getFullYear()}-${pad(now.getMonth()+1)}-01`;
+  const leadsLast7  = activeLeads.filter(l => l.assignDate && l.assignDate.substring(0,10) >= D7).length;
+  const leadsLast30 = activeLeads.filter(l => l.assignDate && l.assignDate.substring(0,10) >= D30).length;
+  const leadsMTD    = activeLeads.filter(l => l.assignDate && l.assignDate.substring(0,10) >= MTD_START).length;
+
   const weekSubmitted = activeLeads.filter(l =>
     l.submittedDate && WEEK_KEYS.includes(l.submittedDate.substring(0,10))
   ).length;
@@ -218,43 +230,32 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
         </div>
 
 
-        {/* ── MISSION STATUS HERO ──────────────────────────────────────── */}
-        <div style={{
-          background: weekSubmitted >= APPS_GOAL_WEEK ? 'rgba(16,185,129,0.08)' : weekSubmitted >= 3 ? 'rgba(245,158,11,0.08)' : 'rgba(239,68,68,0.08)',
-          border: `1px solid ${weekSubmitted >= APPS_GOAL_WEEK ? 'var(--green)' : weekSubmitted >= 3 ? 'var(--amber)' : 'var(--red)'}`,
-          borderRadius: 10, padding: '1rem 1.5rem', marginBottom: '1rem',
-          display: 'flex', alignItems: 'center', gap: '1.5rem'
-        }}>
-          <div style={{textAlign:'center',flexShrink:0}}>
-            <div style={{fontSize:'3.5rem',fontWeight:800,lineHeight:1,
-              color: weekSubmitted >= APPS_GOAL_WEEK ? 'var(--green)' : weekSubmitted >= 3 ? 'var(--amber)' : 'var(--red)',
-              fontFamily:"'Syne',sans-serif"
-            }}>{weekSubmitted}</div>
-            <div style={{fontSize:'0.72rem',color:'#64748b',fontWeight:700,letterSpacing:'0.08em',marginTop:'0.2rem'}}>APPS THIS WEEK</div>
-          </div>
-          <div style={{flex:1}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:'0.4rem'}}>
-              <span style={{fontWeight:800,fontSize:'0.95rem',color:'#e2e8f0',fontFamily:"'Syne',sans-serif"}}>
-                {weekSubmitted >= APPS_GOAL_WEEK ? '🎯 MISSION HIT' : `${APPS_GOAL_WEEK - weekSubmitted} TO GO`}
+        {/* ── MISSION STATUS — compact bar ──────────────────────────────── */}
+        {(() => {
+          const missionColor = weekSubmitted >= APPS_GOAL_WEEK ? 'var(--green)' : weekSubmitted >= 3 ? 'var(--amber)' : 'var(--red)';
+          const missionBg    = weekSubmitted >= APPS_GOAL_WEEK ? 'rgba(16,185,129,0.07)' : weekSubmitted >= 3 ? 'rgba(245,158,11,0.07)' : 'rgba(239,68,68,0.07)';
+          const pctFill      = Math.min(Math.round((weekSubmitted / APPS_GOAL_WEEK) * 100), 100);
+          return (
+            <div style={{
+              background: missionBg, border: `1px solid ${missionColor}40`,
+              borderRadius: 8, padding: '0.55rem 1rem', marginBottom: '0.75rem',
+              display: 'flex', alignItems: 'center', gap: '1rem'
+            }}>
+              <span style={{fontSize:'1.5rem',fontWeight:800,color:missionColor,fontFamily:"'Syne',sans-serif",lineHeight:1,flexShrink:0}}>
+                {weekSubmitted}<span style={{fontSize:'0.75rem',color:'#64748b',fontWeight:600,marginLeft:'0.3rem'}}>/ {APPS_GOAL_WEEK}</span>
               </span>
-              <span style={{fontSize:'0.78rem',color:'#64748b',fontWeight:600}}>Goal: {APPS_GOAL_WEEK} / week</span>
+              <span style={{fontSize:'0.75rem',fontWeight:700,color:missionColor,flexShrink:0}}>
+                {weekSubmitted >= APPS_GOAL_WEEK ? '🎯 MISSION HIT' : `APPS THIS WEEK — ${APPS_GOAL_WEEK - weekSubmitted} TO GO`}
+              </span>
+              <div style={{flex:1,background:'var(--navy)',borderRadius:4,height:6,overflow:'hidden'}}>
+                <div style={{width:`${pctFill}%`,height:'100%',background:missionColor,borderRadius:4,transition:'width 0.4s'}} />
+              </div>
+              <span style={{fontSize:'0.7rem',color:'#64748b',flexShrink:0}}>
+                Last wk: <span style={{color: weekSubmitted >= lastWeekSubmitted ? 'var(--green)' : 'var(--red)', fontWeight:700}}>{lastWeekSubmitted}</span>
+              </span>
             </div>
-            <div style={{background:'var(--navy)',borderRadius:6,height:14,overflow:'hidden',marginBottom:'0.4rem'}}>
-              <div style={{width:`${Math.min(Math.round((weekSubmitted/APPS_GOAL_WEEK)*100),100)}%`,
-                height:'100%',borderRadius:6,transition:'width 0.4s',
-                background: weekSubmitted >= APPS_GOAL_WEEK ? 'var(--green)' : weekSubmitted >= 3 ? 'var(--amber)' : 'var(--red)'
-              }} />
-            </div>
-            <div style={{fontSize:'0.72rem',color:'#64748b'}}>
-              Last week: <span style={{color:'#94a3b8',fontWeight:600}}>{lastWeekSubmitted} apps</span>
-              {lastWeekSubmitted > 0 && (
-                <span style={{color:weekSubmitted>=lastWeekSubmitted?'var(--green)':'var(--red)',fontWeight:700,marginLeft:'0.5rem'}}>
-                  {weekSubmitted >= lastWeekSubmitted ? '▲' : '▼'}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+          );
+        })()}
         <div style={{
           background:'var(--navy-2)',borderRadius:10,padding:'1rem 1.25rem',
           marginBottom:'1rem',border:'1px solid var(--navy-3)'
@@ -273,33 +274,46 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
         <div style={{display:'grid',gridTemplateColumns:'220px 1fr 220px',gap:'1rem',marginBottom:'1rem'}}>
 
           <div style={{background:'var(--navy-2)',borderRadius:10,padding:'1rem',border:'1px solid var(--navy-3)'}}>
-            <div style={{fontWeight:700,fontSize:'0.88rem',color:'#e2e8f0',marginBottom:'0.85rem'}}>Pipeline Health</div>
+            <div style={{fontWeight:700,fontSize:'0.88rem',color:'#e2e8f0',marginBottom:'0.75rem'}}>Lead Intake</div>
+
+            {/* Intake velocity */}
             {[
-              {label:'Bucket A — HOT',  bucket:bucketA, color:'var(--red)',    key:'A'},
-              {label:'Bucket B — WARM', bucket:bucketB, color:'var(--amber)',  key:'B'},
-              {label:'Bucket C — COLD', bucket:bucketC, color:'var(--blue)',   key:'C'},
-            ].map(({label,bucket,color,key}) => (
-              <div key={key} style={{
-                background:'var(--navy)',borderRadius:8,padding:'0.65rem 0.75rem',
-                marginBottom:'0.55rem',borderLeft:`3px solid ${color}`
-              }}>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.2rem'}}>
-                  <span style={{fontSize:'0.75rem',fontWeight:600,color}}>{label}</span>
-                  <span style={{fontSize:'1.1rem',fontWeight:700,color:'#e2e8f0'}}>{bucket.length}</span>
-                </div>
-                <div style={{fontSize:'0.7rem',color:'#64748b'}}>
-                  Called this wk: <span style={{color:'#94a3b8',fontWeight:600}}>{countCalledThisWeek(bucket)}</span>
-                </div>
+              {label:'Last 7 Days',  val:leadsLast7},
+              {label:'Last 30 Days', val:leadsLast30},
+              {label:'MTD',          val:leadsMTD},
+            ].map(({label,val}) => (
+              <div key={label} style={{display:'flex',justifyContent:'space-between',alignItems:'center',
+                background:'var(--navy)',borderRadius:7,padding:'0.5rem 0.75rem',marginBottom:'0.4rem'}}>
+                <span style={{fontSize:'0.73rem',color:'#94a3b8'}}>{label}</span>
+                <span style={{fontSize:'1.1rem',fontWeight:800,color:'#e2e8f0',fontFamily:"'JetBrains Mono',monospace"}}>{val}</span>
               </div>
             ))}
-            <div style={{borderTop:'1px solid var(--navy-3)',paddingTop:'0.75rem',marginTop:'0.25rem'}}>
-              <div style={{fontSize:'0.68rem',color:'#64748b',marginBottom:'0.45rem',textTransform:'uppercase',letterSpacing:'0.04em'}}>By Stage</div>
+
+            <div style={{borderTop:'1px solid var(--navy-3)',paddingTop:'0.65rem',marginTop:'0.55rem'}}>
+              <div style={{fontSize:'0.68rem',color:'#64748b',marginBottom:'0.4rem',textTransform:'uppercase',letterSpacing:'0.04em'}}>Buckets</div>
               {[
-                ['New Lead',stageCounts.new],['Contacted',stageCounts.contacted],
-                ['Audit Set',stageCounts.audit_set],['Follow-up',stageCounts.follow_up],
+                {label:'A — HOT',  bucket:bucketA, color:'var(--red)',   key:'A'},
+                {label:'B — WARM', bucket:bucketB, color:'var(--amber)', key:'B'},
+                {label:'C — COLD', bucket:bucketC, color:'var(--blue)',  key:'C'},
+              ].map(({label,bucket,color,key}) => (
+                <div key={key} style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.3rem'}}>
+                  <span style={{fontSize:'0.73rem',color,fontWeight:600}}>{label}</span>
+                  <span style={{fontSize:'0.9rem',fontWeight:700,color:'#e2e8f0'}}>{bucket.length}
+                    <span style={{fontSize:'0.65rem',color:'#64748b',fontWeight:400,marginLeft:'0.3rem'}}>
+                      ({countCalledThisWeek(bucket)} called)
+                    </span>
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{borderTop:'1px solid var(--navy-3)',paddingTop:'0.65rem',marginTop:'0.55rem'}}>
+              <div style={{fontSize:'0.68rem',color:'#64748b',marginBottom:'0.4rem',textTransform:'uppercase',letterSpacing:'0.04em'}}>By Stage</div>
+              {[
+                ['New',stageCounts.new],['Contacted',stageCounts.contacted],
                 ['App Submitted',stageCounts.app_submitted],['Underwriting',stageCounts.underwriting],
               ].map(([s,c]) => (
-                <div key={s} style={{display:'flex',justifyContent:'space-between',fontSize:'0.73rem',color:'#94a3b8',marginBottom:'0.22rem'}}>
+                <div key={s} style={{display:'flex',justifyContent:'space-between',fontSize:'0.72rem',color:'#94a3b8',marginBottom:'0.2rem'}}>
                   <span>{s}</span><span style={{fontWeight:600,color:'#e2e8f0'}}>{c}</span>
                 </div>
               ))}

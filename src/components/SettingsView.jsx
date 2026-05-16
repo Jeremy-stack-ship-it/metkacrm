@@ -15,6 +15,7 @@ export default function SettingsView({
   financialSaved, setFinancialSaved,
   backfillLead, SCHED_COLS,
   backupNeedsAlert, backupDaysSince, backupBg, backupBorder, backupColor,
+  backupExists, restoreBackup,
   templates, scripts,
   saveScripts, saveTemplates,
 }) {
@@ -311,7 +312,11 @@ export default function SettingsView({
               rd.readAsText(file); ev.target.value="";
             }})
           ),
-          React.createElement("button",{onClick:()=>{if(confirm("WIPE ALL LEADS? This cannot be undone.\n\nExport a backup first.")){saveLeads([]);alert("All leads cleared. Ready for fresh import.");}},style:{padding:"10px 22px",background:"var(--red-dim)",color:"var(--red)",border:"1px solid #FCA5A5",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}},"🗑 Wipe All Leads")
+          backupExists && React.createElement("button",{
+            onClick:()=>{ if(window.confirm("Restore your pre-import backup? This will replace current leads.")) restoreBackup(); },
+            style:{padding:"10px 22px",background:"var(--amber-dim)",color:"var(--amber)",border:"1px solid var(--amber)",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}
+          },"↩ Restore Pre-Import Backup"),
+          React.createElement("button",{onClick:()=>{if(confirm("WIPE ALL LEADS? This cannot be undone.\n\nExport a backup first.")){saveLeads([]);alert("All leads cleared. Ready for fresh import.");}},style:{padding:"10px 22px",background:"var(--red-dim)",color:"var(--red)",border:"1px solid #FCA5A5",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}},"\U0001f5d1 Wipe All Leads")
         )
       )
     )
