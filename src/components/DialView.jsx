@@ -113,6 +113,9 @@ export default function DialView({
   const [pdCountdown,    setPdCountdown]    = useState(null);
   const [pdStatus,       setPdStatus]       = useState('idle'); // idle | dialing | answered | pausing
   const [pdLockedQueue,  setPdLockedQueue]  = useState([]);
+  // ── Session log for Google Calendar export ────────────────────────────────
+  const [pdSessionStart, setPdSessionStart] = useState(null);
+  const [pdSessionLog,   setPdSessionLog]   = useState(null); // set on stop; cleared on next start
 
   const pdTimerRef   = useRef(null);
   const pdTimeoutRef = useRef(null);
@@ -159,6 +162,7 @@ export default function DialView({
     const queue = [...pdQueue];
     setPdLockedQueue(queue);
     setPdIdx(0); setPdAttempt(1); setPdStatus('dialing'); setPdMode(true);
+    setPdSessionStart(Date.now()); setPdSessionLog(null);
 
     const lead = queue[0];
     setOpenId(lead.id);
@@ -175,10 +179,17 @@ export default function DialView({
   }, [pdQueue, dialLead, twilioDevice, handleDisposition, setOpenId, pdClearTimers, pdAdvanceToNext]);
 
   const pdStop = useCallback(() => {
+    const endTs = Date.now();
+    setPdSessionLog(prev => {
+      // Only write a new log if we actually started a session
+      if (!pdSessionStart || pdIdx < 0) return prev;
+      return { start: pdSessionStart, end: endTs, dialsCount: pdIdx + 1, totalQueued: pdLockedQueue.length };
+    });
+    setPdSessionStart(null);
     pdClearTimers();
     if (twilioDevice) twilioDevice.disconnectAll();
     setPdStatus('idle'); setPdIdx(0); setPdAttempt(1); setPdPendingAttempt2(false); setPdLockedQueue([]); setPdMode(false);
-  }, [twilioDevice, pdClearTimers]);
+  }, [twilioDevice, pdClearTimers, pdSessionStart, pdIdx, pdLockedQueue]);
 
   // Detect answered call — stop countdown, mark as answered
   useEffect(() => {
@@ -395,6 +406,36 @@ export default function DialView({
                   }
                 }, pdQueue.length)
               ),
+
+          // 📅 Log last session to Google Calendar — appears after PD stop
+          !pdMode && pdSessionLog && (() => {
+            const toGCalTs = (ms) => new Date(ms).toISOString().replace(/[-:.]/g,'').slice(0,15) + 'Z';
+            const durationMin = Math.max(1, Math.round((pdSessionLog.end - pdSessionLog.start) / 60000));
+            const startLabel = new Date(pdSessionLog.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const endLabel   = new Date(pdSessionLog.end).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const details = encodeURIComponent(
+              `Ministry of Protection — Power Dial Session\n\nLeads Dialed: ${pdSessionLog.dialsCount} / ${pdSessionLog.totalQueued}\nDuration: ${durationMin} min\nStart: ${startLabel}  |  End: ${endLabel}\n\nLogged via Metka Field Ops CRM`
+            );
+            const title = encodeURIComponent(`🔥 MOP Dial Session — ${pdSessionLog.dialsCount} dials`);
+            const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${toGCalTs(pdSessionLog.start)}/${toGCalTs(pdSessionLog.end)}&details=${details}`;
+            return React.createElement("button", {
+              onClick: () => window.open(gcalUrl, '_blank'),
+              title: "Log this dial session to Google Calendar",
+              style: {
+                width: "100%", minHeight: "30px", padding: "0 8px",
+                fontSize: "10px", fontWeight: "800", letterSpacing: "0.5px",
+                background: "rgba(66,133,244,0.15)", color: "#93C5FD",
+                border: "1px solid rgba(66,133,244,0.35)",
+                borderRadius: "4px", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
+                marginBottom: "4px"
+              }
+            },
+              "📅",
+              React.createElement("span", null, "LOG SESSION TO CALENDAR"),
+              React.createElement("span", { style: { opacity: 0.7 } }, `${pdSessionLog.dialsCount} dials · ${durationMin}m`)
+            );
+          })(),
 
           // ▶ Manual Dial — one lead at a time, full queue as sorted
           queue.length > 0 && React.createElement("button", {
@@ -1148,43 +1189,4 @@ export default function DialView({
               ...[
                 { id: "diabetes", label: "Diabetes" },
                 { id: "heart",    label: "Heart Condition" },
-                { id: "cancer",   label: "Cancer (last 5yr)" },
-                { id: "copd",     label: "COPD / Lung" },
-                { id: "kidney",   label: "Kidney Disease" },
-                { id: "stroke",   label: "Stroke / TIA" },
-              ].map(flag =>
-                React.createElement("label", { key: flag.id, style: { display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", padding: "5px 7px", borderRadius: "5px", background: (open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)) ? "rgba(239,68,68,0.12)" : "transparent", border: "1px solid " + ((open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)) ? "var(--red)" : "var(--border)") } },
-                  React.createElement("input", {
-                    type: "checkbox",
-                    checked: !!(open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)),
-                    onChange: e => {
-                      if (!open) return;
-                      const cur = Array.isArray(open.healthFlags) ? [...open.healthFlags] : [];
-                      const next = e.target.checked ? [...new Set([...cur, flag.id])] : cur.filter(f => f !== flag.id);
-                      upd(open.id, { healthFlags: next });
-                    },
-                    style: { accentColor: "var(--red)", cursor: "pointer" }
-                  }),
-                  React.createElement("span", {
-                    style: {
-                      fontSize: "11px",
-                      color: (open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)) ? "var(--red)" : "var(--t2)",
-                      fontWeight: (open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)) ? "800" : "500"
-                    }
-                  }, flag.label)
-                )
-              )
-            )
-          ),
-
-          // Auto-qualification signal
-          (() => {
-            if (!open) return React.createElement("div", { style: { textAlign: "center", padding: "12px 0", color: "var(--t4)", fontSize: "12px" } }, "Select a lead to qualify.");
-            const flags = Array.isArray(open.healthFlags) ? open.healthFlags : [];
-            const pivot      = flags.length >= 2;
-            const tableRate  = !pivot && (!!open.tobacco || flags.length === 1);
-            const signal = pivot
-              ? { label: "PIVOT",      color: "var(--red)",   bg: "rgba(239,68,68,0.08)",   border: "var(--red)",   action: "\u2192 Graded / Guaranteed Issue FE", icon: "\u26a0" }
-              : tableRate
-              ? { label: "TABLE RATE", color: "var(--amber)", bg: "rgba(245,158,11,0.08)",  border: "var(--amber)", action: "\u2192 Run quoted products \u00b7 flag rate class", icon: "\u26a1" }
-              : { label: "CLEAN",      color: "var(--green)", bg: "rgba(16,185,129,0.08)",  bor
+          
