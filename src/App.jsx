@@ -1326,4 +1326,4 @@ function App() {
   return React.createElement(MetkaCRM);
 }
 
-export 
+export default App;
