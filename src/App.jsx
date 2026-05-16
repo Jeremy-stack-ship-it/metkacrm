@@ -1117,7 +1117,6 @@ const queue = useMemo(() => {
         activityStats, goals, stats,
         supaStatus, setView,
         setAddForm, fileRef, handleFile,
-        backupExists, restoreBackup,
       }),
 
       // ── ADD FORM BAR ──
@@ -1300,6 +1299,7 @@ const queue = useMemo(() => {
           financialSaved, setFinancialSaved,
           backfillLead, SCHED_COLS,
           backupNeedsAlert, backupDaysSince, backupBg, backupBorder, backupColor,
+          backupExists, restoreBackup,
           templates, scripts,
           saveScripts, saveTemplates,
         })
