@@ -970,7 +970,7 @@ export default function DialView({
         "aria-label": "Lead tools",
         style: { display: "flex", borderBottom: "1px solid var(--border)", background: "var(--surface)", flexShrink: 0 }
       },
-        [["script", "📞", "Script"], ["notes", "📝", "Notes"], ["sms", "💬", "SMS"], ["activity", "📋", "Activity"]].map(([tab, icon, lbl]) =>
+        [["script", "\ud83d\udcde", "Script"], ["notes", "\ud83d\udcdd", "Notes"], ["sms", "\ud83d\udcac", "SMS"], ["activity", "\ud83d\udccb", "Activity"], ["quals", "\u2705", "Q's"]].map(([tab, icon, lbl]) =>
           React.createElement("button", {
             key: tab,
             role: "tab",
@@ -1104,6 +1104,105 @@ export default function DialView({
             : React.createElement("div", { style: { textAlign: "center", padding: "32px 0", color: "var(--t4)", fontSize: "12px" } },
                 open ? "No activity logged yet." : "Select a lead to view activity."
               )
+        ),
+
+        // Q's tab — Qualification checklist
+        dialRightTab === "quals" && React.createElement("div", {
+          id: "dial-panel-quals", role: "tabpanel", "aria-labelledby": "dial-tab-quals", style: { padding: "12px" }
+        },
+          React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "10px" } }, "\u2705 QUALIFICATION CHECKLIST"),
+
+          // Mortgage / debt fields
+          React.createElement("div", { style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "8px", padding: "12px", marginBottom: "8px" } },
+            React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "8px" } }, "\ud83c\udfe0 MORTGAGE / DEBT"),
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginBottom: "6px" } },
+              React.createElement("div", null,
+                React.createElement("label", { htmlFor: "q-mort-bal", style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "BALANCE"),
+                React.createElement("input", {
+                  id: "q-mort-bal", type: "text", placeholder: "$250,000",
+                  key: "mort-bal-" + (open ? open.id : "none"),
+                  defaultValue: open ? (open.mortgageBalance || "") : "",
+                  onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.mortgageBalance || "")) upd(open.id, { mortgageBalance: v }); } },
+                  style: { ...inp(), width: "100%", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box" }
+                })
+              ),
+              React.createElement("div", null,
+                React.createElement("label", { htmlFor: "q-mort-term", style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "TERM LEFT"),
+                React.createElement("input", {
+                  id: "q-mort-term", type: "text", placeholder: "20 yrs",
+                  key: "mort-term-" + (open ? open.id : "none"),
+                  defaultValue: open ? (open.mortgageTerm || "") : "",
+                  onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.mortgageTerm || "")) upd(open.id, { mortgageTerm: v }); } },
+                  style: { ...inp(), width: "100%", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box" }
+                })
+              )
+            ),
+            React.createElement("div", null,
+              React.createElement("label", { htmlFor: "q-primary", style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", display: "block", marginBottom: "3px" } }, "PRIMARY BORROWER"),
+              React.createElement("input", {
+                id: "q-primary", type: "text", placeholder: "Name on mortgage",
+                key: "q-primary-" + (open ? open.id : "none"),
+                defaultValue: open ? (open.primaryBorrower || "") : "",
+                onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open.primaryBorrower || "")) upd(open.id, { primaryBorrower: v }); } },
+                style: { ...inp(), width: "100%", fontSize: "11px", padding: "6px 8px", boxSizing: "border-box" }
+              })
+            )
+          ),
+
+          // Health flags
+          React.createElement("div", { style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "8px", padding: "12px", marginBottom: "8px" } },
+            React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "8px" } }, "\u2764 HEALTH FLAGS"),
+            React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" } },
+              ...[
+                { id: "diabetes", label: "Diabetes" },
+                { id: "heart",    label: "Heart Condition" },
+                { id: "cancer",   label: "Cancer (last 5yr)" },
+                { id: "copd",     label: "COPD / Lung" },
+                { id: "kidney",   label: "Kidney Disease" },
+                { id: "stroke",   label: "Stroke / TIA" },
+              ].map(flag =>
+                React.createElement("label", { key: flag.id, style: { display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", padding: "5px 7px", borderRadius: "5px", background: (open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)) ? "rgba(239,68,68,0.12)" : "transparent", border: "1px solid " + ((open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)) ? "var(--red)" : "var(--border)") } },
+                  React.createElement("input", {
+                    type: "checkbox",
+                    checked: !!(open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)),
+                    onChange: e => {
+                      if (!open) return;
+                      const cur = Array.isArray(open.healthFlags) ? [...open.healthFlags] : [];
+                      const next = e.target.checked ? [...new Set([...cur, flag.id])] : cur.filter(f => f !== flag.id);
+                      upd(open.id, { healthFlags: next });
+                    },
+                    style: { accentColor: "var(--red)", cursor: "pointer" }
+                  }),
+                  React.createElement("span", {
+                    style: {
+                      fontSize: "11px",
+                      color: (open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)) ? "var(--red)" : "var(--t2)",
+                      fontWeight: (open && Array.isArray(open.healthFlags) && open.healthFlags.includes(flag.id)) ? "800" : "500"
+                    }
+                  }, flag.label)
+                )
+              )
+            )
+          ),
+
+          // Auto-qualification signal
+          (() => {
+            if (!open) return React.createElement("div", { style: { textAlign: "center", padding: "12px 0", color: "var(--t4)", fontSize: "12px" } }, "Select a lead to qualify.");
+            const flags = Array.isArray(open.healthFlags) ? open.healthFlags : [];
+            const pivot      = flags.length >= 2;
+            const tableRate  = !pivot && (!!open.tobacco || flags.length === 1);
+            const signal = pivot
+              ? { label: "PIVOT",      color: "var(--red)",   bg: "rgba(239,68,68,0.08)",   border: "var(--red)",   action: "\u2192 Graded / Guaranteed Issue FE", icon: "\u26a0" }
+              : tableRate
+              ? { label: "TABLE RATE", color: "var(--amber)", bg: "rgba(245,158,11,0.08)",  border: "var(--amber)", action: "\u2192 Run quoted products \u00b7 flag rate class", icon: "\u26a1" }
+              : { label: "CLEAN",      color: "var(--green)", bg: "rgba(16,185,129,0.08)",  border: "var(--green)", action: "\u2192 Book Household Protection Audit", icon: "\u2705" };
+            return React.createElement("div", {
+              style: { background: signal.bg, border: `1px solid ${signal.border}`, borderRadius: "8px", padding: "14px", textAlign: "center" }
+            },
+              React.createElement("div", { style: { fontSize: "13px", fontWeight: "800", color: signal.color, letterSpacing: "0.08em", marginBottom: "5px" } }, signal.icon + " " + signal.label),
+              React.createElement("div", { style: { fontSize: "11px", color: signal.color, fontWeight: "600" } }, signal.action)
+            );
+          })()
         )
       )
     )

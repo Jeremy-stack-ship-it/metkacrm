@@ -59,6 +59,7 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
   const dailyApptGoal    = goals.appointments || 3;
 
   const activeLeads = leads.filter(l => !l.archived && !l.invalid);
+  const issuedLeads = leads.filter(l => l.stage === 'issued');
   const bucketA = activeLeads.filter(l => l.bucket === 'A');
   const bucketB = activeLeads.filter(l => l.bucket === 'B');
   const bucketC = activeLeads.filter(l => l.bucket === 'C');
@@ -216,6 +217,44 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
           </span>
         </div>
 
+
+        {/* ── MISSION STATUS HERO ──────────────────────────────────────── */}
+        <div style={{
+          background: weekSubmitted >= APPS_GOAL_WEEK ? 'rgba(16,185,129,0.08)' : weekSubmitted >= 3 ? 'rgba(245,158,11,0.08)' : 'rgba(239,68,68,0.08)',
+          border: `1px solid ${weekSubmitted >= APPS_GOAL_WEEK ? 'var(--green)' : weekSubmitted >= 3 ? 'var(--amber)' : 'var(--red)'}`,
+          borderRadius: 10, padding: '1rem 1.5rem', marginBottom: '1rem',
+          display: 'flex', alignItems: 'center', gap: '1.5rem'
+        }}>
+          <div style={{textAlign:'center',flexShrink:0}}>
+            <div style={{fontSize:'3.5rem',fontWeight:800,lineHeight:1,
+              color: weekSubmitted >= APPS_GOAL_WEEK ? 'var(--green)' : weekSubmitted >= 3 ? 'var(--amber)' : 'var(--red)',
+              fontFamily:"'Syne',sans-serif"
+            }}>{weekSubmitted}</div>
+            <div style={{fontSize:'0.72rem',color:'#64748b',fontWeight:700,letterSpacing:'0.08em',marginTop:'0.2rem'}}>APPS THIS WEEK</div>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:'0.4rem'}}>
+              <span style={{fontWeight:800,fontSize:'0.95rem',color:'#e2e8f0',fontFamily:"'Syne',sans-serif"}}>
+                {weekSubmitted >= APPS_GOAL_WEEK ? '🎯 MISSION HIT' : `${APPS_GOAL_WEEK - weekSubmitted} TO GO`}
+              </span>
+              <span style={{fontSize:'0.78rem',color:'#64748b',fontWeight:600}}>Goal: {APPS_GOAL_WEEK} / week</span>
+            </div>
+            <div style={{background:'var(--navy)',borderRadius:6,height:14,overflow:'hidden',marginBottom:'0.4rem'}}>
+              <div style={{width:`${Math.min(Math.round((weekSubmitted/APPS_GOAL_WEEK)*100),100)}%`,
+                height:'100%',borderRadius:6,transition:'width 0.4s',
+                background: weekSubmitted >= APPS_GOAL_WEEK ? 'var(--green)' : weekSubmitted >= 3 ? 'var(--amber)' : 'var(--red)'
+              }} />
+            </div>
+            <div style={{fontSize:'0.72rem',color:'#64748b'}}>
+              Last week: <span style={{color:'#94a3b8',fontWeight:600}}>{lastWeekSubmitted} apps</span>
+              {lastWeekSubmitted > 0 && (
+                <span style={{color:weekSubmitted>=lastWeekSubmitted?'var(--green)':'var(--red)',fontWeight:700,marginLeft:'0.5rem'}}>
+                  {weekSubmitted >= lastWeekSubmitted ? '▲' : '▼'}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
         <div style={{
           background:'var(--navy-2)',borderRadius:10,padding:'1rem 1.25rem',
           marginBottom:'1rem',border:'1px solid var(--navy-3)'
@@ -412,6 +451,56 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
           )}
         </div>
 
+
+        {/* ── 5 R'S ANNUAL REVIEW ──────────────────────────────────────── */}
+        {issuedLeads.length > 0 && (
+          <div style={{background:'var(--navy-2)',borderRadius:10,padding:'1.25rem',border:'1px solid var(--navy-3)',marginBottom:'1rem'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.85rem'}}>
+              <span style={{fontWeight:700,fontSize:'0.95rem',color:'#e2e8f0'}}>🔁 5 R's Annual Review</span>
+              <span style={{background:'var(--green)',color:'#fff',borderRadius:12,fontSize:'0.72rem',fontWeight:700,padding:'0.2rem 0.65rem'}}>{issuedLeads.length} ISSUED</span>
+            </div>
+            {issuedLeads.map(l => {
+              const first = (l.name || '').split(' ')[0] || 'there';
+              const scripts5r = {
+                'Referrals': `Hi ${first} — this is Jeremy Metka, your Senior Field Underwriter. I'm doing annual reviews this week and wanted to reach out. First — do you feel like your household is fully protected? And second, do you know anyone else who might benefit from a Household Protection Audit?`,
+                'Reset': `Hi ${first} — Jeremy Metka here. I do annual reviews on all our issued households and I want to make sure your coverage still fits your life. Things change — income, family size, health. Can we set 15 minutes to run a quick reset audit?`,
+                'Replace': `Hi ${first}, this is Jeremy Metka. I've been reviewing issued households and there may be a stronger product available now that could give you more Living Benefits for the same or less premium. Worth a 10-minute look?`,
+                'Rugrats': `Hi ${first} — Jeremy Metka here. Just doing our annual reviews. Quick question — any new additions to the family? A new child or grandchild changes the protection picture entirely. Want to run a quick audit?`,
+                'Recruit': `Hi ${first}, this is Jeremy Metka. You've seen firsthand what this work does for families. I'm building a regional team and looking for servant leaders — people with integrity who want to build something real. Would you ever consider learning more about what I do?`,
+              };
+              return (
+                <div key={l.id} style={{
+                  background:'var(--navy)',borderRadius:8,padding:'0.85rem 1rem',
+                  marginBottom:'0.6rem',borderLeft:'3px solid var(--green)'
+                }}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.6rem'}}>
+                    <div>
+                      <span style={{fontWeight:700,fontSize:'0.88rem',color:'#e2e8f0'}}>{l.name}</span>
+                      {l.carrier && <span style={{fontSize:'0.72rem',color:'#64748b',marginLeft:'0.5rem'}}>· {l.carrier}</span>}
+                    </div>
+                    <span style={{fontSize:'0.68rem',color:'#64748b'}}>{l.phone}</span>
+                  </div>
+                  <div style={{display:'flex',gap:'0.4rem',flexWrap:'wrap'}}>
+                    {Object.entries(scripts5r).map(([label, msg]) => (
+                      <button key={label} onClick={() => {
+                        try { navigator.clipboard.writeText(msg); } catch(e) {
+                          const ta = document.createElement('textarea');
+                          ta.value = msg; document.body.appendChild(ta); ta.select();
+                          document.execCommand('copy'); document.body.removeChild(ta);
+                        }
+                        alert(`✅ ${label} script copied for ${first}`);
+                      }} style={{
+                        padding:'0.3rem 0.65rem',fontSize:'0.72rem',fontWeight:700,
+                        color:'var(--green)',background:'rgba(16,185,129,0.12)',
+                        border:'1px solid rgba(16,185,129,0.3)',borderRadius:5,cursor:'pointer'
+                      }}>{label}</button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
         <div style={{background:'rgba(37,44,63,0.4)',borderRadius:10,padding:'1rem 1.25rem',border:'1px dashed var(--navy-3)',opacity:0.55}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.75rem'}}>
             <span style={{fontWeight:700,fontSize:'0.88rem',color:'#475569'}}>Downline Pipeline</span>
