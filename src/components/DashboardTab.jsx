@@ -1,4 +1,6 @@
 import React from 'react';
+import { isDueToday } from '../lib/phaseEngine';
+import { priority } from '../lib/leadScoring';
 
 function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig = {}, setView, setOpenId, setPrevView = () => {}, startDialSession = () => {}, refreshQueueOrder = () => {} }) {
 
@@ -129,26 +131,20 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
     : 0;
 
   function buildDialQueue() {
-    const queue = [];
-    const todayISO = TODAY_KEY;
-    const yest = new Date(now);
-    yest.setDate(now.getDate() - 1);
-    const yestISO = `${yest.getFullYear()}-${pad(yest.getMonth()+1)}-${pad(yest.getDate())}`;
-    bucketA.filter(l => l.disposition === 'callback' && l.nextCallback && l.nextCallback <= todayISO)
-      .forEach(l => queue.push({ ...l, _priority: 1, _reason: '🔴 Callback Due' }));
-    bucketA.filter(l => l.disposition === 'not_called')
-      .sort((a, b) => new Date(b.assignDate||0) - new Date(a.assignDate||0))
-      .forEach(l => queue.push({ ...l, _priority: 2, _reason: '🟠 New — Not Called' }));
-    bucketB.filter(l => l.disposition === 'callback' && l.nextCallback && l.nextCallback <= todayISO)
-      .forEach(l => queue.push({ ...l, _priority: 3, _reason: '🟡 B — Callback Due' }));
-    bucketA.filter(l =>
-      (l.disposition === 'no_answer' || l.disposition === 'vm_left') &&
-      (!l.lastContact || l.lastContact < yestISO)
-    ).forEach(l => queue.push({ ...l, _priority: 4, _reason: '🔵 Re-dial' }));
-    bucketB.filter(l => l.disposition === 'not_called')
-      .forEach(l => queue.push({ ...l, _priority: 5, _reason: '⚪ B — Not Called' }));
-    const seen = new Set();
-    return queue.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true; }).slice(0, 10);
+    // Uses phaseEngine.isDueToday + leadScoring.priority — single source of truth
+    return [...bucketA, ...bucketB]
+      .filter(isDueToday)
+      .sort((a, b) => priority(b) - priority(a))
+      .slice(0, 10)
+      .map(l => {
+        const isOD   = l.nextCallback && new Date(l.nextCallback) < now;
+        const reason = isOD                          ? '🔴 Callback Overdue'
+          : l.disposition === 'not_called'           ? '🟠 New — Not Called'
+          : l.disposition === 'callback'             ? '📅 Callback Due'
+          : (l.disposition === 'no_answer' || l.disposition === 'vm_left') ? '🔵 Re-dial'
+          : '⚪ Eligible';
+        return { ...l, _priority: priority(l), _reason: reason };
+      });
   }
 
   const dialQueue = buildDialQueue();
