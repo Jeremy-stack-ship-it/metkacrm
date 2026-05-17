@@ -68,7 +68,7 @@ import { STATE_TZ, STAGES, DISPS, BC, BL, NC, FIELD_MAP_DEFS,
   fmt, fmtDate, currency, chip, inp } from './constants.js';
 // ── Library Modules (v3.6) ───────────────────────────────────────
 import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity } from './lib/supabaseSync.js';
-import { backfillLead, phaseFromBucket, buildSchedule, computeNextDial, applyPhaseTransition, getPhasePriority, isDueToday, SCHED_COLS } from './lib/phaseEngine.js';
+import { backfillLead, applyPhaseTransition, getPhasePriority, isDueToday, SCHED_COLS } from './lib/phaseEngine.js';
 import { DEFAULT_GOALS, CONTACT_DISPS, ACTIVITY_TYPES, dayKey, TODAY_KEY, lastNDays, weekKeys, monthKeys, aggregateActivity, fmtTime, goalTone, makeActivityManager } from './lib/activityLog.js';
 import { makeLeadManager } from './lib/leads.js';
 window.LZString = LZString; // expose for console debugging

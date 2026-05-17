@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { BC, BL, NC, fmt, inp, chip, isUWStuck, daysInUW } from '../constants.js';
-import { getPhasePriority } from '../lib/phaseEngine';
-import { isDueToday } from '../lib/phaseEngine';
+import { BC, BL, NC, fmt, inp, isUWStuck, daysInUW } from '../constants.js';
 import { usePowerDialer } from '../lib/usePowerDialer.js';
 
-const LS_SESSION = "metka-session-v1";
 
 // ── Script token renderer — module scope (no per-render redefinition) ──────
 import DialQueuePanel from './DialQueuePanel';
