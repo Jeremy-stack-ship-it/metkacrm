@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { BC, BL, NC, fmt, inp, chip, isUWStuck, daysInUW } from '../constants.js';
 import { getPhasePriority } from '../lib/phaseEngine';
 import { isDueToday } from '../lib/phaseEngine';
+import { usePowerDialer } from '../lib/usePowerDialer.js';
 
 const LS_SESSION = "metka-session-v1";
 
@@ -44,156 +45,23 @@ export default function DialView({
   setPrevView,
   callbackPresets,
 }) {
-  // ── POWER DIALER ENGINE (18s/30s auto-hangup) ──────────────────
+  // ── POWER DIALER ENGINE — extracted to lib/usePowerDialer.js ──────────
+  const {
+    pdQueue,
+    pdMode, pdStatus, pdIdx, pdLockedQueue, pdAttempt, pdCountdown,
+    pdSessionLog,
+    currentPdLead, pdBg, pdAccent,
+    pdStart, pdStop, fireDisp,
+  } = usePowerDialer({ queue, dialLead, twilioDevice, setOpenId, handleDisposition, callStatus });
 
-  // ── Call control panel state ─────────────────────────────────────────────
+  // ── Local view state ────────────────────────────────────────────────────
   const [callPanelExpanded, setCallPanelExpanded] = useState(true);
   const [onHold,            setOnHold]            = useState(false);
-
-  // ── Queue filter: "today" shows only phase-engine due leads, "all" shows full queue ──
-  const [dialQueueFilter, setDialQueueFilter] = useState('today');
-
-  // ── Attempt 2 pending flag — fires after call actually disconnects (callStatus=null) ──
-  const [pdPendingAttempt2, setPdPendingAttempt2] = useState(false);
-
-  // ── Callback scheduler popover ────────────────────────────────────────────
-  const [cbPopoverOpen, setCbPopoverOpen] = useState(false);
-  const [cbCustomTs,    setCbCustomTs]    = useState('');
-
-  // ── Manual appointment booking popover ───────────────────────────────────
-  const [manualApptOpen, setManualApptOpen] = useState(false);
-  const [manualApptTs,   setManualApptTs]   = useState('');
-
-  // ── Power Dial queue: intersection of current UI queue and phase-engine due-today ──
-  // This is what Power Dial actually dials through — consistent with the TODAY badge.
-  const pdQueue = React.useMemo(() => queue.filter(isDueToday), [queue]);
-
-  const [pdMode,         setPdMode]         = useState(false);
-  const [pdIdx,          setPdIdx]          = useState(0);
-  const [pdAttempt,      setPdAttempt]      = useState(1);
-  const [pdCountdown,    setPdCountdown]    = useState(null);
-  const [pdStatus,       setPdStatus]       = useState('idle'); // idle | dialing | answered | pausing
-  const [pdLockedQueue,  setPdLockedQueue]  = useState([]);
-  // ── Session log for Google Calendar export ────────────────────────────────
-  const [pdSessionStart, setPdSessionStart] = useState(null);
-  const [pdSessionLog,   setPdSessionLog]   = useState(null); // set on stop; cleared on next start
-
-  const pdTimerRef   = useRef(null);
-  const pdTimeoutRef = useRef(null);
-  const pdAdvanceRef = useRef(null);
-
-  const pdClearTimers = useCallback(() => {
-    if (pdTimerRef.current)   { clearInterval(pdTimerRef.current);  pdTimerRef.current   = null; }
-    if (pdTimeoutRef.current) { clearTimeout(pdTimeoutRef.current); pdTimeoutRef.current = null; }
-    if (pdAdvanceRef.current) { clearTimeout(pdAdvanceRef.current); pdAdvanceRef.current = null; }
-    setPdCountdown(null);
-  }, []);
-
-  const pdAdvanceToNext = useCallback((queue, nextIdx) => {
-    pdClearTimers();
-    setPdStatus('pausing');
-    pdAdvanceRef.current = setTimeout(() => {
-      if (nextIdx >= queue.length) {
-        setPdStatus('idle'); setPdIdx(0); setPdMode(false); return;
-      }
-      const nextLead = queue[nextIdx];
-      setPdIdx(nextIdx);
-      setPdAttempt(1);
-      setPdStatus('dialing');
-      setOpenId(nextLead.id);
-      dialLead(nextLead);
-
-      let secs = ATTEMPT1_SEC;
-      setPdCountdown(secs);
-      pdTimerRef.current = setInterval(() => { secs -= 1; setPdCountdown(secs); }, 1000);
-      pdTimeoutRef.current = setTimeout(() => {
-        // Attempt 1 timeout — hang up, set pending flag; useEffect fires attempt 2 once callStatus hits null
-        if (twilioDevice) twilioDevice.disconnectAll();
-        pdClearTimers();
-        setPdAttempt(2); setPdStatus('pausing'); setPdPendingAttempt2(true);
-      }, ATTEMPT1_SEC * 1000);
-    }, 1500);
-  }, [dialLead, twilioDevice, setOpenId, pdClearTimers]);
-
-  const pdStart = useCallback(() => {
-    if (!pdQueue || !pdQueue.length) {
-      alert('No leads due today in your current queue. Switch to ALL or adjust your filters.');
-      return;
-    }
-    const queue = [...pdQueue];
-    setPdLockedQueue(queue);
-    setPdIdx(0); setPdAttempt(1); setPdStatus('dialing'); setPdMode(true);
-    setPdSessionStart(Date.now()); setPdSessionLog(null);
-
-    const lead = queue[0];
-    setOpenId(lead.id);
-    dialLead(lead);
-
-    let secs = ATTEMPT1_SEC;
-    setPdCountdown(secs);
-    pdTimerRef.current = setInterval(() => { secs -= 1; setPdCountdown(secs); }, 1000);
-    pdTimeoutRef.current = setTimeout(() => {
-      if (twilioDevice) twilioDevice.disconnectAll();
-      pdClearTimers();
-      setPdAttempt(2); setPdStatus('pausing'); setPdPendingAttempt2(true);
-    }, ATTEMPT1_SEC * 1000);
-  }, [pdQueue, dialLead, twilioDevice, handleDisposition, setOpenId, pdClearTimers, pdAdvanceToNext]);
-
-  const pdStop = useCallback(() => {
-    const endTs = Date.now();
-    setPdSessionLog(prev => {
-      // Only write a new log if we actually started a session
-      if (!pdSessionStart || pdIdx < 0) return prev;
-      return { start: pdSessionStart, end: endTs, dialsCount: pdIdx + 1, totalQueued: pdLockedQueue.length };
-    });
-    setPdSessionStart(null);
-    pdClearTimers();
-    if (twilioDevice) twilioDevice.disconnectAll();
-    setPdStatus('idle'); setPdIdx(0); setPdAttempt(1); setPdPendingAttempt2(false); setPdLockedQueue([]); setPdMode(false);
-  }, [twilioDevice, pdClearTimers, pdSessionStart, pdIdx, pdLockedQueue]);
-
-  // Detect answered call — stop countdown, mark as answered
-  useEffect(() => {
-    if (pdMode && pdStatus === 'dialing' && callStatus === 'connected') {
-      pdClearTimers(); setPdStatus('answered');
-    }
-  }, [callStatus, pdMode, pdStatus, pdClearTimers]);
-
-  // Fire attempt 2 once the attempt 1 call has actually disconnected (callStatus → null)
-  useEffect(() => {
-    if (pdMode && pdPendingAttempt2 && callStatus === null) {
-      setPdPendingAttempt2(false);
-      const currentLead = pdLockedQueue[pdIdx];
-      if (!currentLead) return;
-      setPdStatus('dialing');
-      dialLead(currentLead);
-      setPdCountdown(null);
-    }
-  }, [callStatus, pdMode, pdPendingAttempt2, pdLockedQueue, pdIdx, dialLead]);
-
-  // ── fireDisp: disposition wrapper that also advances PD when a call is answered ──
-  // All JSX disposition buttons call this instead of handleDisposition directly.
-  // Internal PD timeout paths (no_answer) still call handleDisposition directly
-  // because they already invoke pdAdvanceToNext immediately after.
-  const fireDisp = useCallback((dispId) => {
-    // Hang up on all dispositions except ones where the user explicitly keeps the call alive
-    if (!KEEP_CALL_DISPS.has(dispId) && twilioDevice) {
-      twilioDevice.disconnectAll();
-    }
-    handleDisposition(dispId);
-    if (pdMode && (pdStatus === 'answered' || pdStatus === 'dialing')) {
-      pdClearTimers();
-      pdAdvanceToNext(pdLockedQueue, pdIdx + 1);
-    }
-  }, [handleDisposition, twilioDevice, pdMode, pdStatus, pdClearTimers, pdAdvanceToNext, pdLockedQueue, pdIdx]);
-
-  // Cleanup on unmount
-  useEffect(() => () => pdClearTimers(), [pdClearTimers]);
-
-  // PD display helpers
-  const currentPdLead = pdMode && pdLockedQueue.length > 0 ? pdLockedQueue[pdIdx] : null;
-  const pdBg     = pdStatus === 'answered' ? '#1A3A5C' : pdStatus === 'pausing' ? '#252D3D' : '#171E2D';
-  const pdAccent = pdStatus === 'answered' ? '#3B82F6' : pdStatus === 'pausing' ? '#64748B' : '#3B82F6';
+  const [dialQueueFilter,   setDialQueueFilter]   = useState('today');
+  const [cbPopoverOpen,     setCbPopoverOpen]     = useState(false);
+  const [cbCustomTs,        setCbCustomTs]        = useState('');
+  const [manualApptOpen,    setManualApptOpen]    = useState(false);
+  const [manualApptTs,      setManualApptTs]      = useState('');
 
     return React.createElement("div", { style: { display: "flex", flex: 1, height: "100%", minWidth: 0, overflow: "hidden" } },
     // ── LEFT: Queue panel (extracted) ──
