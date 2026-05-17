@@ -20,6 +20,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { SCHED_COLS, buildSchedule, computeNextDial, phaseFromBucket, applyPhaseTransition, getPhasePriority, isDueToday, backfillLead } from '../lib/phaseEngine';
 
 // ── PHASE CONSTANTS ──────────────────────────────────────────────
 export const PHASE_DEFS = {
@@ -29,136 +30,6 @@ export const PHASE_DEFS = {
   M2:   { id:'M2',   label:'Machine 2', color:'#64748B' },
   EXIT: { id:'EXIT', label:'Exit',      color:'#DC2626' },
 };
-
-export const SCHED_COLS = [
-  'p1_1','p1_2','p1_3','p1_4','p1_5','p1_6','p1_7',
-  'p2_1','p2_2','p2_3','p2_4','p2_5',
-  'p3_1','p3_2','p3_3','p3_4','p3_5',
-];
-
-// ── LIFECYCLE HELPERS ────────────────────────────────────────────
-
-const addDaysISO = (date, n) => {
-  const d = new Date(date);
-  d.setDate(d.getDate() + n);
-  d.setHours(9, 0, 0, 0);
-  return d.toISOString();
-};
-
-export const buildSchedule = (from) => {
-  const d = new Date(from);
-  d.setHours(9, 0, 0, 0);
-  return {
-    p1_1: addDaysISO(d, 0),
-    p1_2: addDaysISO(d, 2),
-    p1_3: addDaysISO(d, 4),
-    p1_4: addDaysISO(d, 6),
-    p1_5: addDaysISO(d, 8),
-    p1_6: addDaysISO(d, 10),
-    p1_7: addDaysISO(d, 12),
-    p2_1: addDaysISO(d, 15),
-    p2_2: addDaysISO(d, 18),
-    p2_3: addDaysISO(d, 22),
-    p2_4: addDaysISO(d, 25),
-    p2_5: addDaysISO(d, 29),
-    p3_1: addDaysISO(d, 31),
-    p3_2: addDaysISO(d, 38),
-    p3_3: addDaysISO(d, 45),
-    p3_4: addDaysISO(d, 52),
-    p3_5: addDaysISO(d, 59),
-  };
-};
-
-export const computeNextDial = (lead) => {
-  const startOfToday = new Date();
-  startOfToday.setHours(0, 0, 0, 0);
-  const dates = SCHED_COLS
-    .map(k => lead[k])
-    .filter(Boolean)
-    .map(s => new Date(s))
-    .filter(d => d >= startOfToday);
-  if (!dates.length) return null;
-  return new Date(Math.min(...dates.map(d => d.getTime()))).toISOString();
-};
-
-export const phaseFromBucket = (lead) => {
-  const bucket = lead.bucket || 'C';
-  const assignDate = lead.assignDate ? new Date(lead.assignDate) : new Date();
-  const daysOld = Math.max(0, Math.floor((Date.now() - assignDate.getTime()) / 86400000));
-  if (bucket === 'A') {
-    if (daysOld <= 14) return 'P1';
-    if (daysOld <= 30) return 'P2';
-    if (daysOld <= 60) return 'P3';
-    return 'M2';
-  }
-  if (bucket === 'B') return daysOld <= 180 ? 'M2' : 'EXIT';
-  return 'EXIT';
-};
-
-export const applyPhaseTransition = (lead, dispId) => {
-  const patch = {};
-  const now = new Date().toISOString();
-
-  if (['dnc', 'not_interested'].includes(dispId)) {
-    patch.phase = 'EXIT';
-    patch.next_dial = null;
-    SCHED_COLS.forEach(k => { patch[k] = null; });
-  } else if (dispId === 'appointment_booked') {
-    patch.phase = lead.phase || 'P1';
-  } else if (dispId === 'no_show' || dispId === 'no_sale') {
-    const sched = buildSchedule(new Date());
-    Object.assign(patch, sched);
-    patch.phase = 'P1';
-    patch.phase_start = now;
-    patch.next_dial = sched.p1_1;
-  } else if (['no_answer', 'vm_left', 'callback', 'follow_up_needed', 'hung_up'].includes(dispId)) {
-    const earliest = SCHED_COLS
-      .filter(k => lead[k])
-      .map(k => ({ k, d: new Date(lead[k]) }))
-      .filter(({ d }) => d <= new Date(Date.now() + 86400000))
-      .sort((a, b) => a.d - b.d)[0];
-    if (earliest) patch[earliest.k] = null;
-    patch.next_dial = computeNextDial({ ...lead, ...patch });
-  }
-
-  return patch;
-};
-
-export const getPhasePriority = (lead) => {
-  const disp = lead.disposition || '';
-  if (disp === 'no_sale') return 100;
-  if (disp === 'no_show') return 90;
-  const phase = lead.phase;
-  if (phase === 'P1') return 80;
-  if (phase === 'P2') return 70;
-  if (phase === 'P3') return 60;
-  if (phase === 'M2') return 50;
-  if (lead.bucket === 'A') return 40;
-  if (lead.bucket === 'B') return 30;
-  return 10;
-};
-
-export const isDueToday = (lead) => {
-  if (lead.phase === 'EXIT') return false;
-  if (['dnc', 'not_interested', 'appointment_booked'].includes(lead.disposition)) return false;
-  if (lead.next_dial) {
-    const due = new Date(lead.next_dial);
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
-    return due <= endOfDay;
-  }
-  return lead.bucket === 'A';
-};
-
-export const backfillLead = (lead) => {
-  if (lead.phase) return lead;
-  const phase = phaseFromBucket(lead);
-  if (phase === 'EXIT') return { ...lead, phase, next_dial: null };
-  const sched = buildSchedule(new Date());
-  return { ...lead, phase, phase_start: new Date().toISOString(), next_dial: sched.p1_1, ...sched };
-};
-
-// ── NURTURE SMS SEQUENCES ────────────────────────────────────────
 
 export const SMS_SEQUENCES = {
   cat1: {

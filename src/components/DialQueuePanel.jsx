@@ -1,6 +1,6 @@
 import React from 'react';
 import { BC, isUWStuck } from '../constants.js';
-import { getPhasePriority } from './TodaysBlock';
+import { getPhasePriority } from '../lib/phaseEngine';
 import { isDueToday } from '../lib/phaseEngine';
 
 const LS_SESSION = 'metka-session-v1';

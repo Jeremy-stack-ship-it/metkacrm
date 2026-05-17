@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { BC, BL, NC, fmt, inp, chip, isUWStuck, daysInUW } from '../constants.js';
-import { getPhasePriority } from './TodaysBlock';
+import { getPhasePriority } from '../lib/phaseEngine';
 import { isDueToday } from '../lib/phaseEngine';
 
 const LS_SESSION = "metka-session-v1";
