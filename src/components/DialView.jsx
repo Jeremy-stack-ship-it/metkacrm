@@ -615,10 +615,40 @@ export default function DialView({
             return bAge - aAge;
           });
 
+          // ── Queue row helpers — v3.7 ─────────────────────────────────
+          const DISP_ICON = {
+            no_answer: "📵", vm_left: "📬", callback: "📅", follow_up: "🔄",
+            not_interested: "🚫", hung_up: "📴", dnc: "⛔", no_show: "❌",
+            appointment_booked: "✅", not_called: "", no_sale: "💬",
+          };
+          const recencyLabel = (iso) => {
+            if (!iso) return null;
+            const todayStr = new Date().toDateString();
+            const d = new Date(iso);
+            if (d.toDateString() === todayStr) return "today";
+            const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+            if (days === 1) return "1d ago";
+            if (days < 7)  return days + "d ago";
+            if (days < 30) return Math.floor(days / 7) + "wk ago";
+            return Math.floor(days / 30) + "mo ago";
+          };
+          const fmtCbTime = (iso) => {
+            if (!iso) return null;
+            const d = new Date(iso);
+            return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+          };
+
           return sorted.map((lead, idx) => {
-            const isActive = openId === lead.id;
-            const isOD = lead.nextCallback && new Date(lead.nextCallback) < now3;
-            const stuck = isUWStuck(lead);
+            const isActive   = openId === lead.id;
+            const isOD       = lead.nextCallback && new Date(lead.nextCallback) < now3;
+            const isCbToday  = lead.nextCallback && new Date(lead.nextCallback).toDateString() === now3.toDateString();
+            const stuck      = isUWStuck(lead);
+            // improvement #2 — "called today" dim in ALL view
+            const calledToday = dialQueueFilter === "all"
+              && lead.lastContact
+              && new Date(lead.lastContact).toDateString() === now3.toDateString();
+            const dispIcon   = DISP_ICON[lead.disposition] || "";
+            const recency    = recencyLabel(lead.lastContact);
             return React.createElement("li", {
               key: lead.id,
               role: "option",
@@ -631,7 +661,8 @@ export default function DialView({
                 padding: "10px 12px",
                 borderBottom: "1px solid rgba(255,255,255,0.05)",
                 cursor: "pointer",
-                background: isActive ? "rgba(93,202,165,0.18)" : "transparent",
+                background: isActive ? "rgba(93,202,165,0.18)" : calledToday ? "rgba(255,255,255,0.02)" : "transparent",
+                opacity: calledToday && !isActive ? 0.6 : 1,
                 borderLeft: "3px solid " + (isActive ? "#5DCAA5" : stuck ? "#EF4444" : isOD ? "#EF4444" : BC[lead.bucket] + "80"),
                 display: "flex", flexDirection: "column", justifyContent: "center",
                 outline: "none"
@@ -640,12 +671,26 @@ export default function DialView({
               React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "5px", marginBottom: "2px" } },
                 React.createElement("span", { "aria-hidden": "true", style: { fontSize: "11px", color: "rgba(255,255,255,0.5)", minWidth: "15px", fontFamily: "'JetBrains Mono',monospace", lineHeight: 1 } }, idx + 1),
                 React.createElement("span", { style: { fontSize: "12px", fontWeight: "700", color: isActive ? "#5DCAA5" : "rgba(255,255,255,0.88)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, lead.name),
+                // improvement #2 — called-today badge
+                calledToday && React.createElement("span", { title: "Already worked today", style: { fontSize: "10px", padding: "1px 4px", borderRadius: "4px", background: "rgba(93,202,165,0.15)", color: "#5DCAA5", fontWeight: "800", flexShrink: 0, marginRight: "3px" } }, "✓"),
                 React.createElement("span", { "aria-hidden": "true", style: { fontSize: "11px", padding: "1px 5px", borderRadius: "8px", background: BC[lead.bucket] + "28", color: BC[lead.bucket], fontWeight: "800", flexShrink: 0 } }, lead.bucket)
               ),
-              React.createElement("div", { style: { paddingLeft: "20px", display: "flex", gap: "6px", alignItems: "center" } },
-                React.createElement("span", { style: { fontSize: "11px", color: "rgba(255,255,255,0.45)", fontFamily: "'JetBrains Mono',monospace", fontWeight: "500" } }, lead.phone),
-                isOD && React.createElement("span", { style: { fontSize: "11px", color: "#EF4444", fontWeight: "800", marginLeft: "auto" } }, "OD"),
-                stuck && React.createElement("span", { style: { fontSize: "11px", color: "#FBBF24", fontWeight: "800", marginLeft: "auto" } }, "UW")
+              // improvement #1 — last disp + recency | improvement #3 — cb time
+              React.createElement("div", { style: { paddingLeft: "20px", display: "flex", gap: "6px", alignItems: "center", flexWrap: "nowrap", overflow: "hidden" } },
+                React.createElement("span", { style: { fontSize: "11px", color: "rgba(255,255,255,0.45)", fontFamily: "'JetBrains Mono',monospace", fontWeight: "500", flexShrink: 0 } }, lead.phone),
+                (dispIcon || recency) && React.createElement("span", { style: { fontSize: "10px", color: "rgba(255,255,255,0.35)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 } },
+                  (dispIcon ? dispIcon + " " : "") + (recency || "")
+                ),
+                // improvement #3 — callback time chip
+                (isOD || isCbToday) && React.createElement("span", {
+                  style: {
+                    fontSize: "10px", fontWeight: "800", flexShrink: 0, marginLeft: "auto",
+                    color: isOD ? "#EF4444" : "#34D399",
+                    background: isOD ? "rgba(239,68,68,0.12)" : "rgba(52,211,153,0.12)",
+                    padding: "1px 5px", borderRadius: "4px"
+                  }
+                }, (isOD ? "OD " : "CB ") + (fmtCbTime(lead.nextCallback) || "")),
+                stuck && React.createElement("span", { style: { fontSize: "11px", color: "#FBBF24", fontWeight: "800", flexShrink: 0 } }, "UW")
               )
             );
           });
