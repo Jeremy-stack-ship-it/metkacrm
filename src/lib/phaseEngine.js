@@ -133,6 +133,16 @@ export const isDueToday = (lead) => {
   if (lead.phase === 'EXIT') return false;
   if (lead.stage === 'removed') return false;
   if (['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked'].includes(lead.disposition)) return false;
+
+  // v3.7 — don't resurface a lead already contacted today unless a callback is now due
+  if (lead.lastContact) {
+    const contactedToday = new Date(lead.lastContact).toDateString() === new Date().toDateString();
+    if (contactedToday) {
+      const cbDue = lead.nextCallback && new Date(lead.nextCallback) <= new Date();
+      if (!cbDue) return false;
+    }
+  }
+
   if (lead.next_dial) {
     const due = new Date(lead.next_dial);
     const endOfDay = new Date();
