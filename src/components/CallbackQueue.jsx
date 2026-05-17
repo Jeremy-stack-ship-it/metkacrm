@@ -75,6 +75,43 @@ export default function CallbackQueue({
 
   return React.createElement("div", { style: { flex: 1, overflowY: "auto", background: "var(--surface-2)", padding: "24px" } },
     React.createElement("div", { style: { maxWidth: "680px", margin: "0 auto" } },
+
+      // v3.7 — Overdue emergency banner
+      overdue.length > 0 && React.createElement("div", {
+        style: {
+          display: "flex", alignItems: "center", gap: "12px",
+          padding: "12px 16px", marginBottom: "20px",
+          background: "rgba(239,68,68,0.12)", border: "2px solid var(--red)",
+          borderRadius: "10px", animation: "none"
+        }
+      },
+        React.createElement("span", { style: { fontSize: "20px", flexShrink: 0 } }, "🚨"),
+        React.createElement("div", { style: { flex: 1 } },
+          React.createElement("div", { style: { fontSize: "13px", fontWeight: "800", color: "var(--red)", letterSpacing: "0.04em" } },
+            overdue.length + " OVERDUE CALLBACK" + (overdue.length > 1 ? "S" : "") + " — ACT NOW"
+          ),
+          React.createElement("div", { style: { fontSize: "11px", color: "rgba(255,255,255,0.6)", marginTop: "2px" } },
+            "These families are waiting. Dial them before anything else."
+          )
+        ),
+        React.createElement("button", {
+          onClick: () => {
+            const ids = overdue.map(l => l.id);
+            if (!ids.length) return;
+            const s = { ids, idx: 0, total: ids.length, startedAt: new Date().toISOString() };
+            setSession(s);
+            setSessionPaused(false);
+            try { localStorage.setItem(LS_SESSION, JSON.stringify(s)); } catch {}
+            setOpenId(ids[0]); setView("dial"); setNoteText(""); setDetailTab("live");
+          },
+          style: {
+            flexShrink: 0, padding: "8px 14px", background: "var(--red)", color: "#fff",
+            border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: "800",
+            cursor: "pointer", whiteSpace: "nowrap"
+          }
+        }, "▶ Dial Now")
+      ),
+
       // Header
       React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "14px", marginBottom: "24px" } },
         React.createElement("div", null,

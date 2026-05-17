@@ -229,6 +229,62 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
           </span>
         </div>
 
+        {/* v3.7 — Daily pace KPI banner */}
+        {(() => {
+          const dialPct  = dailyDialGoal  > 0 ? Math.min(Math.round((todayDials    / dailyDialGoal)    * 100), 100) : 0;
+          const contPct  = dailyContactGoal > 0 ? Math.min(Math.round((todayContacts / dailyContactGoal) * 100), 100) : 0;
+          const apptPct  = dailyApptGoal  > 0 ? Math.min(Math.round((todayAppts    / dailyApptGoal)    * 100), 100) : 0;
+          const workStart = 8; // 8 AM
+          const workEnd   = 20; // 8 PM
+          const hNow      = now.getHours() + now.getMinutes() / 60;
+          const hLeft     = Math.max(0, workEnd - hNow);
+          const hTotal    = workEnd - workStart;
+          const timePct   = Math.min(Math.round(((hNow - workStart) / hTotal) * 100), 100);
+          const hLeftStr  = hLeft > 0 ? (Math.floor(hLeft) + 'h ' + Math.round((hLeft % 1) * 60) + 'm left') : 'End of day';
+          // Pace: dials completed vs time elapsed — are we ahead or behind?
+          const expectedDials = Math.round((timePct / 100) * dailyDialGoal);
+          const paceGap = todayDials - expectedDials; // positive = ahead, negative = behind
+          const paceColor = paceGap >= 0 ? 'var(--green)' : paceGap >= -10 ? 'var(--amber)' : 'var(--red)';
+          const paceLabel = paceGap >= 0 ? `▲ ${paceGap} ahead` : `▼ ${Math.abs(paceGap)} behind`;
+
+          const Meter = ({ label, val, goal, pct }) => (
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:'4px'}}>
+                <span style={{fontSize:'10px',fontWeight:'700',color:'rgba(255,255,255,0.5)',letterSpacing:'0.06em'}}>{label}</span>
+                <span style={{fontSize:'11px',fontWeight:'800',color: pct >= 100 ? 'var(--green)' : pct >= 60 ? 'var(--amber)' : 'rgba(255,255,255,0.7)'}}>{val}<span style={{fontWeight:'400',color:'rgba(255,255,255,0.35)'}}>/{goal}</span></span>
+              </div>
+              <div style={{height:'5px',background:'rgba(255,255,255,0.1)',borderRadius:'3px',overflow:'hidden'}}>
+                <div style={{height:'100%',width:`${pct}%`,background: pct>=100?'var(--green)':pct>=60?'var(--amber)':'var(--red)',borderRadius:'3px',transition:'width 0.4s'}} />
+              </div>
+            </div>
+          );
+
+          return (
+            <div style={{
+              background:'var(--navy)', border:'1px solid rgba(255,255,255,0.08)',
+              borderRadius:'10px', padding:'14px 18px', marginBottom:'16px',
+              display:'flex', alignItems:'center', gap:'20px'
+            }}>
+              <div style={{flexShrink:0}}>
+                <div style={{fontSize:'10px',fontWeight:'800',color:'rgba(255,255,255,0.4)',letterSpacing:'0.08em',marginBottom:'3px'}}>TODAY'S PACE</div>
+                <div style={{fontSize:'22px',fontWeight:'800',color:paceColor,fontFamily:"'Syne',sans-serif",lineHeight:1}}>{paceLabel}</div>
+                <div style={{fontSize:'10px',color:'rgba(255,255,255,0.35)',marginTop:'3px'}}>{hLeftStr}</div>
+              </div>
+              <div style={{width:'1px',height:'40px',background:'rgba(255,255,255,0.08)',flexShrink:0}} />
+              <div style={{flex:1,display:'flex',gap:'16px',minWidth:0}}>
+                <Meter label="DIALS"    val={todayDials}    goal={dailyDialGoal}    pct={dialPct} />
+                <Meter label="CONTACTS" val={todayContacts} goal={dailyContactGoal} pct={contPct} />
+                <Meter label="APPTS"    val={todayAppts}    goal={dailyApptGoal}    pct={apptPct} />
+              </div>
+              <div style={{flexShrink:0,textAlign:'right'}}>
+                <div style={{fontSize:'10px',color:'rgba(255,255,255,0.4)',marginBottom:'3px'}}>TIME USED</div>
+                <div style={{fontSize:'16px',fontWeight:'800',color:'rgba(255,255,255,0.7)'}}>{timePct}%</div>
+                <div style={{fontSize:'10px',color:'rgba(255,255,255,0.3)'}}>of work day</div>
+              </div>
+            </div>
+          );
+        })()}
+
 
         {/* ── MISSION STATUS — compact bar ──────────────────────────────── */}
         {(() => {

@@ -61,6 +61,16 @@ export function useTwilioDevice({ upd, logDial }) {
   const dialLead = (lead) => {
     const phoneClean = (lead.phone || '').replace(/\D/g, '');
     if (!phoneClean) return;
+
+    // v3.7 — DNC / removed guard
+    const HARD_STOPS = ['dnc', 'not_interested', 'withdrawn', 'chargeback'];
+    if (HARD_STOPS.includes(lead.disposition) || lead.stage === 'removed') {
+      const label = lead.disposition === 'dnc' ? 'DNC' : lead.stage === 'removed' ? 'Removed' : 'Not Interested';
+      const go = window.confirm(
+        `⛔ ${label} — ${lead.name || 'This lead'} is marked ${label}.\n\nDial anyway? (This may be a compliance risk.)`
+      );
+      if (!go) return;
+    }
     if (useTwilioCalling && twilioDevice) {
       setActiveCallLead(lead);
       setCallStatus('connecting');
