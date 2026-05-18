@@ -1,6 +1,6 @@
 import React from 'react';
 import { BC, isUWStuck } from '../constants.js';
-import { getPhasePriority, isDueToday, getActiveSession, getNextSession } from '../lib/phaseEngine';
+import { getPhasePriority, isDueToday, getActiveSession, getNextSession, SESSIONS } from '../lib/phaseEngine';
 
 const LS_SESSION = 'metka-session-v1';
 
@@ -64,66 +64,69 @@ export default function DialQueuePanel({
       )
     ),
 
-    // ── SECTION 1.5: Session Status Banner ───────────────────────────────────
-    // v3.12 — shows active session name/time and AM/PM slot counts from queue
+    // ── SECTION 1.5: Today Panel ──────────────────────────────────────────────
+    // v3.12 — Two-block daily overview: AM + PM sessions, lead/callback counts
     (() => {
       const now = new Date();
+      const todaySessions = SESSIONS.filter(s => s.day === now.getDay());
+      if (!todaySessions.length) return null;
+
       const activeSess = getActiveSession(now);
       const nextSess   = getNextSession(now);
-      if (!activeSess && !nextSess) return null;
+      const nowMins    = now.getHours() * 60 + now.getMinutes();
+
       const fmtT = (h, m) => {
         const ap  = h >= 12 ? 'PM' : 'AM';
         const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
         return h12 + ':' + String(m).padStart(2, '0') + ' ' + ap;
       };
-      const amCount = queue.filter(l => (l.slot || 'AM') === 'AM').length;
-      const pmCount = queue.filter(l => (l.slot || 'AM') === 'PM').length;
 
       return React.createElement('div', {
-        style: {
-          padding: '7px 12px',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
-          flexShrink: 0,
-          background: activeSess ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.08)'
-        }
+        style: { padding: '8px 10px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }
       },
-        activeSess
-          ? React.createElement('div', null,
-              React.createElement('div', {
-                style: { display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }
-              },
-                React.createElement('div', {
-                  style: { width: 6, height: 6, borderRadius: '50%', background: '#3B82F6', boxShadow: '0 0 5px #3B82F6', flexShrink: 0 }
-                }),
-                React.createElement('div', {
-                  style: { fontSize: '10px', fontWeight: '800', color: '#93C5FD', letterSpacing: '0.06em' }
-                }, activeSess.label.toUpperCase()),
-                React.createElement('div', {
-                  style: { fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginLeft: 'auto', fontWeight: '600' }
-                }, fmtT(activeSess.startH, activeSess.startM) + '–' + fmtT(activeSess.endH, activeSess.endM))
-              ),
-              React.createElement('div', { style: { display: 'flex', gap: '5px' } },
-                React.createElement('div', {
-                  style: { fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.07)', borderRadius: '4px', padding: '2px 7px' }
-                }, 'AM ' + amCount),
-                React.createElement('div', {
-                  style: { fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.07)', borderRadius: '4px', padding: '2px 7px' }
-                }, 'PM ' + pmCount)
-              )
-            )
-          : React.createElement('div', {
-              style: { display: 'flex', alignItems: 'center', gap: '5px' }
+        React.createElement('div', { style: { display: 'flex', gap: '6px' } },
+          todaySessions.map(sess => {
+            const isActive  = !!(activeSess && activeSess.id === sess.id);
+            const isPast    = !isActive && nowMins > sess.endH * 60 + sess.endM;
+            const isNext    = !!(nextSess && nextSess.id === sess.id && !isActive);
+            const leadCount = queue.filter(l => (l.slot || 'AM') === sess.slot).length;
+            const cbCount   = queue.filter(l => (l.slot || 'AM') === sess.slot && l.disposition === 'callback').length;
+
+            const bg     = isActive ? 'rgba(59,130,246,0.13)' : 'rgba(255,255,255,0.04)';
+            const border = isActive ? '1px solid rgba(59,130,246,0.4)' : '1px solid rgba(255,255,255,0.08)';
+
+            return React.createElement('div', {
+              key: sess.id,
+              style: { flex: 1, background: bg, border, borderRadius: '8px', padding: '8px 8px 7px', minWidth: 0, opacity: isPast ? 0.45 : 1 }
             },
+              // Slot label + active indicator
               React.createElement('div', {
-                style: { fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.28)', letterSpacing: '0.06em' }
-              }, 'NEXT:'),
+                style: { fontSize: '10px', fontWeight: '800', color: isActive ? '#93C5FD' : 'rgba(255,255,255,0.55)', letterSpacing: '0.07em', marginBottom: '1px' }
+              }, (isActive ? '⚡ ' : '') + sess.slot),
+              // Time range
               React.createElement('div', {
-                style: { fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)' }
-              }, nextSess.label),
+                style: { fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginBottom: '6px', whiteSpace: 'nowrap' }
+              }, fmtT(sess.startH, sess.startM) + '–' + fmtT(sess.endH, sess.endM)),
+              // Big lead count
               React.createElement('div', {
-                style: { fontSize: '10px', color: 'rgba(255,255,255,0.28)', marginLeft: 'auto', fontWeight: '600' }
-              }, fmtT(nextSess.startH, nextSess.startM))
-            )
+                style: { fontSize: '22px', fontWeight: '900', color: isActive ? '#f1f5f9' : 'rgba(255,255,255,0.5)', lineHeight: 1, marginBottom: '1px' }
+              }, leadCount),
+              // Subtext: leads · N cb
+              React.createElement('div', {
+                style: { fontSize: '9px', color: 'rgba(255,255,255,0.28)', fontWeight: '600', marginBottom: '6px' }
+              }, 'leads' + (cbCount > 0 ? ' · ' + cbCount + ' cb' : '')),
+              // Action button / status
+              isActive
+                ? React.createElement('button', {
+                    onClick: pdMode ? pdStop : pdStart,
+                    style: { width: '100%', minHeight: '28px', background: pdMode ? 'rgba(239,68,68,0.22)' : '#3B82F6', color: pdMode ? '#EF4444' : '#fff', border: pdMode ? '1px solid rgba(239,68,68,0.5)' : 'none', borderRadius: '5px', fontSize: '10px', fontWeight: '800', cursor: 'pointer', letterSpacing: '0.03em' }
+                  }, pdMode ? '⏹ STOP' : '▶ START')
+                : React.createElement('div', {
+                    style: { fontSize: '9px', fontWeight: '700', color: isNext ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.18)', textAlign: 'center', paddingTop: '4px' }
+                  }, isPast ? '— DONE —' : '— NEXT —')
+            );
+          })
+        )
       );
     })(),
 
