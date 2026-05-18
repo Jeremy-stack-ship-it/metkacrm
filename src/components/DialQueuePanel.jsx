@@ -1,7 +1,6 @@
 import React from 'react';
 import { BC, isUWStuck } from '../constants.js';
-import { getPhasePriority } from '../lib/phaseEngine';
-import { isDueToday } from '../lib/phaseEngine';
+import { getPhasePriority, isDueToday, getActiveSession, getNextSession } from '../lib/phaseEngine';
 
 const LS_SESSION = 'metka-session-v1';
 
@@ -64,6 +63,69 @@ export default function DialQueuePanel({
         )
       )
     ),
+
+    // ── SECTION 1.5: Session Status Banner ───────────────────────────────────
+    // v3.12 — shows active session name/time and AM/PM slot counts from queue
+    (() => {
+      const now = new Date();
+      const activeSess = getActiveSession(now);
+      const nextSess   = getNextSession(now);
+      if (!activeSess && !nextSess) return null;
+      const fmtT = (h, m) => {
+        const ap  = h >= 12 ? 'PM' : 'AM';
+        const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+        return h12 + ':' + String(m).padStart(2, '0') + ' ' + ap;
+      };
+      const amCount = queue.filter(l => (l.slot || 'AM') === 'AM').length;
+      const pmCount = queue.filter(l => (l.slot || 'AM') === 'PM').length;
+
+      return React.createElement('div', {
+        style: {
+          padding: '7px 12px',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          flexShrink: 0,
+          background: activeSess ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.08)'
+        }
+      },
+        activeSess
+          ? React.createElement('div', null,
+              React.createElement('div', {
+                style: { display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }
+              },
+                React.createElement('div', {
+                  style: { width: 6, height: 6, borderRadius: '50%', background: '#3B82F6', boxShadow: '0 0 5px #3B82F6', flexShrink: 0 }
+                }),
+                React.createElement('div', {
+                  style: { fontSize: '10px', fontWeight: '800', color: '#93C5FD', letterSpacing: '0.06em' }
+                }, activeSess.label.toUpperCase()),
+                React.createElement('div', {
+                  style: { fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginLeft: 'auto', fontWeight: '600' }
+                }, fmtT(activeSess.startH, activeSess.startM) + '–' + fmtT(activeSess.endH, activeSess.endM))
+              ),
+              React.createElement('div', { style: { display: 'flex', gap: '5px' } },
+                React.createElement('div', {
+                  style: { fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.07)', borderRadius: '4px', padding: '2px 7px' }
+                }, 'AM ' + amCount),
+                React.createElement('div', {
+                  style: { fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.07)', borderRadius: '4px', padding: '2px 7px' }
+                }, 'PM ' + pmCount)
+              )
+            )
+          : React.createElement('div', {
+              style: { display: 'flex', alignItems: 'center', gap: '5px' }
+            },
+              React.createElement('div', {
+                style: { fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.28)', letterSpacing: '0.06em' }
+              }, 'NEXT:'),
+              React.createElement('div', {
+                style: { fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)' }
+              }, nextSess.label),
+              React.createElement('div', {
+                style: { fontSize: '10px', color: 'rgba(255,255,255,0.28)', marginLeft: 'auto', fontWeight: '600' }
+              }, fmtT(nextSess.startH, nextSess.startM))
+            )
+      );
+    })(),
 
     // ── SECTION 2: Call control panel (collapsible) ───────────────────────
     callPanelExpanded && (() => {

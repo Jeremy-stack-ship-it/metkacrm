@@ -14,15 +14,21 @@
 // ============================================================
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { isDueToday } from './phaseEngine.js';
+import { isDueToday, getActiveSession } from './phaseEngine.js';
 
 const ATTEMPT1_SEC = 18;
 const ATTEMPT2_SEC = 30;
 const KEEP_CALL_DISPS = new Set(['callback', 'appointment_booked']);
 
 export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenId, handleDisposition, callStatus }) {
-  // ── PD queue: phase-engine due-today leads only ──
-  const pdQueue = useMemo(() => (queue || []).filter(isDueToday), [queue]);
+  // ── PD queue: due-today leads filtered to active session slot (v3.12) ──
+  // When a session is live, only surface leads whose slot matches the session.
+  // Between sessions: surface all due-today leads so the field is never dark.
+  const pdQueue = useMemo(() => {
+    const base = (queue || []).filter(isDueToday);
+    const sess  = getActiveSession(new Date());
+    return sess ? base.filter(l => (l.slot || 'AM') === sess.slot) : base;
+  }, [queue]);
 
   // ── State ──
   const [pdMode,           setPdMode]           = useState(false);

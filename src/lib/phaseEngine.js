@@ -110,6 +110,10 @@ export const applyPhaseTransition = (lead, dispId) => {
       .sort((a, b) => a.d - b.d)[0];
     if (earliest) patch[earliest.k] = null;
     patch.next_dial = computeNextDial({ ...lead, ...patch });
+    // v3.12 — flip slot on no_answer: never call same person at same time twice
+    if (['no_answer', 'vm_left', 'hung_up'].includes(dispId)) {
+      patch.slot = (lead.slot || 'AM') === 'AM' ? 'PM' : 'AM';
+    }
   }
 
   return patch;
@@ -262,4 +266,108 @@ export const suggestSeqCat = (lead) => {
   if (d === 'no_show') return 'cat2';
   if (d === 'not_interested' && (lead?.stage === 'appointment_set' || lead?.smsSeq)) return 'cat3';
   return 'cat1';
+};
+
+// ── SESSION SLOT SYSTEM (v3.12) ─────────────────────────────────────────────
+// 11 fixed weekly sessions. slot:'AM'|'PM' on each lead controls which session
+// they surface in. Wednesday PM = 6:30–8:00 (late). Saturday AM = 80-lead double.
+// No-answer flips the slot so leads are never called at the same time twice.
+
+export const SESSIONS = [
+  { id:'MON_AM',  day:1, slot:'AM', startH:9,  startM:0,  endH:10, endM:30, capacity:40, label:'Monday AM'    },
+  { id:'MON_PM',  day:1, slot:'PM', startH:16, startM:0,  endH:17, endM:30, capacity:40, label:'Monday PM'    },
+  { id:'TUE_AM',  day:2, slot:'AM', startH:9,  startM:0,  endH:10, endM:30, capacity:40, label:'Tuesday AM'   },
+  { id:'TUE_PM',  day:2, slot:'PM', startH:14, startM:30, endH:16, endM:0,  capacity:40, label:'Tuesday PM'   },
+  { id:'WED_AM',  day:3, slot:'AM', startH:9,  startM:0,  endH:10, endM:30, capacity:40, label:'Wednesday AM' },
+  { id:'WED_PM',  day:3, slot:'PM', startH:18, startM:30, endH:20, endM:0,  capacity:40, label:'Wednesday Late'},
+  { id:'THU_AM',  day:4, slot:'AM', startH:9,  startM:0,  endH:10, endM:30, capacity:40, label:'Thursday AM'  },
+  { id:'THU_PM',  day:4, slot:'PM', startH:16, startM:0,  endH:17, endM:30, capacity:40, label:'Thursday PM'  },
+  { id:'FRI_AM',  day:5, slot:'AM', startH:9,  startM:0,  endH:10, endM:30, capacity:40, label:'Friday AM'    },
+  { id:'FRI_PM',  day:5, slot:'PM', startH:16, startM:0,  endH:17, endM:30, capacity:40, label:'Friday PM'    },
+  { id:'SAT_AM',  day:6, slot:'AM', startH:9,  startM:0,  endH:12, endM:0,  capacity:80, label:'Saturday AM'  },
+];
+
+// Returns the active session for a given time, opening 15 min early.
+// Returns null between sessions or on Sunday.
+export const getActiveSession = (now = new Date()) => {
+  const day = now.getDay();
+  const hhmm = now.getHours() * 60 + now.getMinutes();
+  for (const s of SESSIONS) {
+    if (s.day !== day) continue;
+    const start = s.startH * 60 + s.startM;
+    const end   = s.endH   * 60 + s.endM;
+    if (hhmm >= start - 15 && hhmm < end) return s;
+  }
+  return null;
+};
+
+// Returns the next upcoming session (today or future days this week).
+export const getNextSession = (now = new Date()) => {
+  const day  = now.getDay();
+  const hhmm = now.getHours() * 60 + now.getMinutes();
+  // Remaining sessions today
+  for (const s of SESSIONS) {
+    if (s.day === day && (s.startH * 60 + s.startM) > hhmm) return s;
+  }
+  // Future days, wrapping up to 7
+  for (let i = 1; i <= 7; i++) {
+    const nd = (day + i) % 7;
+    const found = SESSIONS.find(s => s.day === nd);
+    if (found) return found;
+  }
+  return null;
+};
+
+// Assigns the correct slot to a lead. New leads always start AM.
+// Used when adding a lead or on load backfill.
+export const assignSlot = (lead) => {
+  if (lead.slot) return lead.slot;
+  // Infer from next_dial time if available
+  if (lead.next_dial) {
+    const h = new Date(lead.next_dial).getHours();
+    return h >= 13 ? 'PM' : 'AM';
+  }
+  return 'AM';
+};
+
+// Builds the session queue for a given session.
+// Returns up to session.capacity leads: max 15 callbacks (no_sale+no_show),
+// remainder filled with phase-scheduled fresh leads.
+export const buildSessionQueue = (leads, session) => {
+  if (!session) return [];
+  const CALLBACK_DISPS = new Set(['no_sale', 'no_show']);
+  const SKIP_DISPS     = new Set(['dnc','not_interested','withdrawn','chargeback','appointment_booked']);
+  const maxCallbacks   = Math.min(15, Math.round(session.capacity * 0.375));
+
+  const candidates = (leads || []).filter(l => {
+    if (l.phase === 'EXIT')          return false;
+    if (l.stage === 'removed')       return false;
+    if (SKIP_DISPS.has(l.disposition)) return false;
+    if (!isDueToday(l))              return false;
+    return (l.slot || 'AM') === session.slot;
+  });
+
+  const sorted    = [...candidates].sort((a, b) => getPhasePriority(b) - getPhasePriority(a));
+  const callbacks = sorted.filter(l => CALLBACK_DISPS.has(l.disposition));
+  const fresh     = sorted.filter(l => !CALLBACK_DISPS.has(l.disposition));
+
+  const cappedCb    = callbacks.slice(0, maxCallbacks);
+  const freshSlots  = session.capacity - cappedCb.length;
+  const cappedFresh = fresh.slice(0, freshSlots);
+
+  // Priority order: fresh first (P1→P2→P3), callbacks after (cap enforced)
+  return [...cappedFresh, ...cappedCb];
+};
+
+// Counts today's leads per slot — used for session header display.
+export const countTodayBySlot = (leads) => {
+  const SKIP_DISPS = new Set(['dnc','not_interested','withdrawn','chargeback','appointment_booked']);
+  let am = 0, pm = 0;
+  (leads || []).forEach(l => {
+    if (l.phase === 'EXIT')            return;
+    if (SKIP_DISPS.has(l.disposition)) return;
+    if (!isDueToday(l))                return;
+    if ((l.slot || 'AM') === 'AM') am++; else pm++;
+  });
+  return { am, pm };
 };

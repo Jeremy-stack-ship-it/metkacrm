@@ -68,7 +68,7 @@ import { STATE_TZ, STAGES, DISPS, BC, BL, NC, FIELD_MAP_DEFS,
   fmt, fmtDate, currency, chip, inp } from './constants.js';
 // ── Library Modules (v3.6) ───────────────────────────────────────
 import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity } from './lib/supabaseSync.js';
-import { backfillLead, applyPhaseTransition, getPhasePriority, isDueToday, SCHED_COLS } from './lib/phaseEngine.js';
+import { backfillLead, applyPhaseTransition, getPhasePriority, isDueToday, SCHED_COLS, assignSlot } from './lib/phaseEngine.js';
 import { DEFAULT_GOALS, CONTACT_DISPS, ACTIVITY_TYPES, dayKey, TODAY_KEY, lastNDays, weekKeys, monthKeys, aggregateActivity, fmtTime, goalTone, makeActivityManager } from './lib/activityLog.js';
 import { makeLeadManager } from './lib/leads.js';
 window.LZString = LZString; // expose for console debugging
@@ -287,6 +287,21 @@ function MetkaCRM(){
           localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
         } catch(e) { console.warn('[CRM v3.11] Could not persist backfill:', e); }
         console.log(`[CRM v3.11] Backfilled ${backfillCount} Bucket A leads with phase schedules`);
+      }
+
+      // v3.12 — Slot backfill: assign AM/PM slot to any lead missing one
+      let slotCount = 0;
+      const slottedLeads = initialLeads.map(l => {
+        if (l.slot) return l;
+        slotCount++;
+        return { ...l, slot: assignSlot(l) };
+      });
+      if (slotCount > 0) {
+        initialLeads = slottedLeads;
+        try {
+          localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
+        } catch(e) { console.warn('[CRM v3.12] Could not persist slot backfill:', e); }
+        console.log(`[CRM v3.12] Assigned session slots to ${slotCount} leads`);
       }
 
       setLeads(initialLeads);
@@ -1188,6 +1203,7 @@ const queue = useMemo(() => {
     (open && open.disposition === 'appointment_booked' && open.nextCallback && new Date(open.nextCallback) < new Date() && !open.apptConfirmed) &&
       React.createElement(AppointmentConfirmModal, {
         open, upd, logActivity, fmt,
+        onAdvance: () => setOpenId(null),
       })
   );
 }

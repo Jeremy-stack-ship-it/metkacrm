@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 
 // ── APPOINTMENT CONFIRMATION MODAL ──────────────────────────────────────────
 // Full-screen lock — no X, no backdrop close. Must resolve before anything else.
-export default function AppointmentConfirmModal({ open, upd, logActivity, fmt }) {
+export default function AppointmentConfirmModal({ open, upd, logActivity, fmt, onAdvance }) {
   const [confirmReschedule, setConfirmReschedule] = useState(false);
   const [confirmCbDate,     setConfirmCbDate]     = useState('');
   const [confirmCbTime,     setConfirmCbTime]     = useState('');
+  const [resolved,          setResolved]          = useState(false);
 
   if (!open) return null;
   const first = (open.name || '').split(' ')[0];
@@ -19,6 +20,7 @@ export default function AppointmentConfirmModal({ open, upd, logActivity, fmt })
     });
     logActivity('appointment', open.id, 'auto');
     setConfirmReschedule(false);
+    setResolved('showed');
   };
 
   const handleNoShow = () => {
@@ -30,6 +32,7 @@ export default function AppointmentConfirmModal({ open, upd, logActivity, fmt })
       notes: [{ ts: new Date().toISOString(), type: 'call', text: '❌ No-show — appointment was ' + apptTime }, ...(open.notes || [])]
     });
     setConfirmReschedule(false);
+    setResolved('no_show');
   };
 
   const handleConfirmReschedule = () => {
@@ -43,6 +46,7 @@ export default function AppointmentConfirmModal({ open, upd, logActivity, fmt })
     setConfirmReschedule(false);
     setConfirmCbDate('');
     setConfirmCbTime('');
+    setResolved('rescheduled');
   };
 
   return React.createElement('div', {
@@ -79,11 +83,32 @@ export default function AppointmentConfirmModal({ open, upd, logActivity, fmt })
         React.createElement('div', { style: { fontSize: '12px', color: 'var(--t3)', fontWeight: '600' } }, '🗓  Appointment was scheduled for ' + apptTime)
       ),
 
-      React.createElement('div', {
+      !resolved && React.createElement('div', {
         style: { fontSize: '15px', fontWeight: '700', color: 'var(--t1)', marginBottom: '18px', lineHeight: '1.4' }
       }, 'Did ' + first + ' show up?'),
 
-      confirmReschedule
+      resolved
+        ? React.createElement('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '8px 0' } },
+            React.createElement('div', { style: { fontSize: '32px' } },
+              resolved === 'showed' ? '✅' : resolved === 'no_show' ? '❌' : '🔄'
+            ),
+            React.createElement('div', { style: { fontSize: '15px', fontWeight: '700', color: 'var(--t1)', textAlign: 'center' } },
+              resolved === 'showed' ? 'Logged — Presentation In Progress'
+              : resolved === 'no_show' ? 'No-Show Logged — Phase Reset'
+              : 'Rescheduled — New Appointment Set'
+            ),
+            onAdvance && React.createElement('button', {
+              onClick: onAdvance,
+              style: {
+                marginTop: '8px', minHeight: '52px', width: '100%',
+                background: 'var(--sky)', color: '#fff',
+                border: 'none', borderRadius: '10px',
+                fontSize: '15px', fontWeight: '800', cursor: 'pointer',
+                letterSpacing: '0.02em'
+              }
+            }, 'Next Lead →')
+          )
+        : confirmReschedule
         ? React.createElement('div', null,
             React.createElement('div', { style: { fontSize: '11px', fontWeight: '800', color: 'var(--t3)', letterSpacing: '0.08em', marginBottom: '10px' } }, 'SET NEW DATE & TIME'),
             React.createElement('div', { style: { display: 'flex', gap: '8px', marginBottom: '12px' } },
