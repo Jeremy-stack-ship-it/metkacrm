@@ -18,7 +18,7 @@ import { isDueToday, getActiveSession } from './phaseEngine.js';
 
 const ATTEMPT1_SEC = 18;
 const ATTEMPT2_SEC = 30;
-const KEEP_CALL_DISPS = new Set(['callback', 'appointment_booked']);
+const KEEP_CALL_DISPS = new Set(['callback']);
 
 export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenId, handleDisposition, callStatus }) {
   // ── PD queue: due-today leads filtered to active session slot (v3.12) ──

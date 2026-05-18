@@ -6,12 +6,6 @@ import { usePowerDialer } from '../lib/usePowerDialer.js';
 // ── Script token renderer — module scope (no per-render redefinition) ──────
 import DialQueuePanel from './DialQueuePanel';
 import DialRightPanel from './DialRightPanel';
-// ── Power Dialer timing constants — module scope ─────────────────────────────
-const ATTEMPT1_SEC = 18;
-const ATTEMPT2_SEC = 30;
-
-// Dispositions that keep the call live (no auto-hang-up on fire)
-const KEEP_CALL_DISPS = new Set(['callback', 'appointment_booked']);
 
 export default function DialView({
   queue, session, setSession, sessionPaused, setSessionPaused, setDialSessionActive,
@@ -337,9 +331,10 @@ export default function DialView({
           ];
           // Secondary (less frequent) — smaller, muted
           const secondaryDisps = [
-            { id: "not_interested", icon: "🚫", label: "Not Int." },
-            { id: "hung_up",        icon: "📴", label: "Hung Up"  },
-            { id: "dnc",            icon: "⛔", label: "DNC"      },
+            { id: "appointment_booked", icon: "📅", label: "Appt Booked", activeColor: "#6d28d9" },
+            { id: "not_interested",     icon: "🚫", label: "Not Int."    },
+            { id: "hung_up",            icon: "📴", label: "Hung Up"     },
+            { id: "dnc",               icon: "⛔", label: "DNC"         },
           ];
           // Callback preset compute helper
           const presetToDate = (p) => {
@@ -464,6 +459,7 @@ export default function DialView({
                   React.createElement("div", { style: { display: "flex", gap: "5px" } },
                     secondaryDisps.map(d => {
                       const isActive = open.disposition === d.id;
+                      const activeBg = d.activeColor || "var(--navy)";
                       return React.createElement("button", {
                         key: d.id,
                         onClick: () => fireDisp(d.id),
@@ -471,9 +467,9 @@ export default function DialView({
                         "aria-pressed": isActive,
                         style: {
                           minHeight: "36px", flex: "1 1 0", padding: "4px 4px",
-                          background: isActive ? "var(--navy)" : "transparent",
+                          background: isActive ? activeBg : "transparent",
                           color: isActive ? "#fff" : "var(--t3)",
-                          border: "1px solid " + (isActive ? "var(--navy)" : "var(--border)"),
+                          border: "1px solid " + (isActive ? activeBg : "var(--border)"),
                           borderRadius: "8px", fontSize: "11px", fontWeight: isActive ? "600" : "400",
                           cursor: "pointer", display: "flex", flexDirection: "row", alignItems: "center",
                           justifyContent: "center", gap: "5px", transition: "all 0.1s ease",
