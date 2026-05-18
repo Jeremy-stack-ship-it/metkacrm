@@ -49,7 +49,7 @@ export default function DialView({
     pdSessionLog,
     currentPdLead, pdBg, pdAccent,
     pdStart, pdStop, fireDisp,
-  } = usePowerDialer({ queue, dialLead, twilioDevice, setOpenId, handleDisposition, callStatus });
+  } = usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenId, handleDisposition, callStatus });
 
   // ── Local view state ────────────────────────────────────────────────────
   const [callPanelExpanded, setCallPanelExpanded] = useState(true);
@@ -188,9 +188,9 @@ export default function DialView({
                   // Manual appt popover
                   manualApptOpen && React.createElement("div", {
                     style: {
-                      position: "absolute", bottom: "calc(100% + 6px)", left: 0, right: 0, zIndex: 200,
+                      position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 200,
                       background: "var(--surface)", border: "2px solid #8B5CF6", borderRadius: "12px",
-                      padding: "14px", boxShadow: "0 -6px 24px rgba(0,0,0,0.18)"
+                      padding: "14px", boxShadow: "0 6px 24px rgba(0,0,0,0.18)"
                     }
                   },
                     React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" } },

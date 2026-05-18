@@ -20,7 +20,7 @@ const ATTEMPT1_SEC = 18;
 const ATTEMPT2_SEC = 30;
 const KEEP_CALL_DISPS = new Set(['callback', 'appointment_booked']);
 
-export function usePowerDialer({ queue, dialLead, twilioDevice, setOpenId, handleDisposition, callStatus }) {
+export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenId, handleDisposition, callStatus }) {
   // ── PD queue: phase-engine due-today leads only ──
   const pdQueue = useMemo(() => (queue || []).filter(isDueToday), [queue]);
 
@@ -82,11 +82,14 @@ export function usePowerDialer({ queue, dialLead, twilioDevice, setOpenId, handl
       return;
     }
     const locked = [...pdQueue];
+    // If a lead is already open and it's in the queue, start there instead of index 0
+    const openIdx = openId ? locked.findIndex(l => l.id === openId) : -1;
+    const startIdx = openIdx >= 0 ? openIdx : 0;
     setPdLockedQueue(locked);
-    setPdIdx(0); setPdAttempt(1); setPdStatus('dialing'); setPdMode(true);
+    setPdIdx(startIdx); setPdAttempt(1); setPdStatus('dialing'); setPdMode(true);
     setPdSessionStart(Date.now()); setPdSessionLog(null);
 
-    const lead = locked[0];
+    const lead = locked[startIdx];
     setOpenId(lead.id);
     dialLead(lead);
 
@@ -98,7 +101,7 @@ export function usePowerDialer({ queue, dialLead, twilioDevice, setOpenId, handl
       pdClearTimers();
       setPdAttempt(2); setPdStatus('pausing'); setPdPendingAttempt2(true);
     }, ATTEMPT1_SEC * 1000);
-  }, [pdQueue, dialLead, twilioDevice, setOpenId, pdClearTimers]);
+  }, [pdQueue, openId, dialLead, twilioDevice, setOpenId, pdClearTimers]);
 
   // ── Stop PD session ──
   const pdStop = useCallback(() => {
