@@ -160,7 +160,17 @@ export const isDueToday = (lead) => {
     return cb <= endOfDay;
   }
 
-  return lead.bucket === 'A';
+  // v3.11 — Bucket A fallback: only truly fresh leads (no schedule built yet, assigned ≤2 days ago)
+  // Leads with no next_dial that are older than 2 days should have been backfilled on load —
+  // if they still lack a schedule, don't flood the Today queue with all 466 at once.
+  if (lead.bucket === 'A') {
+    const assigned = lead.assignDate ? new Date(lead.assignDate) : null;
+    if (!assigned) return false;
+    const daysOld = (Date.now() - assigned.getTime()) / 86400000;
+    return daysOld <= 2;
+  }
+
+  return false;
 };
 
 export const backfillLead = (lead) => {

@@ -268,6 +268,27 @@ function MetkaCRM(){
           initialLeads = JSON.parse(decompressed || r);
         } catch { initialLeads = SEEDS; }
       }
+      // v3.11 — One-time backfill: build phase schedule for any Bucket A lead missing one.
+      // Prevents all 466 leads from flooding the Today queue simultaneously.
+      // Safe: only touches leads with no existing phase; skips EXIT/DNC leads.
+      const SKIP_DISPS = new Set(['dnc','not_interested','withdrawn','chargeback','appointment_booked','no_sale']);
+      let backfillCount = 0;
+      const backfilledLeads = initialLeads.map(l => {
+        if (l.bucket !== 'A') return l;
+        if (l.phase) return l; // already has a schedule
+        if (SKIP_DISPS.has(l.disposition)) return l;
+        backfillCount++;
+        return backfillLead(l);
+      });
+      if (backfillCount > 0) {
+        initialLeads = backfilledLeads;
+        // Persist immediately so backfill doesn't re-run next load
+        try {
+          localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
+        } catch(e) { console.warn('[CRM v3.11] Could not persist backfill:', e); }
+        console.log(`[CRM v3.11] Backfilled ${backfillCount} Bucket A leads with phase schedules`);
+      }
+
       setLeads(initialLeads);
 
       // Load Scripts & Templates
