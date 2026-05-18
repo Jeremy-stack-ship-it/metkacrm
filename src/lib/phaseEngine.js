@@ -135,8 +135,9 @@ export const isDueToday = (lead) => {
   if (['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked'].includes(lead.disposition)) return false;
 
   // v3.7 — don't resurface a lead already contacted today unless a callback is now due
+  // v3.10 fix: compare date strings directly (avoids UTC midnight parse timezone offset)
   if (lead.lastContact) {
-    const contactedToday = new Date(lead.lastContact).toDateString() === new Date().toDateString();
+    const contactedToday = lead.lastContact === new Date().toLocaleDateString('en-CA');
     if (contactedToday) {
       const cbDue = lead.nextCallback && new Date(lead.nextCallback) <= new Date();
       if (!cbDue) return false;
@@ -149,6 +150,16 @@ export const isDueToday = (lead) => {
     endOfDay.setHours(23, 59, 59, 999);
     return due <= endOfDay;
   }
+
+  // Bucket B: surface when a callback is due/overdue today
+  if (lead.bucket === 'B') {
+    if (!lead.nextCallback) return false;
+    const cb = new Date(lead.nextCallback);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+    return cb <= endOfDay;
+  }
+
   return lead.bucket === 'A';
 };
 

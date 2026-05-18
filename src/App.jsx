@@ -695,7 +695,7 @@ const saveLeads = useCallback((next, opts = {}) => {
       ? { notes: [{ ts: new Date().toISOString(), type: "call", text: noteText }, ...(open.notes || [])] }
       : {};
 
-    upd(open.id, {disposition: dispId, lastContact: new Date().toISOString().split("T")[0], ...stagePatch, ...phasePatch, ...cbPatch, ...notePatch});
+    upd(open.id, {disposition: dispId, lastContact: new Date().toLocaleDateString('en-CA'), ...stagePatch, ...phasePatch, ...cbPatch, ...notePatch});
 
     // v3.4 — advance to next lead (nextId captured pre-upd, no index-jump risk)
     if (inDialer) {
@@ -721,10 +721,10 @@ const queue = useMemo(() => {
   // Dispositions that mean "done for now — schedule out, leave queue"
   // Only these trigger hiding/sinking. Dialing alone (lastContact stamp) does NOT.
   const SINK_DISPS = ['no_answer','vm_left','follow_up_needed','chargeback','hung_up'];
-  const todayStr = new Date().toDateString();
+  const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
   const dispositionedToday = (l) =>
     SINK_DISPS.includes(l.disposition) &&
-    l.lastContact && new Date(l.lastContact).toDateString() === todayStr;
+    l.lastContact && l.lastContact === todayStr;
 
   const filtered = [...leads].filter(l => {
     // Ghost Protocol: hard-remove all terminal dispositions + removed stage
@@ -1020,7 +1020,7 @@ const queue = useMemo(() => {
               chargeback:         "removed",
             };
             const stagePatch = DISP_STAGE_MAP[dispId] ? { stage: DISP_STAGE_MAP[dispId] } : {};
-            upd(id, { disposition: dispId, lastContact: new Date().toISOString().split("T")[0], ...stagePatch, ...phasePatch });
+            upd(id, { disposition: dispId, lastContact: new Date().toLocaleDateString('en-CA'), ...stagePatch, ...phasePatch });
           },
           onOpen: (id) => { setOpenId(id); setPrevView("today"); setView("contact"); setDetailTab("activity"); },
           onUpdate: upd,
