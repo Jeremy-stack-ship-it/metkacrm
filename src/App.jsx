@@ -922,12 +922,19 @@ const queue = useMemo(() => {
   useEffect(() => {
     const handler = (e) => {
       if (!e.data || e.data.event !== 'calendly.event_scheduled') return;
-      const startTime = e.data.payload?.event?.start_time;
+      const payload   = e.data.payload || {};
+      const startTime = payload.event?.start_time;
       if (!startTime || !calendlyTargetId) return;
+      // Build a structured note with Calendly event details (v3.12)
+      const eventName  = payload.event?.name || payload.event_type?.name || 'Appointment';
+      const startLocal = new Date(startTime).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+      const targetLead = leads.find(l => l.id === calendlyTargetId);
+      const newNote    = { ts: new Date().toISOString(), type: 'appointment', text: `📅 Calendly booked — ${eventName} · ${startLocal}` };
       upd(calendlyTargetId, {
         disposition: 'appointment_booked',
         stage: 'appointment_set',
-        nextCallback: new Date(startTime).toISOString()
+        nextCallback: new Date(startTime).toISOString(),
+        notes: [...(targetLead?.notes || []), newNote]
       });
       logActivity('appointment', calendlyTargetId, 'auto');
       setCalendlyTargetId(null);
