@@ -68,8 +68,11 @@ export default function SettingsView({
             onClick:()=>{
               const amCount = leads.filter(l=>(l.slot||'AM')==='AM').length;
               const pmCount = leads.filter(l=>l.slot==='PM').length;
-              if(!window.confirm(`Current distribution:\n• AM: ${amCount} leads\n• PM: ${pmCount} leads\n\nThis will redistribute all leads ~50/50 using a deterministic hash. Existing slot assignments will be overwritten.\n\nProceed?`)) return;
+              const freshCount = leads.filter(l=>!l.next_dial).length;
+              if(!window.confirm(`Current distribution:\n• AM: ${amCount} leads\n• PM: ${pmCount} leads\n\nThis will redistribute ${freshCount} unscheduled leads ~50/50.\nLeads already scheduled by the phase engine keep their slot.\n\nProceed?`)) return;
               const rebalanced = leads.map(l => {
+                // Only rebalance fresh leads — phase-scheduled leads keep their slot intact
+                if (l.next_dial) return l;
                 const newSlot = assignSlot({ ...l, slot: undefined });
                 return { ...l, slot: newSlot };
               });
