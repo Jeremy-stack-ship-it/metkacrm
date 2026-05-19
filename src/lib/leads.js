@@ -205,7 +205,7 @@ export const makeLeadManager = (
       firstName: newL.name.split(" ")[0] || "",
             lastName: newL.name.split(" ").slice(1).join(" ") || ""
     };
-    const l = { ...backfillLead(rawL), slot: 'AM' }; // v3.1 phase schedule + v3.12 session slot
+    const l = { ...backfillLead(rawL), slot: assignSlot(rawL) }; // v3.1 phase schedule + v3.14 hash-based slot
     saveLeads([l, ...leads]);
     setNewL({ name: "", phone: "", state: "OK", bucket: "A", leadType: "Mortgage Protection" });
     setAddForm(false);

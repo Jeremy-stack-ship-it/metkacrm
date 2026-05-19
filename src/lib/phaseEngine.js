@@ -321,13 +321,10 @@ export const getNextSession = (now = new Date()) => {
 // Assigns the correct slot to a lead. Distributes 50/50 AM/PM.
 // No-answer flips the slot after each attempt so same-time repeats never happen.
 // Used when adding a lead or on backfill.
+// v3.14 — removed next_dial time inference: buildSchedule always sets 9 AM so all
+// scheduled leads were landing in AM. Now uses deterministic id hash for 50/50 split.
 export const assignSlot = (lead) => {
   if (lead.slot) return lead.slot;
-  // Infer from next_dial time if available
-  if (lead.next_dial) {
-    const h = new Date(lead.next_dial).getHours();
-    return h >= 13 ? 'PM' : 'AM';
-  }
   // Distribute new leads 50/50 using a deterministic hash of the lead id
   // so AM and PM each get a full independent pool of fresh leads.
   if (lead.id) {
