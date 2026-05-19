@@ -71,7 +71,6 @@ import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll,
 import { backfillLead, applyPhaseTransition, getPhasePriority, isDueToday, SCHED_COLS, assignSlot } from './lib/phaseEngine.js';
 import { DEFAULT_GOALS, CONTACT_DISPS, ACTIVITY_TYPES, dayKey, TODAY_KEY, lastNDays, weekKeys, monthKeys, aggregateActivity, fmtTime, goalTone, makeActivityManager } from './lib/activityLog.js';
 import { makeLeadManager } from './lib/leads.js';
-window.LZString = LZString; // expose for console debugging
 import LoginGate, { useAuth } from './components/LoginGate.jsx';
 import DEFAULT_SCRIPTS from './lib/defaultScripts.js';
 import { parseBucket, parseDisp, parseStage, autoDetectMapping, parseCSV } from './lib/csvParser.js';
@@ -92,7 +91,6 @@ import { useTwilioDevice } from './lib/useTwilioDevice.js';
 // (All Supabase functions imported from lib/supabaseSync.js v3.6)
 import { supabase } from './lib/supabaseSync.js';
 import AppointmentConfirmModal from './components/AppointmentConfirmModal';
-window.supabase = supabase; // expose for console debugging
 
 // ── TWILIO COMMS LOADER ──────────────────────────────────────────
 // TODO: implement real Twilio REST call when Messages tab is activated.

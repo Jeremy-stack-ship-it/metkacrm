@@ -1,10 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
 // ── SUPABASE CLIENT ──────────────────────────────────────────────
-const SUPA_URL  = "https://brskbcdaefmkcgctlhlb.supabase.co";
-const SUPA_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyc2tiY2RhZWZta2NnY3RsaGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczODExODAsImV4cCI6MjA5Mjk1NzE4MH0.SY8hQHmWKxBjSNNAHGVz7zU0skF8Km98Clbj8ALPamE";
+const SUPA_URL  = import.meta.env.VITE_SUPABASE_URL;
+const SUPA_KEY  = import.meta.env.VITE_SUPABASE_KEY;
 const supabase  = createClient(SUPA_URL, SUPA_KEY);
-window.supabase = supabase; // expose for console debugging
 
 // Upsert a single lead to Supabase (non-blocking).
 // Returns a promise that rejects on error so callers can update sync status.

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const PASSWORD    = "Ministry2026!";
+const PASSWORD    = import.meta.env.VITE_CRM_PASSWORD;
 const SESSION_KEY = "metka-auth-v1";
 const SESSION_TTL = 1000 * 60 * 60 * 12;
 
