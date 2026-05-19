@@ -1193,7 +1193,7 @@ const queue = useMemo(() => {
           financialConfig, setFinancialConfig,
           financialDraft, setFinancialDraft,
           financialSaved, setFinancialSaved,
-          backfillLead, SCHED_COLS,
+          backfillLead, SCHED_COLS, assignSlot,
           backupNeedsAlert, backupDaysSince, backupBg, backupBorder, backupColor,
           backupExists, restoreBackup,
           templates, scripts,

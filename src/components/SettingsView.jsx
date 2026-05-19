@@ -13,7 +13,7 @@ export default function SettingsView({
   financialConfig, setFinancialConfig,
   financialDraft, setFinancialDraft,
   financialSaved, setFinancialSaved,
-  backfillLead, SCHED_COLS,
+  backfillLead, SCHED_COLS, assignSlot,
   backupNeedsAlert, backupDaysSince, backupBg, backupBorder, backupColor,
   backupExists, restoreBackup,
   templates, scripts,
@@ -61,7 +61,26 @@ export default function SettingsView({
               alert("✅ Phase data cleared. Now click Activate Phase System to re-assign.");
             },
             style:{padding:"10px 20px",background:"var(--surface-2)",color:"var(--t2)",border:"1px solid var(--border)",borderRadius:"8px",fontSize:"13px",fontWeight:"600",cursor:"pointer"}
-          },"↺ Reset All Phases")
+          },"↺ Reset All Phases"),
+
+          // Balance AM/PM Slots button
+          React.createElement("button",{
+            onClick:()=>{
+              const amCount = leads.filter(l=>(l.slot||'AM')==='AM').length;
+              const pmCount = leads.filter(l=>l.slot==='PM').length;
+              if(!window.confirm(`Current distribution:\n• AM: ${amCount} leads\n• PM: ${pmCount} leads\n\nThis will redistribute all leads ~50/50 using a deterministic hash. Existing slot assignments will be overwritten.\n\nProceed?`)) return;
+              const rebalanced = leads.map(l => {
+                const newSlot = assignSlot({ ...l, slot: undefined });
+                return { ...l, slot: newSlot };
+              });
+              const newAm = rebalanced.filter(l=>l.slot==='AM').length;
+              const newPm = rebalanced.filter(l=>l.slot==='PM').length;
+              setLeads(rebalanced);
+              saveLeads(rebalanced);
+              alert(`✅ Slots rebalanced.\n• AM: ${newAm} leads\n• PM: ${newPm} leads`);
+            },
+            style:{padding:"10px 20px",background:"var(--surface-2)",color:"var(--t2)",border:"1px solid var(--border)",borderRadius:"8px",fontSize:"13px",fontWeight:"600",cursor:"pointer"}
+          },"⚖ Balance AM/PM Slots")
         ),
         React.createElement("div",{style:{marginTop:"14px",padding:"10px 14px",background:"var(--surface-2)",borderRadius:"8px",border:"1px solid var(--border)"}},
           React.createElement("div",{style:{fontSize:"11px",fontWeight:"700",color:"var(--t3)",marginBottom:"6px",letterSpacing:"0.5px"}},"PHASE SUMMARY"),
@@ -316,7 +335,7 @@ export default function SettingsView({
             onClick:()=>{ if(window.confirm("Restore your pre-import backup? This will replace current leads.")) restoreBackup(); },
             style:{padding:"10px 22px",background:"var(--amber-dim)",color:"var(--amber)",border:"1px solid var(--amber)",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}
           },"↩ Restore Pre-Import Backup"),
-          React.createElement("button",{onClick:()=>{if(confirm("WIPE ALL LEADS? This cannot be undone.\n\nExport a backup first.")){saveLeads([]);alert("All leads cleared. Ready for fresh import.");}},style:{padding:"10px 22px",background:"var(--red-dim)",color:"var(--red)",border:"1px solid #FCA5A5",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}},"\U0001f5d1 Wipe All Leads")
+          React.createElement("button",{onClick:()=>{if(confirm("WIPE ALL LEADS? This cannot be undone.\n\nExport a backup first.")){saveLeads([]);alert("All leads cleared. Ready for fresh import.");}},style:{padding:"10px 22px",background:"var(--red-dim)",color:"var(--red)",border:"1px solid #FCA5A5",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}},"🗑 Wipe All Leads")
         )
       )
     )

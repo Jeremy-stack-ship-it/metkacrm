@@ -318,14 +318,22 @@ export const getNextSession = (now = new Date()) => {
   return null;
 };
 
-// Assigns the correct slot to a lead. New leads always start AM.
-// Used when adding a lead or on load backfill.
+// Assigns the correct slot to a lead. Distributes 50/50 AM/PM.
+// No-answer flips the slot after each attempt so same-time repeats never happen.
+// Used when adding a lead or on backfill.
 export const assignSlot = (lead) => {
   if (lead.slot) return lead.slot;
   // Infer from next_dial time if available
   if (lead.next_dial) {
     const h = new Date(lead.next_dial).getHours();
     return h >= 13 ? 'PM' : 'AM';
+  }
+  // Distribute new leads 50/50 using a deterministic hash of the lead id
+  // so AM and PM each get a full independent pool of fresh leads.
+  if (lead.id) {
+    let hash = 0;
+    for (let i = 0; i < Math.min(lead.id.length, 8); i++) hash += lead.id.charCodeAt(i);
+    return hash % 2 === 0 ? 'AM' : 'PM';
   }
   return 'AM';
 };
