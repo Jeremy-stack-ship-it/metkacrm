@@ -449,6 +449,20 @@ const saveLeads = useCallback((next, opts = {}) => {
   }
 // eslint-disable-next-line react-hooks/exhaustive-deps
 }, []);
+  // v3.12 — single-lead persist used by upd() functional updater (avoids stale-closure race in PD mode)
+  // Writes compressed localStorage + fires Supabase single-row upsert. Does NOT call setLeads (already done).
+  const persistLeads = useCallback((next, updatedLead) => {
+    try {
+      const stringData = JSON.stringify(next);
+      const compressed = LZString.compressToUTF16(stringData);
+      localStorage.setItem(LS_LEADS, compressed);
+    } catch (e) {
+      alert("Storage Full! Even with compression, the browser cannot save more leads.");
+    }
+    if (updatedLead) sbUpsertLead(updatedLead);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const saveScripts=next=>{setScripts(next);try{localStorage.setItem(LS_SCRIPTS,JSON.stringify(next));}catch{}};
   const saveTemplates=next=>{setTemplates(next);try{localStorage.setItem("metka-templates-v1",JSON.stringify(next));}catch{}};
 
@@ -476,7 +490,8 @@ const saveLeads = useCallback((next, opts = {}) => {
       leads, activity, saveLeads, saveActivity, setOpenId, setView, prevView,
       newL, setNewL, setDupeLead, setAddForm,
       cbDate, cbTime, setCbDate, setCbTime,
-      noteText, setNoteText, noteType
+      noteText, setNoteText, noteType,
+      setLeads, persistLeads   // v3.12 — functional updater + single-lead persist
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [leads, activity, saveLeads, saveActivity, prevView,
@@ -1203,7 +1218,7 @@ const queue = useMemo(() => {
     ),
 
 
-        // ── FLOATING CALL CONTROL BAR ──
+           // ── FLOATING CALL CONTROL BAR ──
     view !== 'dial' && React.createElement(CallBar, {activeCall, callStatus, callElapsed, callMuted, activeCallLead, toggleMute, hangUp}),
 
     // ── APPOINTMENT CONFIRMATION MODAL ── full-screen lock, no escape

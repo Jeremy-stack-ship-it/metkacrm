@@ -28,68 +28,76 @@ export const makeLeadManager = (
   setCbTime,
   noteText,
   setNoteText,
-  noteType
+  noteType,
+  setLeads,        // v3.12 — functional updater to prevent stale-closure race in PD mode
+  persistLeads     // v3.12 — (next: Lead[]) => void  saves to localStorage + Supabase single row
 ) => {
   // Single-lead update: local save (skip bulk push) then push just this row
   // v2.2 — auto-stamps submittedDate / policyIssueDate on stage transitions
   // v2.3 — auto-logs activity on disp→contact and stage→appointment_set transitions
+  // v3.12 — uses setLeads(prev=>) to avoid stale-closure race condition in Power Dialer mode
   const upd = (id, p) => {
-    const cur = leads.find(l => l.id === id);
     let patch = { ...p };
+    let queued = []; // [{type, leadId}]
 
-    // Track which activity events to fire AFTER state has been saved
-    const queued = []; // [{type, leadId}]
+    // Use functional updater — always reads the *current* leads array, not the memo snapshot.
+    // This prevents two rapid PD dispositions from clobbering each other.
+    setLeads(prev => {
+      const cur = prev.find(l => l.id === id);
 
-    if (cur && patch.stage && patch.stage !== cur.stage) {
-      const nowIso = new Date().toISOString();
-      const baseNotes = patch.notes ? [...patch.notes] : [...(cur.notes || [])];
-      if (patch.stage === "app_submitted" && !cur.submittedDate) {
-        patch.submittedDate = nowIso;
-        baseNotes.unshift({ ts: nowIso, type: "note", text: "📨 Stage advanced to App Submitted — UW clock started." });
+      if (cur && patch.stage && patch.stage !== cur.stage) {
+        const nowIso = new Date().toISOString();
+        const baseNotes = patch.notes ? [...patch.notes] : [...(cur.notes || [])];
+        if (patch.stage === "app_submitted" && !cur.submittedDate) {
+          patch.submittedDate = nowIso;
+          baseNotes.unshift({ ts: nowIso, type: "note", text: "📨 Stage advanced to App Submitted — UW clock started." });
+        }
+        if (patch.stage === "issued" && !cur.policyIssueDate) {
+          patch.policyIssueDate = nowIso;
+          baseNotes.unshift({ ts: nowIso, type: "note", text: "✅ Policy Issued." });
+        }
+        if (patch.stage === "appointment_set" && cur.stage !== "appointment_set") {
+          queued.push({ type: "appointment", leadId: id });
+        }
+        patch.notes = baseNotes;
       }
-      if (patch.stage === "issued" && !cur.policyIssueDate) {
-        patch.policyIssueDate = nowIso;
-        baseNotes.unshift({ ts: nowIso, type: "note", text: "✅ Policy Issued." });
-      }
-      // v2.3: stage entering appointment_set = an appointment was set
-      if (patch.stage === "appointment_set" && cur.stage !== "appointment_set") {
-        queued.push({ type: "appointment", leadId: id });
-      }
-      patch.notes = baseNotes;
-    }
 
-    // v2.3: disposition transition INTO a real-conversation state = a contact
-    if (cur && patch.disposition && patch.disposition !== cur.disposition) {
-      const nowIsContact = CONTACT_DISPS.includes(patch.disposition);
-      const wasContact = CONTACT_DISPS.includes(cur.disposition || "");
-      if (nowIsContact && !wasContact) {
-        queued.push({ type: "contact", leadId: id });
+      if (cur && patch.disposition && patch.disposition !== cur.disposition) {
+        const nowIsContact = CONTACT_DISPS.includes(patch.disposition);
+        const wasContact = CONTACT_DISPS.includes(cur.disposition || "");
+        if (nowIsContact && !wasContact) {
+          queued.push({ type: "contact", leadId: id });
+        }
       }
-    }
 
-    const next = leads.map(l => l.id === id ? { ...l, ...patch } : l);
-    saveLeads(next, { skipSupa: true });
-    // v2.6 — push single updated lead to Supabase instantly
-    const updated = next.find(l => l.id === id);
-    if (updated) sbUpsertLead(updated);
+      const next = prev.map(l => l.id === id ? { ...l, ...patch } : l);
 
-    // v2.3 — fire queued activity events (after lead update so leadName resolves)
-    if (queued.length) {
-      const ts = new Date().toISOString();
-      const evs = queued.map((q, i) => {
-        const lead = next.find(l => l.id === q.leadId);
-        return {
-          id: `a_${Date.now()}_${i}_${Math.random().toString(36).slice(2, 5)}`,
-          ts,
-          date: dayKey(ts),
-          type: q.type,
-          leadId: q.leadId,
-          leadName: lead ? lead.name : null,
-          source: "auto"
-        };
-      });
-      saveActivity([...evs, ...activity]);
-    }
+      // Persist outside render cycle (setTimeout = after React commits this state)
+      const updated = next.find(l => l.id === id);
+      if (updated) {
+        setTimeout(() => persistLeads(next, updated), 0);
+      }
+
+      // Fire queued activity events
+      if (queued.length) {
+        const ts = new Date().toISOString();
+        const evs = queued.map((q, i) => {
+          const lead = next.find(l => l.id === q.leadId);
+          return {
+            id: `a_${Date.now()}_${i}_${Math.random().toString(36).slice(2, 5)}`,
+            ts,
+            date: dayKey(ts),
+            type: q.type,
+            leadId: q.leadId,
+            leadName: lead ? lead.name : null,
+            source: "auto"
+          };
+        });
+        setTimeout(() => saveActivity([...evs, ...activity]), 0);
+      }
+
+      return next;
+    });
   };
 
   const addNote = (id) => {
