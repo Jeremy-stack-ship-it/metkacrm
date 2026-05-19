@@ -30,7 +30,8 @@ export const makeLeadManager = (
   setNoteText,
   noteType,
   setLeads,        // v3.12 — functional updater to prevent stale-closure race in PD mode
-  persistLeads     // v3.12 — (next: Lead[]) => void  saves to localStorage + Supabase single row
+  persistLeads,    // v3.12 — (next: Lead[]) => void  saves to localStorage + Supabase single row
+  appendActivity   // v3.13 — functional updater for activity events (fixes stale closure / 0 contacts bug)
 ) => {
   // Single-lead update: local save (skip bulk push) then push just this row
   // v2.2 — auto-stamps submittedDate / policyIssueDate on stage transitions
@@ -93,7 +94,7 @@ export const makeLeadManager = (
             source: "auto"
           };
         });
-        setTimeout(() => saveActivity([...evs, ...activity]), 0);
+        setTimeout(() => appendActivity(evs), 0); // v3.13 — functional updater, no stale activity snapshot
       }
 
       return next;
@@ -123,7 +124,7 @@ export const makeLeadManager = (
         leadName: lead ? lead.name : null,
         source: "auto"
       };
-      saveActivity([ev, ...activity]);
+      appendActivity([ev]); // v3.13 — functional updater
       sbAppendActivity(ev).catch(() => {});
     }
     setNoteText("");
@@ -152,7 +153,7 @@ export const makeLeadManager = (
       leadName: lead.name,
       source: "auto"
     };
-    saveActivity([ev, ...activity]);
+    appendActivity([ev]); // v3.13 — functional updater
     sbAppendActivity(ev).catch(() => {});
   };
 
@@ -202,7 +203,7 @@ export const makeLeadManager = (
     };
     const l = { ...backfillLead(rawL), slot: 'AM' }; // v3.1 phase schedule + v3.12 session slot
     saveLeads([l, ...leads]);
-    setNewL({ name: "", phone: "", state: "OK", bucket: "A", leadType: "Mortgage Protection" });
+        setNewL({ name: "", phone: "", state: "OK", bucket: "A", leadType: "Mortgage Protection" });
     setAddForm(false);
     setOpenId(l.id);
   };

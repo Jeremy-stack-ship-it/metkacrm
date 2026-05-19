@@ -474,6 +474,16 @@ const saveLeads = useCallback((next, opts = {}) => {
     try{localStorage.setItem(LS_ACTIVITY,JSON.stringify(next));}catch{}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
+  // v3.13 — Functional-updater append for activity events fired inside leads.js upd().
+  // Uses setActivity(prev=>) so it always reads current state — fixes 0/20 CONTACTS / 0/5 APPTS bug
+  // caused by stale `activity` snapshot in makeLeadManager closure during rapid PD dialing.
+  const appendActivity = useCallback(evs => {
+    setActivity(prev => {
+      const next = [...evs, ...prev];
+      try { localStorage.setItem(LS_ACTIVITY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
   const saveGoals=next=>{
     setGoals(next);
     try{localStorage.setItem(LS_GOALS,JSON.stringify(next));}catch{}
@@ -491,10 +501,11 @@ const saveLeads = useCallback((next, opts = {}) => {
       newL, setNewL, setDupeLead, setAddForm,
       cbDate, cbTime, setCbDate, setCbTime,
       noteText, setNoteText, noteType,
-      setLeads, persistLeads   // v3.12 — functional updater + single-lead persist
+      setLeads, persistLeads,  // v3.12 — functional updater + single-lead persist
+      appendActivity           // v3.13 — functional updater for activity events (fixes stale closure)
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [leads, activity, saveLeads, saveActivity, prevView,
+    [leads, saveLeads, saveActivity, prevView,
      newL, cbDate, cbTime, noteText, setNoteText, noteType]
   );
   const { undoLastActivity, logActivity } = activityMgr;
@@ -1219,7 +1230,7 @@ const queue = useMemo(() => {
 
 
            // ── FLOATING CALL CONTROL BAR ──
-    view !== 'dial' && React.createElement(CallBar, {activeCall, callStatus, callElapsed, callMuted, activeCallLead, toggleMute, hangUp}),
+        view !== 'dial' && React.createElement(CallBar, {activeCall, callStatus, callElapsed, callMuted, activeCallLead, toggleMute, hangUp}),
 
     // ── APPOINTMENT CONFIRMATION MODAL ── full-screen lock, no escape
     (open && open.disposition === 'appointment_booked' && open.nextCallback && new Date(open.nextCallback) < new Date() && !open.apptConfirmed) &&
