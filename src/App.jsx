@@ -492,8 +492,8 @@ const saveLeads = useCallback((next, opts = {}) => {
   // Wrapped in useMemo so downstream components don't re-render on unrelated state changes.
   // saveLeads + saveActivity are useCallback([]) — stable refs, safe as useMemo deps.
   const activityMgr = useMemo(
-    () => makeActivityManager(setActivity, leads, saveActivity),
-    [leads, saveActivity] // eslint-disable-line react-hooks/exhaustive-deps
+    () => makeActivityManager(setActivity, leads, saveActivity, appendActivity), // v3.13 — appendActivity fixes manual +1 button
+    [leads, saveActivity, appendActivity] // eslint-disable-line react-hooks/exhaustive-deps
   );
   const leadMgr = useMemo(
     () => makeLeadManager(

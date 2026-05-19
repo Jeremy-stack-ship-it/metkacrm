@@ -114,7 +114,7 @@ export const goalTone = (val, goal) => {
 // Create activity log management functions. These work with state via callbacks.
 // saveActivity and leads must be passed in from the component.
 
-export const makeActivityManager = (setActivity, leads, saveActivity) => {
+export const makeActivityManager = (setActivity, leads, saveActivity, appendActivity) => {
   const undoLastActivity = (activity) => {
     if (activity.length === 0) return;
     const nextActivity = [...activity];
@@ -126,7 +126,9 @@ export const makeActivityManager = (setActivity, leads, saveActivity) => {
 
   // Append a single activity event. source: 'auto' (system-fired) or 'manual' (+1 button).
   // v3.5 — pushes only the new event to Supabase (sbAppendActivity), never rewrites the log.
-  const logActivity = (type, leadId, source, activity) => {
+  // v3.13 — uses appendActivity functional updater; removed stale `activity` param from signature.
+  //          Manual +1 button was broken because callers never passed the 4th arg ([ev, ...undefined] throws).
+  const logActivity = (type, leadId, source) => {
     if (!type) return;
     const lead = leadId ? leads.find(l => l.id === leadId) : null;
     const ts = new Date().toISOString();
@@ -139,7 +141,7 @@ export const makeActivityManager = (setActivity, leads, saveActivity) => {
       leadName: lead ? lead.name : null,
       source: source || "auto"
     };
-    saveActivity([ev, ...activity]);
+    appendActivity([ev]); // v3.13 — functional updater, no stale activity param needed
     sbAppendActivity(ev).catch(() => {}); // non-blocking, single-event push
   };
 
