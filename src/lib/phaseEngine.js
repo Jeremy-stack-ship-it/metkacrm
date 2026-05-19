@@ -317,21 +317,19 @@ export const getNextSession = (now = new Date()) => {
   }
   return null;
 };
-
-// Assigns the correct slot to a lead. Distributes 50/50 AM/PM.
-// No-answer flips the slot after each attempt so same-time repeats never happen.
-// Used when adding a lead or on backfill.
-// v3.14 — removed next_dial time inference: buildSchedule always sets 9 AM so all
-// scheduled leads were landing in AM. Now uses deterministic id hash for 50/50 split.
+// Assigns AM/PM slot based on day of month the lead was received.
+// Odd day → AM, Even day → PM. Naturally alternates as leads arrive on different days.
+// v3.14b — date-based, deterministic, no hash bias.
 export const assignSlot = (lead) => {
   if (lead.slot) return lead.slot;
-  // Distribute new leads 50/50 using a deterministic hash of the lead id
-  // so AM and PM each get a full independent pool of fresh leads.
-  if (lead.id) {
-    let hash = 0;
-    for (let i = 0; i < Math.min(lead.id.length, 8); i++) hash += lead.id.charCodeAt(i);
-    return hash % 2 === 0 ? 'AM' : 'PM';
+  // Odd day of month received → AM, even day → PM
+  const dateStr = lead.created_at || lead.phase_start;
+  if (dateStr) {
+    const day = new Date(dateStr).getDate(); // 1–31
+    return day % 2 !== 0 ? 'AM' : 'PM';    // odd → AM, even → PM
   }
+  // Fallback: first char charCode parity
+  if (lead.id) return lead.id.charCodeAt(0) % 2 !== 0 ? 'AM' : 'PM';
   return 'AM';
 };
 

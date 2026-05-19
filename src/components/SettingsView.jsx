@@ -68,17 +68,14 @@ export default function SettingsView({
             onClick:()=>{
               const amCount = leads.filter(l=>(l.slot||'AM')==='AM').length;
               const pmCount = leads.filter(l=>l.slot==='PM').length;
-              // v3.14b — index-based alternating assignment guarantees exact 50/50
-              // Hash was biased: most lead IDs sum to odd char codes → all PM
+              // v3.14b — date-based: odd day of month received → AM, even → PM
               const activeLeads = leads.filter(l => l.stage !== 'removed' && l.phase !== 'EXIT');
-              if(!window.confirm(`Current distribution:\n• AM: ${amCount} leads\n• PM: ${pmCount} leads\n\nThis will redistribute ALL ${activeLeads.length} active leads to exactly 50/50.\nSchedule dates and phases are preserved — only the AM/PM slot changes.\n\nProceed?`)) return;
-              let amIdx = 0, pmIdx = 0;
+              if(!window.confirm(`Current distribution:\n• AM: ${amCount} leads\n• PM: ${pmCount} leads\n\nThis will re-slot ALL ${activeLeads.length} active leads by date received:\n  Odd day received → AM  |  Even day received → PM\nPhases and schedule dates preserved.\n\nProceed?`)) return;
               const rebalanced = leads.map(l => {
-                // Skip removed/EXIT leads — they don't dial
                 if (l.stage === 'removed' || l.phase === 'EXIT') return l;
-                // Alternate by count: whoever has fewer gets the next lead
-                const slot = amIdx <= pmIdx ? 'AM' : 'PM';
-                if (slot === 'AM') amIdx++; else pmIdx++;
+                const dateStr = l.created_at || l.phase_start;
+                const day = dateStr ? new Date(dateStr).getDate() : (l.id ? l.id.charCodeAt(0) : 1);
+                const slot = day % 2 !== 0 ? 'AM' : 'PM'; // odd → AM, even → PM
                 return { ...l, slot };
               });
               const newAm = rebalanced.filter(l=>l.slot==='AM').length;
