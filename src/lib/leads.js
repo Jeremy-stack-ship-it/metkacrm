@@ -38,12 +38,19 @@ export const makeLeadManager = (
   // v2.3 — auto-logs activity on disp→contact and stage→appointment_set transitions
   // v3.12 — uses setLeads(prev=>) to avoid stale-closure race condition in Power Dialer mode
   const upd = (id, p) => {
-    let patch = { ...p };
-    let queued = []; // [{type, leadId}]
+    // v3.13 fix — side-effect capture vars live OUTSIDE setLeads but are OVERWRITTEN each invocation.
+    // React StrictMode (dev) double-invokes updaters to detect side effects — moving queued INSIDE
+    // and setTimeout calls OUTSIDE means side effects fire exactly once in both dev and prod.
+    let sfLeads = null;
+    let sfUpdated = null;
+    let sfEvents = null;
 
-    // Use functional updater — always reads the *current* leads array, not the memo snapshot.
-    // This prevents two rapid PD dispositions from clobbering each other.
     setLeads(prev => {
+      // patch reset inside updater — prevents StrictMode double-run mutation carryover.
+      const patch = { ...p };
+      // queued is fresh per invocation — no external array that accumulates across StrictMode runs.
+      const queued = [];
+
       const cur = prev.find(l => l.id === id);
 
       if (cur && patch.stage && patch.stage !== cur.stage) {
@@ -73,32 +80,29 @@ export const makeLeadManager = (
 
       const next = prev.map(l => l.id === id ? { ...l, ...patch } : l);
 
-      // Persist outside render cycle (setTimeout = after React commits this state)
-      const updated = next.find(l => l.id === id);
-      if (updated) {
-        setTimeout(() => persistLeads(next, updated), 0);
-      }
-
-      // Fire queued activity events
+      // Overwrite captures every invocation — StrictMode's second (real) run wins.
+      sfUpdated = next.find(l => l.id === id) || null;
+      sfLeads = next;
       if (queued.length) {
         const ts = new Date().toISOString();
-        const evs = queued.map((q, i) => {
+        sfEvents = queued.map((q, i) => {
           const lead = next.find(l => l.id === q.leadId);
           return {
             id: `a_${Date.now()}_${i}_${Math.random().toString(36).slice(2, 5)}`,
-            ts,
-            date: dayKey(ts),
-            type: q.type,
-            leadId: q.leadId,
-            leadName: lead ? lead.name : null,
-            source: "auto"
+            ts, date: dayKey(ts), type: q.type,
+            leadId: q.leadId, leadName: lead ? lead.name : null, source: "auto"
           };
         });
-        setTimeout(() => appendActivity(evs), 0); // v3.13 — functional updater, no stale activity snapshot
+      } else {
+        sfEvents = null;
       }
 
       return next;
     });
+
+    // Side effects fire OUTSIDE the updater — exactly once regardless of StrictMode double-runs.
+    if (sfUpdated) setTimeout(() => persistLeads(sfLeads, sfUpdated), 0);
+    if (sfEvents)  setTimeout(() => appendActivity(sfEvents), 0);
   };
 
   const addNote = (id) => {
@@ -199,11 +203,11 @@ export const makeLeadManager = (
       nextCallback: null,
       notes: [],
       firstName: newL.name.split(" ")[0] || "",
-      lastName: newL.name.split(" ").slice(1).join(" ") || ""
+            lastName: newL.name.split(" ").slice(1).join(" ") || ""
     };
     const l = { ...backfillLead(rawL), slot: 'AM' }; // v3.1 phase schedule + v3.12 session slot
     saveLeads([l, ...leads]);
-        setNewL({ name: "", phone: "", state: "OK", bucket: "A", leadType: "Mortgage Protection" });
+    setNewL({ name: "", phone: "", state: "OK", bucket: "A", leadType: "Mortgage Protection" });
     setAddForm(false);
     setOpenId(l.id);
   };
