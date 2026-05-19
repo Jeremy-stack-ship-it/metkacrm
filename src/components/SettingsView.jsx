@@ -68,11 +68,14 @@ export default function SettingsView({
             onClick:()=>{
               const amCount = leads.filter(l=>(l.slot||'AM')==='AM').length;
               const pmCount = leads.filter(l=>l.slot==='PM').length;
-              const freshCount = leads.filter(l=>!l.next_dial).length;
-              if(!window.confirm(`Current distribution:\n• AM: ${amCount} leads\n• PM: ${pmCount} leads\n\nThis will redistribute ${freshCount} unscheduled leads ~50/50.\nLeads already scheduled by the phase engine keep their slot.\n\nProceed?`)) return;
+              // v3.14 — rebalance ALL active leads, not just unscheduled ones
+              // Existing leads all got slot:'AM' stamped; must strip and rehash everyone
+              const activeLeads = leads.filter(l => l.stage !== 'removed' && l.phase !== 'EXIT');
+              if(!window.confirm(`Current distribution:\n• AM: ${amCount} leads\n• PM: ${pmCount} leads\n\nThis will redistribute ALL ${activeLeads.length} active leads ~50/50 by ID hash.\nSchedule dates and phases are preserved — only the AM/PM slot changes.\n\nProceed?`)) return;
               const rebalanced = leads.map(l => {
-                // Only rebalance fresh leads — phase-scheduled leads keep their slot intact
-                if (l.next_dial) return l;
+                // Skip removed/EXIT leads — they don't dial
+                if (l.stage === 'removed' || l.phase === 'EXIT') return l;
+                // Strip stored slot and let assignSlot hash-assign
                 const newSlot = assignSlot({ ...l, slot: undefined });
                 return { ...l, slot: newSlot };
               });
