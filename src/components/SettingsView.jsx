@@ -68,16 +68,18 @@ export default function SettingsView({
             onClick:()=>{
               const amCount = leads.filter(l=>(l.slot||'AM')==='AM').length;
               const pmCount = leads.filter(l=>l.slot==='PM').length;
-              // v3.14 — rebalance ALL active leads, not just unscheduled ones
-              // Existing leads all got slot:'AM' stamped; must strip and rehash everyone
+              // v3.14b — index-based alternating assignment guarantees exact 50/50
+              // Hash was biased: most lead IDs sum to odd char codes → all PM
               const activeLeads = leads.filter(l => l.stage !== 'removed' && l.phase !== 'EXIT');
-              if(!window.confirm(`Current distribution:\n• AM: ${amCount} leads\n• PM: ${pmCount} leads\n\nThis will redistribute ALL ${activeLeads.length} active leads ~50/50 by ID hash.\nSchedule dates and phases are preserved — only the AM/PM slot changes.\n\nProceed?`)) return;
+              if(!window.confirm(`Current distribution:\n• AM: ${amCount} leads\n• PM: ${pmCount} leads\n\nThis will redistribute ALL ${activeLeads.length} active leads to exactly 50/50.\nSchedule dates and phases are preserved — only the AM/PM slot changes.\n\nProceed?`)) return;
+              let amIdx = 0, pmIdx = 0;
               const rebalanced = leads.map(l => {
                 // Skip removed/EXIT leads — they don't dial
                 if (l.stage === 'removed' || l.phase === 'EXIT') return l;
-                // Strip stored slot and let assignSlot hash-assign
-                const newSlot = assignSlot({ ...l, slot: undefined });
-                return { ...l, slot: newSlot };
+                // Alternate by count: whoever has fewer gets the next lead
+                const slot = amIdx <= pmIdx ? 'AM' : 'PM';
+                if (slot === 'AM') amIdx++; else pmIdx++;
+                return { ...l, slot };
               });
               const newAm = rebalanced.filter(l=>l.slot==='AM').length;
               const newPm = rebalanced.filter(l=>l.slot==='PM').length;
