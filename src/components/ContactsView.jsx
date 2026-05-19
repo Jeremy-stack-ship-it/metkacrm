@@ -60,7 +60,7 @@ export default function ContactsView({
             const s={ids,idx:0,total:ids.length,startedAt:new Date().toISOString()};
             setSession(s); setSessionPaused(false);
             try{localStorage.setItem('metka-session-v1',JSON.stringify(s));}catch{}
-            setOpenId(ids[0]); setView("queue"); setDetailTab("live");
+            setOpenId(ids[0]); setView("dial"); setDetailTab("live");
           },
           style:{padding:"9px 16px",borderRadius:"var(--radius-md)",fontWeight:"700",fontSize:"12px",cursor:"pointer",border:"none",whiteSpace:"nowrap",
             background:"var(--green)",color:"#fff",transition:"all 0.2s"}
