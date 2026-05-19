@@ -1,6 +1,114 @@
 # Changelog — Metka Field Ops CRM
 
 All notable changes to this project are documented here. Format: [Date] v[Version] — [Theme]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VERSION: v3.14 | DATE: May 19, 2026 | SESSION: Security Hardening + PM Slot Fix
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CHANGE: Security — credentials to .env, remove window globals, CSP headers, Supabase RLS
+FILES: metka-crm/.env (new), src/lib/supabaseSync.js, src/components/LoginGate.jsx,
+  src/App.jsx, vite.config.js, index.html, rls-setup.sql (new)
+WHAT: Full security audit and remediation.
+  1. VITE_SUPABASE_URL, VITE_SUPABASE_KEY, VITE_CRM_PASSWORD moved to .env (env vars)
+  2. window.supabase and window.LZString globals removed from App.jsx + supabaseSync.js
+  3. CSP meta tag added to index.html (single-line, covers Supabase + Calendly + fonts)
+  4. Security headers added to vite.config.js dev server (X-Frame-Options, nosniff, etc.)
+  5. RLS policies generated (rls-setup.sql) — Jeremy ran in Supabase SQL Editor
+BEFORE: Credentials in source code, window globals, no CSP, no RLS.
+REVERT: Remove meta CSP tag from index.html, restore hardcoded keys in supabaseSync.js
+  and LoginGate.jsx, restore window globals in App.jsx. RLS stays.
+COMMIT: 02261be
+
+────────────────────────────────────────────────────────
+
+CHANGE: CSP widened to cover all Twilio Voice SDK endpoints
+FILE: index.html (connect-src directive)
+WHAT: Twilio Voice SDK + Functions hit *.twilio.com and *.twil.io subdomains.
+  Original CSP only allowed api.twilio.com and voice.twilio.com — blocked token
+  fetch from Twilio Function URL (.twil.io domain) and SDK WSS connections.
+  Widened to: https://*.twilio.com wss://*.twilio.com https://*.twil.io
+BEFORE: Browser calling failed silently — token fetch blocked by CSP.
+REVERT: Narrow connect-src back to specific Twilio subdomains (not recommended).
+COMMIT: ab97f41
+
+────────────────────────────────────────────────────────
+
+CHANGE: PM slot always shows 0 — removed next_dial time inference from assignSlot
+FILE: src/lib/phaseEngine.js (assignSlot), src/lib/leads.js (addLead)
+WHAT: Root cause: buildSchedule hardcodes 9 AM for all next_dial times, so the
+  old time-based inference (hour < 12 → AM) always returned AM. assignSlot now
+  uses ID hash only (hash % 2 === 0 ? AM : PM) for unslotted leads.
+  addLead fixed to call assignSlot() instead of hardcoding slot:'AM'.
+BEFORE: All new leads got slot:'AM'. PM count was permanently 0.
+REVERT: Restore next_dial time inference block in assignSlot; restore slot:'AM'
+  hardcode in addLead.
+COMMIT: e6fd522
+
+────────────────────────────────────────────────────────
+
+CHANGE: Balance AM/PM button now rebalances ALL active leads, not just unscheduled
+FILE: src/components/SettingsView.jsx (Balance AM/PM Slots button handler)
+WHAT: Previous fix skipped leads with next_dial (i.e., everyone phase-scheduled),
+  so existing leads with slot:'AM' stamped were never touched — PM stayed 0.
+  Button now strips slot from ALL non-removed, non-EXIT leads and hash-assigns.
+  Schedule dates, phases, and all other fields preserved — only slot changes.
+BEFORE: Button redistributed 0 leads (all had next_dial). PM count unchanged.
+REVERT: Restore if(l.next_dial) return l guard in the rebalanced map.
+COMMIT: 2d4c0c9
+
+────────────────────────────────────────────────────────
+
+VERSION: v3.12 | DATE: May 18, 2026 | SESSION: Dial Flow + Calendly Fixes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CHANGE: Today Panel — two-block AM/PM session overview in Dial Queue
+FILE: src/components/DialQueuePanel.jsx (Section 1.5 replacement)
+WHAT: Replaced compact banner with full two-card Today Panel showing both
+  AM and PM sessions side by side. Each card: slot label (⚡ AM/PM), time
+  range, live lead count, callback count, and status button (▶ START /
+  ⏹ STOP / — DONE — / — NEXT —). isPast computed from current time vs
+  session end. Lead/callback counts filtered by slot from live queue.
+BEFORE: Compact single-line Section 1.5 banner.
+REVERT: Restore previous Section 1.5 banner block in DialQueuePanel.jsx.
+COMMIT: b76bf53
+
+────────────────────────────────────────────────────────
+
+CHANGE: Calendly booking writes structured note to lead's notes array
+FILE: src/App.jsx (Calendly postMessage listener, ~line 922)
+WHAT: When Calendly fires calendly.event_scheduled, a formatted note is
+  now appended to the lead's notes array:
+  "📅 Calendly booked — [Event Name] · [Day, Mon D, H:MM AM/PM]"
+  Note type is 'appointment' so it renders with 📅 Appt label in activity feed.
+BEFORE: Calendly booking set disposition/stage/nextCallback but wrote no note.
+REVERT: Remove newNote block and notes spread from the upd() call in the
+  Calendly listener (~line 930).
+COMMIT: 6e9a32c
+
+────────────────────────────────────────────────────────
+
+CHANGE: Add "Appt Booked" disposition button + fix PD auto-advance
+FILE: src/components/DialView.jsx (secondaryDisps array, ~line 339)
+      src/lib/usePowerDialer.js (KEEP_CALL_DISPS, line 21)
+WHAT:
+  - Added 📅 Appt Booked button as first item in secondary disposition row.
+    Active state renders purple (#6d28d9). Uses activeColor pattern so
+    each secondary button can have its own active color going forward.
+  - Removed 'appointment_booked' from KEEP_CALL_DISPS in usePowerDialer.js.
+    Previously it blocked PD auto-advance — leads with this disposition
+    would not move to the next lead in the queue.
+  - Removed dead code from DialView.jsx: KEEP_CALL_DISPS, ATTEMPT1_SEC,
+    ATTEMPT2_SEC (all defined but never used — leftover from before PD
+    logic was extracted to usePowerDialer.js).
+NOTE: Calendly auto-booking (postMessage) only calls upd() — it does NOT
+  call fireDisp(), so it does not disconnect or advance. The Appt Booked
+  button is a manual trigger: call disconnects + PD advances only when
+  the agent clicks it.
+BEFORE: No Appt Booked button in disposition bar. appointment_booked in
+  KEEP_CALL_DISPS blocked PD from moving to next lead.
+REVERT: Remove appointment_booked entry from secondaryDisps. Add
+  'appointment_booked' back to KEEP_CALL_DISPS in usePowerDialer.js.
+COMMIT: 2db7fcc
 
 ## [2026-05-13] v3.6 — Modular Architecture Refactor
 
@@ -16,81 +124,4 @@ All notable changes to this project are documented here. Format: [Date] v[Versio
 - Extracted core business logic from App.jsx to lib/ modules (no behavior change, pure refactor)
 - Activity logging now uses append-only pattern (v3.5 schema: individual event rows, never rewrites)
 - Lead creation and updates now centralized in makeLeadManager factory
-- App.jsx line 74: Removed duplicate `applyPhaseTransition` import (already imported from TodaysBlock on line 56). Now imports only unique functions: `backfillLead, phaseFromBucket`
-
-### Fixed
-- Resolved esbuild parser error on duplicate identifier in phaseEngine.js imports
-- Production build now completes successfully (131 modules transformed, bundle size 770.54 kB gzip)
-
-### Dependencies
-- All lib/ modules use pure functions and explicit dependency injection
-- No new npm packages added; existing stack (React, Supabase, LZ-String) unchanged
-
-### Notes
-- Full backward compatibility: v3.5 activity schema with v1.0 legacy blob fallback
-- App.jsx now 30% smaller, focused on React component lifecycle
-- Original v2.3 → v3.5 algorithms fully preserved in extracted modules
-- v3.6 build verified: `npm run build` succeeds with no parser or runtime errors
-
----
-
-## [2026-05-01] v2.0.0 — Ministry Lead Operating System
-
-### Added
-- TODAY block: Structured 30-dial daily work engine with live timer and priority sorting
-- Phase Lifecycle Engine: Auto-calculated 17-point forward schedule per phase (P1–P3, M2, EXIT)
-- SMS modal: 4 Ministry-voice templates with STOP compliance
-- Phase summary: Live lead counts by phase in Settings
-- Dashboard: 4 KPI cards (Contact Rate, Show Rate, Close Rate, Week Dials)
-- Financial Tracker: Weekly overhead vs. commission tracking
-- Ghost Protocol messaging for non-responsive leads
-- Click-to-dial via tel: links with auto-logging
-- Activity log with dial counter and goal tracking
-
-### Fixed
-- vite.config.js: Added .jsx/.js loader for Windows esbuild compatibility
-
----
-
-## [2026-04-01] v1.0.0 — Initial Build
-
-### Added
-- Single-file React CRM with Supabase cloud sync + localStorage dual-write
-- Lead queue with stage/disposition tracking
-- Activity log with dial counter
-- Settings: Supabase config, CSV import/export, manual lead entry
-- 2,440 leads pre-loaded across Bucket A (Hot), B (Warm), C (Cold)
-
----
-
-## [2026-05-14] v3.6.1 — Power Dialer + Audit Fixes
-
-### Added
-- **Power Dialer engine** moved from TodaysBlock → DialView (18s attempt 1, 30s attempt 2, auto-hangup)
-- **`fireDisp()` wrapper** in DialView: disposition buttons now advance PD to next lead when answered
-- **GitHub repository**: https://github.com/Jeremy-stack-ship-it/metkacrm (version control live)
-
-### Changed
-- TodaysBlock stripped to read-only planning view — all execution machinery removed
-- `TOKEN_FIELDS`, `renderLiveTokens`, `ATTEMPT1_SEC`, `ATTEMPT2_SEC` hoisted to module scope (no per-render redefinition)
-- `saveLeads` + `saveActivity` wrapped in `useCallback([])` — stable references
-- `makeLeadManager` + `makeActivityManager` wrapped in `useMemo` — downstream components no longer re-render on unrelated state changes
-- `todayLeads` moved to `useMemo` in App.jsx (was inline sort on every render)
-- Removed Bucket A→B→C and Name A–Z sort options from DialView (not needed in phase-engine workflow)
-- Deleted 3 dead source files: `src/TodaysBlock.jsx`, `src/DashboardTab.jsx`, `src/App.jsx.bak`
-
-### Fixed
-- `filteredContacts` useMemo missing 3 deps (`exclBucket`, `exclStage`, `exclDisp`)
-- Note history React keys using index → now `n.ts || n.id || i` (prevents full re-render on prepend)
-- Templates destructuring `[name, text]` → `[key, tpl]` with `tpl.name`/`tpl.text` (was producing `[object Object]`)
-- AppHeader null guard: `activityStats?.today` safe default prevents crash before Supabase reconciles
-- PD advance-after-disposition: answered calls now auto-advance instead of freezing
-
-### Build
-- `npm run build` ✅ 0 errors — 144 modules, 775.68 kB (207.09 kB gzip)
-
----
-
-**Last Updated**: 2026-05-14
-**Current Version**: v3.6.1
-**Status**: ✅ Production ready. Power Dialer functional end-to-end. GitHub live.
+- App.jsx line 74: Removed duplicate `applyP
