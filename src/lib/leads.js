@@ -1,4 +1,4 @@
-// ── LEAD MANAGEMENT (v2.3 → v3.5) ───────────────────────────────────
+// ── LEAD MANAGEMENT (v2.3 → v3.5) ───────────────────────────────────────────────────────
 // Single lead operations: update, create, delete, notes with activity logging.
 // All state-mutating operations handled through component callbacks for isolation.
 
@@ -6,7 +6,7 @@ import { sbUpsertLead, sbAppendActivity, sbDeleteLead } from './supabaseSync.js'
 import { dayKey, CONTACT_DISPS, computeActivityQueue, makeActivityEvent } from './activityLog.js';
 import { backfillLead } from './phaseEngine.js';
 
-// ── LEAD MANAGEMENT FACTORY ──────────────────────────────────────────
+// ── LEAD MANAGEMENT FACTORY ───────────────────────────────────────────────────────
 // Creates bound lead mutation functions. State mutation is delegated to parent component.
 // Dependencies: leads array, activity log, state setters for leads/activity/UI state.
 
@@ -58,11 +58,11 @@ export const makeLeadManager = (
         const baseNotes = patch.notes ? [...patch.notes] : [...(cur.notes || [])];
         if (patch.stage === "app_submitted" && !cur.submittedDate) {
           patch.submittedDate = nowIso;
-          baseNotes.unshift({ ts: nowIso, type: "note", text: "📨 Stage advanced to App Submitted — UW clock started." });
+          baseNotes.unshift({ ts: nowIso, type: "note", text: "\u{1F4E8} Stage advanced to App Submitted — UW clock started." });
         }
         if (patch.stage === "issued" && !cur.policyIssueDate) {
           patch.policyIssueDate = nowIso;
-          baseNotes.unshift({ ts: nowIso, type: "note", text: "✅ Policy Issued." });
+          baseNotes.unshift({ ts: nowIso, type: "note", text: "\u2705 Policy Issued." });
         }
         if (patch.stage === "appointment_set" && cur.stage !== "appointment_set") {
           queued.push({ type: "appointment", leadId: id });
@@ -72,8 +72,9 @@ export const makeLeadManager = (
 
       if (cur && patch.disposition && patch.disposition !== cur.disposition) {
         const nowIsContact = CONTACT_DISPS.includes(patch.disposition);
-        const wasContact = CONTACT_DISPS.includes(cur.disposition || "");
-        if (nowIsContact && !wasContact) {
+        // v3.15 — removed !wasContact guard: was blocking contacts on all previously-worked leads.
+        // A contact fires whenever disposition changes TO a CONTACT_DISPS value, regardless of prior state.
+        if (nowIsContact) {
           queued.push({ type: "contact", leadId: id });
         }
       }
@@ -134,7 +135,7 @@ export const makeLeadManager = (
     setNoteText("");
   };
 
-  // ── AUTO-LOG DIALS ──────────────────────────────────────────────
+  // ── AUTO-LOG DIALS ────────────────────────────────────────────────────────────────
   const logDial = (id) => {
     const lead = leads.find(l => l.id === id);
     if (!lead) return;

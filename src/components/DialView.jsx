@@ -119,6 +119,7 @@ export default function DialView({
             React.createElement("span", { style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: BC[open.bucket] + "18", color: BC[open.bucket], fontWeight: "800" } }, BL[open.bucket]),
             open.leadType && React.createElement("span", { style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--blue-mid)", color: "#1D4ED8", fontWeight: "700" } }, open.leadType),
             open.city && open.state && React.createElement("span", { style: { fontSize: "11px", color: "var(--t3)" } }, "📍 " + open.city + ", " + open.state),
+            open.assignDate && React.createElement("span", { title: "Assign date — lead received", style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--surface-2)", color: "var(--t3)", fontWeight: "600", border: "1px solid var(--border)" } }, "📋 " + open.assignDate),
             isUWStuck(open) && React.createElement("span", { className: "pulse-red", style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--red-dim)", color: "var(--red)", fontWeight: "800", border: "1px solid #FCA5A5" } }, "⚠ UW " + daysInUW(open) + "d")
           )
         ),
@@ -490,6 +491,7 @@ export default function DialView({
             React.createElement("div", { style: { fontSize: "14px", fontWeight: "600", marginBottom: "6px" } }, "Select a lead to begin"),
             React.createElement("div", { style: { fontSize: "12px" } }, queue.length + " leads in queue")
           )
+
         )
     ),
 
