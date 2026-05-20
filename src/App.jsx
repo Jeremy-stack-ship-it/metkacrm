@@ -260,15 +260,28 @@ function MetkaCRM(){
   // Runs once on mount; cleans up the URL after processing.
   useEffect(() => {
     if (window.location.pathname !== '/cc-callback') return;
-    const code = new URLSearchParams(window.location.search).get('code');
-    if (!code) { window.location.replace('/'); return; }
+    const params = new URLSearchParams(window.location.search);
+    const code   = params.get('code');
+    const errCode = params.get('error');
+    const errDesc = params.get('error_description');
+
+    // CC sent back an error (e.g. access_denied, invalid_request)
+    if (!code) {
+      ccClearTokens();
+      try { sessionStorage.removeItem('cc_pkce_verifier'); } catch {}
+      if (errCode) {
+        alert('Constant Contact denied access.\n\nError: ' + errCode + '\n' + (errDesc || '') + '\n\nGo to Settings → Connect Constant Contact to retry.');
+      }
+      window.location.replace('/');
+      return;
+    }
+
     ccExchangeCode(code)
       .then(() => { window.location.replace('/'); })
       .catch(err => {
-        // Wipe any partial state so the Connect button works on retry
         ccClearTokens();
         try { sessionStorage.removeItem('cc_pkce_verifier'); } catch {}
-        alert('Constant Contact auth failed — tap Connect again to retry.\n\nDetail: ' + err.message);
+        alert('Constant Contact token exchange failed — go to Settings and tap Connect to retry.\n\nDetail: ' + err.message);
         window.location.replace('/');
       });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
