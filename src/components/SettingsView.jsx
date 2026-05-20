@@ -332,7 +332,13 @@ export default function SettingsView({
             : React.createElement("span",{style:{fontSize:"11px",fontWeight:"700",padding:"4px 10px",background:"var(--red-dim)",color:"var(--red)",borderRadius:"20px",border:"1px solid #FCA5A5"}},"○ Not Connected")
         ),
         !ccConnected && React.createElement("button",{
-          onClick:()=>ccAuthorize(),
+          onClick:()=>{
+            // Force-clear any stale tokens or PKCE verifier before retrying
+            ccClearTokens();
+            try { sessionStorage.removeItem('cc_pkce_verifier'); } catch {}
+            setCcSyncStatus('idle'); setCcSyncResult(null);
+            ccAuthorize();
+          },
           style:{padding:"10px 20px",background:"var(--blue)",color:"#fff",border:"none",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer",marginBottom:"12px"}
         },"🔗 Connect Constant Contact"),
         ccConnected && React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:"12px"}},
@@ -363,9 +369,22 @@ export default function SettingsView({
               style:{padding:"10px 20px",background:ccSyncStatus==="loading"?"var(--surface-2)":"var(--green-dim)",color:ccSyncStatus==="loading"?"var(--t3)":"var(--green)",border:"1px solid #6EE7B7",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:ccSyncStatus==="loading"?"not-allowed":"pointer"}
             }, ccSyncStatus==="loading" ? "⏳ Syncing…" : "📤 Sync Bucket A Leads"),
             React.createElement("button",{
-              onClick:()=>{ccClearTokens(); setCcConnected(false); setCcSyncStatus("idle"); setCcSyncResult(null);},
+              onClick:()=>{
+                ccClearTokens();
+                try { sessionStorage.removeItem('cc_pkce_verifier'); } catch {}
+                setCcConnected(false); setCcSyncStatus("idle"); setCcSyncResult(null); setCcLists([]);
+              },
               style:{padding:"10px 16px",background:"var(--red-dim)",color:"var(--red)",border:"1px solid #FCA5A5",borderRadius:"8px",fontSize:"12px",fontWeight:"700",cursor:"pointer"}
-            },"Disconnect")
+            },"Disconnect"),
+            React.createElement("button",{
+              onClick:()=>{
+                ccClearTokens();
+                try { sessionStorage.removeItem('cc_pkce_verifier'); } catch {}
+                setCcConnected(false); setCcSyncStatus("idle"); setCcSyncResult(null); setCcLists([]);
+                setTimeout(() => ccAuthorize(), 50);
+              },
+              style:{padding:"10px 16px",background:"var(--surface-2)",color:"var(--t2)",border:"1px solid var(--border)",borderRadius:"8px",fontSize:"12px",fontWeight:"700",cursor:"pointer"}
+            },"↺ Force Reconnect")
           ),
           ccSyncStatus==="success" && ccSyncResult && React.createElement("div",{style:{padding:"10px 14px",background:"#DCFCE7",border:"1px solid #86EFAC",borderRadius:"8px",fontSize:"12px",color:"#15803D",fontWeight:"600"}},
             "✅ Sync submitted — "+ccSyncResult.count+" contacts queued (Activity ID: "+ccSyncResult.activityId+")"

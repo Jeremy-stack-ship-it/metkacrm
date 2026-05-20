@@ -265,7 +265,10 @@ function MetkaCRM(){
     ccExchangeCode(code)
       .then(() => { window.location.replace('/'); })
       .catch(err => {
-        alert('Constant Contact auth failed: ' + err.message);
+        // Wipe any partial state so the Connect button works on retry
+        ccClearTokens();
+        try { sessionStorage.removeItem('cc_pkce_verifier'); } catch {}
+        alert('Constant Contact auth failed — tap Connect again to retry.\n\nDetail: ' + err.message);
         window.location.replace('/');
       });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
