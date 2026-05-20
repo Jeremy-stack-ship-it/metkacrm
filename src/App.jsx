@@ -36,6 +36,8 @@
  *   — pendingReqs item: {id, label, done, completedAt}
  * Phase (v3.1): phase, phase_start, next_dial,
  * p1_1…p1_7, p2_1…p2_5, p3_1…p3_5
+ * Appointment (v3.14): apptType ('household_audit'|'policy_review'|'annual_review'|'birthday'),
+ * apptConfirmed (bool — set true after showed/no-show/reschedule resolved)
  * ─────────────────────────────────────────
  * ACTIVITY EVENT SCHEMA:
  * {id, ts (ISO), date ('YYYY-MM-DD' local), type ('dial'|'contact'|'appointment'),
@@ -79,6 +81,7 @@ import ActivityDashboard from './components/ActivityDashboard.jsx';
 import DialView from './components/DialView.jsx';
 import FieldMapModal from './components/FieldMapModal.jsx';
 import { ccExchangeCode } from './lib/ccIntegration.js';
+import AppointmentsView from './components/AppointmentsView.jsx';
 import ImportModal from './components/ImportModal.jsx';
 import NavSidebar from './components/NavSidebar.jsx';
 import AppHeader from './components/AppHeader.jsx';
@@ -1141,6 +1144,12 @@ const queue = useMemo(() => {
           leads, setOpenId, setView, setSession, setSessionPaused, setNoteText, setDetailTab,
         }),
 
+        // ── APPOINTMENTS VIEW (v3.14) ──
+        view==="appointments" && React.createElement(AppointmentsView, {
+          leads, upd, logActivity,
+          setOpenId, setView, setPrevView,
+        }),
+
         // ── ACTIVITY VIEW (v2.3) ──
         view==="activity" && React.createElement(ActivityDashboard, {
           activityStats, activityRange, setActivityRange,
@@ -1276,4 +1285,3 @@ function App() {
 }
 
 export default App;
-                                                                                                                                              

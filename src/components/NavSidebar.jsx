@@ -3,8 +3,9 @@ import React from 'react';
 const NAV_ITEMS = [
   { id: "dashboard", icon: "🏠", label: "DASH" },
   { id: "today",     icon: "⚡", label: "TODAY" },
-  { id: "callbacks", icon: "📅", label: "CB" },
-  { id: "dial",      icon: "🎙", label: "DIAL" },
+  { id: "callbacks",     icon: "📞", label: "CB" },
+  { id: "appointments", icon: "📅", label: "APPTS" },
+  { id: "dial",          icon: "🎙", label: "DIAL" },
   { id: "activity",  icon: "🎯", label: "ACT" },
   { id: "contacts",  icon: "📇", label: "DATA" },
   { id: "pipeline",  icon: "📊", label: "PIPE" },
