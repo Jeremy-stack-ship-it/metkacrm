@@ -268,7 +268,6 @@ function MetkaCRM(){
     // CC sent back an error (e.g. access_denied, invalid_request)
     if (!code) {
       ccClearTokens();
-      try { sessionStorage.removeItem('cc_pkce_verifier'); } catch {}
       if (errCode) {
         alert('Constant Contact denied access.\n\nError: ' + errCode + '\n' + (errDesc || '') + '\n\nGo to Settings → Connect Constant Contact to retry.');
       }
@@ -280,7 +279,6 @@ function MetkaCRM(){
       .then(() => { window.location.replace('/'); })
       .catch(err => {
         ccClearTokens();
-        try { sessionStorage.removeItem('cc_pkce_verifier'); } catch {}
         alert('Constant Contact token exchange failed — go to Settings and tap Connect to retry.\n\nDetail: ' + err.message);
         window.location.replace('/');
       });
@@ -1278,3 +1276,4 @@ function App() {
 }
 
 export default App;
+                                                                                                                                              

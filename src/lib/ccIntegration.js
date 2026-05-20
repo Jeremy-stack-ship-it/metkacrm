@@ -1,34 +1,18 @@
-// ── CONSTANT CONTACT INTEGRATION (v1.1 — PKCE) ──────────────────────────────
-// OAuth 2.0 Authorization Code + PKCE flow (required by CC for browser clients).
-// Tokens stored in localStorage. PKCE verifier stored in sessionStorage (survives
-// the redirect but dies with the tab — never touches disk).
-// Client secret kept in .env for future server-side use; not used in PKCE exchange.
+// ── CONSTANT CONTACT INTEGRATION (v1.2 — Edge Function Proxy) ────────────────
+// OAuth 2.0 Authorization Code flow.
+// Token exchange is proxied through a Supabase Edge Function to avoid CC's
+// "Browser requests must use PKCE" restriction (triggered by Origin header).
+// The Edge Function does server-to-server Basic auth — no PKCE needed.
+// Tokens stored in localStorage.
 
-const CC_CLIENT_ID     = import.meta.env.VITE_CC_CLIENT_ID;
-const CC_CLIENT_SECRET = import.meta.env.VITE_CC_CLIENT_SECRET; // kept for Basic auth fallback
-const CC_REDIRECT_URI  = import.meta.env.VITE_CC_REDIRECT_URI || 'http://localhost:5173/cc-callback';
+const CC_CLIENT_ID    = import.meta.env.VITE_CC_CLIENT_ID;
+const CC_REDIRECT_URI = import.meta.env.VITE_CC_REDIRECT_URI || 'http://localhost:5173/cc-callback';
+const CC_TOKEN_PROXY  = import.meta.env.VITE_CC_TOKEN_PROXY_URL; // Supabase Edge Function
 
-const CC_AUTH_URL  = 'https://authz.constantcontact.com/oauth2/default/v1/authorize';
-const CC_TOKEN_URL = 'https://authz.constantcontact.com/oauth2/default/v1/token';
-const CC_API_BASE  = 'https://api.cc.email/v3';
+const CC_AUTH_URL = 'https://authz.constantcontact.com/oauth2/default/v1/authorize';
+const CC_API_BASE = 'https://api.cc.email/v3';
 
-const LS_CC_TOKENS    = 'metka-cc-tokens-v1';
-const SS_PKCE_KEY     = 'cc_pkce_verifier';   // sessionStorage — survives redirect, dies with tab
-
-// ── PKCE HELPERS ─────────────────────────────────────────────────────────────
-const _generateVerifier = () => {
-  const arr = new Uint8Array(32);
-  crypto.getRandomValues(arr);
-  return btoa(String.fromCharCode(...arr))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-};
-
-const _generateChallenge = async (verifier) => {
-  const data = new TextEncoder().encode(verifier);
-  const digest = await crypto.subtle.digest('SHA-256', data);
-  return btoa(String.fromCharCode(...new Uint8Array(digest)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-};
+const LS_CC_TOKENS = 'metka-cc-tokens-v1';
 
 // ── TOKEN STORAGE ────────────────────────────────────────────────────────────
 export const ccSaveTokens = (tokens) => {
@@ -41,7 +25,6 @@ export const ccLoadTokens = () => {
 
 export const ccClearTokens = () => {
   try { localStorage.removeItem(LS_CC_TOKENS); } catch {}
-  try { sessionStorage.removeItem(SS_PKCE_KEY); } catch {}
 };
 
 export const ccIsConnected = () => {
@@ -49,55 +32,37 @@ export const ccIsConnected = () => {
   return !!(t && t.access_token);
 };
 
-// ── STEP 1: Open CC OAuth with PKCE ──────────────────────────────────────────
-export const ccAuthorize = async () => {
-  const verifier   = _generateVerifier();
-  const challenge  = await _generateChallenge(verifier);
-  // Store verifier — retrieved after redirect in ccExchangeCode
-  sessionStorage.setItem(SS_PKCE_KEY, verifier);
-
+// ── STEP 1: Open CC OAuth (simple auth code — no PKCE) ───────────────────────
+export const ccAuthorize = () => {
   const params = new URLSearchParams({
-    client_id:             CC_CLIENT_ID,
-    redirect_uri:          CC_REDIRECT_URI,
-    response_type:         'code',
-    scope:                 'contact_data campaign_data',
-    state:                 Math.random().toString(36).slice(2),
-    code_challenge:        challenge,
-    code_challenge_method: 'S256',
+    client_id:     CC_CLIENT_ID,
+    redirect_uri:  CC_REDIRECT_URI,
+    response_type: 'code',
+    scope:         'contact_data campaign_data',
+    state:         Math.random().toString(36).slice(2),
   });
   window.location.href = `${CC_AUTH_URL}?${params}`;
 };
 
-// ── STEP 2: Exchange auth code for tokens (PKCE — no client_secret in body) ──
+// ── STEP 2: Exchange auth code via Edge Function proxy ────────────────────────
 export const ccExchangeCode = async (code) => {
-  const verifier = sessionStorage.getItem(SS_PKCE_KEY);
-  sessionStorage.removeItem(SS_PKCE_KEY); // one-time use
+  if (!CC_TOKEN_PROXY) throw new Error('VITE_CC_TOKEN_PROXY_URL not configured');
 
-  if (!verifier) throw new Error('PKCE verifier missing — auth session may have expired. Please try connecting again.');
-
-  const body = new URLSearchParams({
-    grant_type:    'authorization_code',
-    code,
-    redirect_uri:  CC_REDIRECT_URI,
-    client_id:     CC_CLIENT_ID,
-    code_verifier: verifier,
-  });
-
-  // CC accepts Basic auth alongside PKCE for confidential clients
-  const credentials = btoa(`${CC_CLIENT_ID}:${CC_CLIENT_SECRET}`);
-  const res = await fetch(CC_TOKEN_URL, {
+  const res = await fetch(CC_TOKEN_PROXY, {
     method: 'POST',
-    headers: {
-      'Content-Type':  'application/x-www-form-urlencoded',
-      'Authorization': `Basic ${credentials}`,
-    },
-    body,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      grant_type:   'authorization_code',
+      code,
+      redirect_uri: CC_REDIRECT_URI,
+    }),
   });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`CC token exchange failed: ${err}`);
-  }
+
   const data = await res.json();
+  if (!res.ok || data.error) {
+    throw new Error(`CC token exchange failed: ${JSON.stringify(data)}`);
+  }
+
   const tokens = {
     access_token:  data.access_token,
     refresh_token: data.refresh_token,
@@ -107,30 +72,29 @@ export const ccExchangeCode = async (code) => {
   return tokens;
 };
 
-// ── STEP 3: Get valid access token (auto-refresh if expiring) ─────────────────
+// ── STEP 3: Get valid access token (auto-refresh via Edge Function) ───────────
 export const ccGetToken = async () => {
   const tokens = ccLoadTokens();
   if (!tokens) throw new Error('Not connected to Constant Contact');
 
   if (Date.now() >= tokens.expires_at - 300_000) {
-    const body = new URLSearchParams({
-      grant_type:    'refresh_token',
-      refresh_token: tokens.refresh_token,
-    });
-    const credentials = btoa(`${CC_CLIENT_ID}:${CC_CLIENT_SECRET}`);
-    const res = await fetch(CC_TOKEN_URL, {
+    if (!CC_TOKEN_PROXY) throw new Error('VITE_CC_TOKEN_PROXY_URL not configured');
+
+    const res = await fetch(CC_TOKEN_PROXY, {
       method: 'POST',
-      headers: {
-        'Content-Type':  'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${credentials}`,
-      },
-      body,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        grant_type:    'refresh_token',
+        refresh_token: tokens.refresh_token,
+      }),
     });
-    if (!res.ok) {
+
+    const data = await res.json();
+    if (!res.ok || data.error) {
       ccClearTokens();
       throw new Error('CC token refresh failed — please reconnect');
     }
-    const data = await res.json();
+
     const fresh = {
       access_token:  data.access_token,
       refresh_token: data.refresh_token || tokens.refresh_token,
