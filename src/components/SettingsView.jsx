@@ -1,5 +1,6 @@
 // ── SETTINGS VIEW ─────────────────────────────────────────────────
 import React from 'react';
+import { ccIsConnected, ccAuthorize, ccClearTokens, ccGetLists, ccSyncLeads } from '../lib/ccIntegration.js';
 
 export default function SettingsView({
   leads, setLeads, saveLeads,
@@ -19,6 +20,27 @@ export default function SettingsView({
   templates, scripts,
   saveScripts, saveTemplates,
 }) {
+  // ── CONSTANT CONTACT LOCAL STATE ─────────────────────────────────────
+  const [ccConnected, setCcConnected] = React.useState(() => ccIsConnected());
+  const [ccLists, setCcLists] = React.useState([]);
+  const [ccSelectedList, setCcSelectedList] = React.useState('');
+  const [ccListsLoading, setCcListsLoading] = React.useState(false);
+  const [ccSyncStatus, setCcSyncStatus] = React.useState('idle'); // idle | loading | success | error
+  const [ccSyncResult, setCcSyncResult] = React.useState(null);
+
+  // Load CC lists when connected
+  React.useEffect(() => {
+    if (!ccConnected) { setCcLists([]); setCcSelectedList(''); return; }
+    setCcListsLoading(true);
+    ccGetLists()
+      .then(lists => {
+        setCcLists(lists);
+        if (lists.length > 0) setCcSelectedList(prev => prev || lists[0].id);
+        setCcListsLoading(false);
+      })
+      .catch(() => setCcListsLoading(false));
+  }, [ccConnected]);
+
   return React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"32px",background:"var(--surface-2)"}},
     React.createElement("div",{style:{maxWidth:"640px",margin:"0 auto"}},
       React.createElement("h2",{style:{fontSize:"20px",fontWeight:"800",marginBottom:"24px",color:"var(--t1)",fontFamily:"'Syne',sans-serif"}},"Settings"),
@@ -295,6 +317,63 @@ export default function SettingsView({
           },
           style:{padding:"10px 24px",background:"var(--navy)",color:"#fff",border:"none",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}
         },"Save Financial Config")
+      ),
+
+
+      // ── CONSTANT CONTACT INTEGRATION CARD ──
+      React.createElement("div",{style:{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"16px",padding:"24px",marginBottom:"16px",boxShadow:"0 4px 16px rgba(0,0,0,0.03)"}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}},
+          React.createElement("div",null,
+            React.createElement("div",{style:{fontSize:"15px",fontWeight:"700",color:"var(--t1)"}},"📧 Constant Contact Sync"),
+            React.createElement("div",{style:{fontSize:"12px",color:"var(--t3)",marginTop:"4px",fontWeight:"500",lineHeight:"1.5"}},"Push Bucket A leads directly into a CC email list for drip campaigns.")
+          ),
+          ccConnected
+            ? React.createElement("span",{style:{fontSize:"11px",fontWeight:"700",padding:"4px 10px",background:"#DCFCE7",color:"#15803D",borderRadius:"20px",border:"1px solid #86EFAC"}},"● Connected")
+            : React.createElement("span",{style:{fontSize:"11px",fontWeight:"700",padding:"4px 10px",background:"var(--red-dim)",color:"var(--red)",borderRadius:"20px",border:"1px solid #FCA5A5"}},"○ Not Connected")
+        ),
+        !ccConnected && React.createElement("button",{
+          onClick:()=>ccAuthorize(),
+          style:{padding:"10px 20px",background:"var(--blue)",color:"#fff",border:"none",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer",marginBottom:"12px"}
+        },"🔗 Connect Constant Contact"),
+        ccConnected && React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:"12px"}},
+          ccListsLoading && React.createElement("div",{style:{fontSize:"12px",color:"var(--t3)"}},"Loading lists…"),
+          !ccListsLoading && ccLists.length > 0 && React.createElement("div",{style:{display:"flex",gap:"10px",alignItems:"center",flexWrap:"wrap"}},
+            React.createElement("label",{style:{fontSize:"12px",fontWeight:"600",color:"var(--t2)"}},"Target List:"),
+            React.createElement("select",{
+              value:ccSelectedList,
+              onChange:e=>setCcSelectedList(e.target.value),
+              style:{flex:1,padding:"8px 12px",borderRadius:"8px",border:"1px solid var(--border)",background:"var(--surface)",color:"var(--t1)",fontSize:"13px",fontWeight:"600"}
+            },
+              ccLists.map(l=>React.createElement("option",{key:l.id,value:l.id},l.name+" ("+l.count+" contacts)"))
+            )
+          ),
+          !ccListsLoading && ccLists.length === 0 && React.createElement("div",{style:{fontSize:"12px",color:"var(--t3)"}},"No active lists found in your CC account."),
+          React.createElement("div",{style:{display:"flex",gap:"10px",flexWrap:"wrap",alignItems:"center"}},
+            React.createElement("button",{
+              disabled:!ccSelectedList || ccSyncStatus==="loading",
+              onClick:()=>{
+                const bucketA = leads.filter(l=>l.bucket==="A");
+                if(!bucketA.length){ alert("No Bucket A leads found."); return; }
+                if(!window.confirm("Sync "+bucketA.length+" Bucket A leads to selected CC list?")) return;
+                setCcSyncStatus("loading"); setCcSyncResult(null);
+                ccSyncLeads(bucketA, ccSelectedList)
+                  .then(res=>{ setCcSyncStatus("success"); setCcSyncResult(res); })
+                  .catch(err=>{ setCcSyncStatus("error"); setCcSyncResult({error:err.message}); });
+              },
+              style:{padding:"10px 20px",background:ccSyncStatus==="loading"?"var(--surface-2)":"var(--green-dim)",color:ccSyncStatus==="loading"?"var(--t3)":"var(--green)",border:"1px solid #6EE7B7",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:ccSyncStatus==="loading"?"not-allowed":"pointer"}
+            }, ccSyncStatus==="loading" ? "⏳ Syncing…" : "📤 Sync Bucket A Leads"),
+            React.createElement("button",{
+              onClick:()=>{ccClearTokens(); setCcConnected(false); setCcSyncStatus("idle"); setCcSyncResult(null);},
+              style:{padding:"10px 16px",background:"var(--red-dim)",color:"var(--red)",border:"1px solid #FCA5A5",borderRadius:"8px",fontSize:"12px",fontWeight:"700",cursor:"pointer"}
+            },"Disconnect")
+          ),
+          ccSyncStatus==="success" && ccSyncResult && React.createElement("div",{style:{padding:"10px 14px",background:"#DCFCE7",border:"1px solid #86EFAC",borderRadius:"8px",fontSize:"12px",color:"#15803D",fontWeight:"600"}},
+            "✅ Sync submitted — "+ccSyncResult.count+" contacts queued (Activity ID: "+ccSyncResult.activityId+")"
+          ),
+          ccSyncStatus==="error" && ccSyncResult && React.createElement("div",{style:{padding:"10px 14px",background:"var(--red-dim)",border:"1px solid #FCA5A5",borderRadius:"8px",fontSize:"12px",color:"var(--red)",fontWeight:"600"}},
+            "❌ Sync failed: "+ccSyncResult.error
+          )
+        )
       ),
 
       // ── Data Management Card ──

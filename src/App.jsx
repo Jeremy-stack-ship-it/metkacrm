@@ -78,6 +78,7 @@ import CallbackQueue from './components/CallbackQueue.jsx';
 import ActivityDashboard from './components/ActivityDashboard.jsx';
 import DialView from './components/DialView.jsx';
 import FieldMapModal from './components/FieldMapModal.jsx';
+import { ccExchangeCode } from './lib/ccIntegration.js';
 import ImportModal from './components/ImportModal.jsx';
 import NavSidebar from './components/NavSidebar.jsx';
 import AppHeader from './components/AppHeader.jsx';
@@ -253,6 +254,21 @@ function MetkaCRM(){
   useEffect(() => { try{ if(openId) localStorage.setItem(LS_OPEN_ID,openId); else localStorage.removeItem(LS_OPEN_ID); }catch{} }, [openId]);
 
   // v4.0 — Twilio Voice Device/Call state lives in useTwilioDevice hook (wired after leadMgr below)
+
+  // ── CONSTANT CONTACT OAUTH CALLBACK (v4.1) ─────────────────────────────
+  // Handles the /cc-callback route when CC redirects back after authorization.
+  // Runs once on mount; cleans up the URL after processing.
+  useEffect(() => {
+    if (window.location.pathname !== '/cc-callback') return;
+    const code = new URLSearchParams(window.location.search).get('code');
+    if (!code) { window.location.replace('/'); return; }
+    ccExchangeCode(code)
+      .then(() => { window.location.replace('/'); })
+      .catch(err => {
+        alert('Constant Contact auth failed: ' + err.message);
+        window.location.replace('/');
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
  useEffect(()=>{
     try{
