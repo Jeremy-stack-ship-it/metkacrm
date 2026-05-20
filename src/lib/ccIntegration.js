@@ -126,19 +126,6 @@ const ccFetch = async (path, opts = {}) => {
   return res.status === 204 ? null : res.json();
 };
 
-// ── POLL ACTIVITY STATUS ──────────────────────────────────────────────────────
-// CC bulk imports are async. Poll /activities/{id} until state is completed|failed.
-// Returns { state, total, errors } — caller manages the polling interval.
-export const ccGetActivityStatus = async (activityId) => {
-  if (!activityId) throw new Error('No activityId');
-  const data = await ccFetch(`/activities/${activityId}`);
-  return {
-    state:  data?.state  || 'processing',  // initialized|processing|completed|cancelled|failed
-    total:  data?.status?.total_count  ?? null,
-    errors: data?.status?.errors_count ?? 0,
-  };
-};
-
 // ── GET CONTACT LISTS ─────────────────────────────────────────────────────────
 export const ccGetLists = async () => {
   const data = await ccFetch('/contact_lists?include_count=true');
@@ -146,42 +133,48 @@ export const ccGetLists = async () => {
 };
 
 // ── SYNC LEADS TO CC LIST ─────────────────────────────────────────────────────
-export const ccSyncLeads = async (leads, listId) => {
+// Uses PUT /v3/contacts (individual upsert) in parallel batches of CC_BATCH_SIZE.
+// The /activities/contacts bulk endpoint returns 404 for some CC account plans;
+// individual upserts via PUT /v3/contacts work universally.
+// onProgress({done, total, succeeded, failed}) fired after each batch.
+const CC_BATCH_SIZE = 20;
+
+export const ccSyncLeads = async (leads, listId, onProgress) => {
   if (!listId) throw new Error('No CC list selected');
 
   const contacts = leads
-    .filter(l => l.email)   // email required for CC bulk import
+    .filter(l => l.email)
     .map(l => {
-      const contact = {
-        email_address: l.email,   // must be plain string for /activities/contacts
-        first_name:    l.firstName || l.name?.split(' ')[0] || '',
-        last_name:     l.lastName  || l.name?.split(' ').slice(1).join(' ') || '',
-        phone_numbers:    [],
-        street_addresses: [],
+      const body = {
+        email_address:   { address: l.email, permission_to_send: 'implicit' },
+        first_name:      l.firstName || l.name?.split(' ')[0] || '',
+        last_name:       l.lastName  || l.name?.split(' ').slice(1).join(' ') || '',
+        list_memberships: [listId],
+        create_source:   'Account',
       };
-      if (l.phone) contact.phone_numbers.push({ phone_number: l.phone.replace(/\D/g,''), kind: 'home' });
-      if (l.state || l.city) {
-        const addr = { kind: 'home' };
-        if (l.state) addr.state = l.state;
-        if (l.city)  addr.city  = l.city;
-        contact.street_addresses.push(addr);
-      }
-      return contact;
+      if (l.phone) body.phone_numbers = [{ phone_number: l.phone.replace(/\D/g, ''), kind: 'home' }];
+      return body;
     });
 
   if (!contacts.length) throw new Error('No contacts with email to sync');
 
-  const result = await ccFetch('/activities/contacts', {
-    method: 'POST',
-    body: JSON.stringify({
-      import_data: contacts,  // JSON objects — no column_names needed
-      list_ids:    [listId],
-    }),
-  });
+  let succeeded = 0;
+  let failed    = 0;
+
+  for (let i = 0; i < contacts.length; i += CC_BATCH_SIZE) {
+    const batch = contacts.slice(i, i + CC_BATCH_SIZE);
+    const results = await Promise.allSettled(
+      batch.map(c => ccFetch('/contacts', { method: 'PUT', body: JSON.stringify(c) }))
+    );
+    results.forEach(r => { if (r.status === 'fulfilled') succeeded++; else failed++; });
+    if (onProgress) onProgress({ done: i + batch.length, total: contacts.length, succeeded, failed });
+  }
 
   return {
-    activityId: result?.activity_id,
-    status:     result?.state || 'submitted',
+    activityId: null,                // no async activity — sync is immediate
+    status:     failed === 0 ? 'completed' : 'completed_with_errors',
     count:      contacts.length,
+    succeeded,
+    failed,
   };
 };

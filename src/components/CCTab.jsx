@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ccIsConnected, ccAuthorize, ccClearTokens,
-  ccGetLists, ccSyncLeads, ccGetActivityStatus,
+  ccGetLists, ccSyncLeads,
 } from '../lib/ccIntegration.js';
 
-// ── CC TAB (v3.16) ────────────────────────────────────────────────
-// Simplified: sync all leads with an email address into a CC list.
-// No bucket filter. No disposition filter. Everyone with an email goes in.
+// ── CC TAB (v3.17) ────────────────────────────────────────────────
+// Sync all leads with an email into a CC list via PUT /v3/contacts batches.
+// No polling — progress shown live as batches complete.
 
 const LS_CC_HISTORY = 'metka-cc-sync-history-v1';
 
@@ -33,14 +33,12 @@ export default function CCTab({ leads }) {
   const [listsLoading,  setListsLoading]  = useState(false);
   const [listsError,    setListsError]    = useState(null);
   const [selectedList,  setSelectedList]  = useState('');
-  const [syncState,     setSyncState]     = useState('idle'); // idle|syncing|polling|done|error
-  const [syncActivity,  setSyncActivity]  = useState(null);
+  const [syncState,     setSyncState]     = useState('idle'); // idle|syncing|done|error
+  const [syncProgress,  setSyncProgress]  = useState(null);  // { done, total, succeeded, failed }
   const [syncError,     setSyncError]     = useState(null);
   const [history,       setHistory]       = useState(() => {
     try { return JSON.parse(localStorage.getItem(LS_CC_HISTORY) || '[]'); } catch { return []; }
   });
-
-  const pollRef = useRef(null);
 
   // All leads that have an email — the only audience we care about
   const emailLeads = leads.filter(l => l.email);
@@ -64,22 +62,18 @@ export default function CCTab({ leads }) {
     else { setLists([]); setSelectedList(''); }
   }, [connected, loadLists]);
 
-  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
-
   // ── CONNECT / DISCONNECT ──────────────────────────────────────────
   const handleConnect = () => { ccClearTokens(); ccAuthorize(); };
 
   const handleDisconnect = () => {
-    if (pollRef.current) clearInterval(pollRef.current);
     ccClearTokens();
     setConnected(false);
     setLists([]); setSelectedList('');
-    setSyncState('idle'); setSyncActivity(null);
+    setSyncState('idle'); setSyncProgress(null);
   };
 
   const resetSync = () => {
-    if (pollRef.current) clearInterval(pollRef.current);
-    setSyncState('idle'); setSyncActivity(null); setSyncError(null);
+    setSyncState('idle'); setSyncProgress(null); setSyncError(null);
   };
 
   // ── SYNC ──────────────────────────────────────────────────────────
@@ -91,45 +85,32 @@ export default function CCTab({ leads }) {
       `Sync ${emailLeads.length} leads (all with email) to "${listName}"?`
     )) return;
 
-    setSyncState('syncing'); setSyncError(null); setSyncActivity(null);
+    setSyncState('syncing');
+    setSyncError(null);
+    setSyncProgress({ done: 0, total: emailLeads.length, succeeded: 0, failed: 0 });
+
     try {
-      const res = await ccSyncLeads(emailLeads, selectedList);
-      setSyncActivity({ activityId: res.activityId, total: res.count, state: 'processing', errors: 0 });
-      setSyncState('polling');
+      const res = await ccSyncLeads(emailLeads, selectedList, (progress) => {
+        setSyncProgress(progress);
+      });
 
-      let attempts = 0;
-      pollRef.current = setInterval(async () => {
-        attempts++;
-        try {
-          const status = await ccGetActivityStatus(res.activityId);
-          setSyncActivity(prev => ({ ...prev, state: status.state, total: status.total ?? prev.total, errors: status.errors }));
+      setSyncState('done');
+      setSyncProgress({ done: res.count, total: res.count, succeeded: res.succeeded, failed: res.failed });
 
-          if (['completed', 'failed', 'cancelled'].includes(status.state)) {
-            clearInterval(pollRef.current);
-            setSyncState(status.state === 'completed' ? 'done' : 'error');
-
-            const entry = {
-              id:       Date.now(),
-              ts:       new Date().toISOString(),
-              listName,
-              count:    res.count,
-              state:    status.state,
-              errors:   status.errors,
-            };
-            setHistory(prev => {
-              const next = [entry, ...prev].slice(0, 10);
-              try { localStorage.setItem(LS_CC_HISTORY, JSON.stringify(next)); } catch {}
-              return next;
-            });
-          }
-        } catch { /* transient — keep polling */ }
-
-        if (attempts >= 45) {
-          clearInterval(pollRef.current);
-          setSyncState('error');
-          setSyncError('Timed out. Check your CC account — contacts may still be importing.');
-        }
-      }, 4000);
+      const entry = {
+        id:        Date.now(),
+        ts:        new Date().toISOString(),
+        listName,
+        count:     res.count,
+        succeeded: res.succeeded,
+        failed:    res.failed,
+        state:     res.failed === 0 ? 'completed' : 'completed_with_errors',
+      };
+      setHistory(prev => {
+        const next = [entry, ...prev].slice(0, 10);
+        try { localStorage.setItem(LS_CC_HISTORY, JSON.stringify(next)); } catch {}
+        return next;
+      });
 
     } catch (e) {
       setSyncState('error');
@@ -138,6 +119,10 @@ export default function CCTab({ leads }) {
   };
 
   // ── RENDER ────────────────────────────────────────────────────────
+  const syncPct = syncProgress && syncProgress.total > 0
+    ? Math.round((syncProgress.done / syncProgress.total) * 100)
+    : 0;
+
   return React.createElement('div', {
     style: { flex: 1, overflowY: 'auto', padding: '20px 24px', background: 'var(--bg)' },
   },
@@ -247,67 +232,100 @@ export default function CCTab({ leads }) {
         // Sync button
         React.createElement('button', {
           onClick: handleSync,
-          disabled: !selectedList || emailLeads.length === 0 || syncState === 'syncing' || syncState === 'polling',
+          disabled: !selectedList || emailLeads.length === 0 || syncState === 'syncing',
           style: btn(
-            (!selectedList || emailLeads.length === 0 || ['syncing', 'polling'].includes(syncState))
+            (!selectedList || emailLeads.length === 0 || syncState === 'syncing')
               ? 'var(--border)' : '#7C3AED',
             '#fff', 'none',
-            { width: '100%', padding: '13px', fontSize: '14px', opacity: ['syncing','polling'].includes(syncState) ? 0.7 : 1 }
+            { width: '100%', padding: '13px', fontSize: '14px', opacity: syncState === 'syncing' ? 0.7 : 1 }
           ),
         },
-          syncState === 'syncing' ? '⏳ Submitting…'
-          : syncState === 'polling' ? '📡 CC is processing…'
-          : `📤 Sync ${emailLeads.length} Leads to CC`
+          syncState === 'syncing'
+            ? `⏳ Syncing… ${syncPct}%`
+            : `📤 Sync ${emailLeads.length} Leads to CC`
         )
       ),
 
       // RIGHT — Sync status + list browser
       React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: '16px' } },
 
-        // Sync status
+        // Sync status card
         React.createElement('div', { style: card() },
           React.createElement('div', { style: { fontSize: '14px', fontWeight: '800', color: 'var(--t1)', marginBottom: '14px' } }, '📊 Sync Status'),
 
+          // idle
           syncState === 'idle' && React.createElement('div', { style: { fontSize: '13px', color: 'var(--t3)', fontStyle: 'italic' } },
             'No sync in progress. Select a list and hit sync.'),
 
-          ['syncing', 'polling'].includes(syncState) && React.createElement('div', null,
-            React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' } },
-              React.createElement('div', { style: { fontSize: '22px' } }, '⏳'),
-              React.createElement('div', null,
-                React.createElement('div', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--t1)' } },
-                  syncState === 'syncing' ? 'Submitting to Constant Contact…' : 'CC is processing your contacts…'),
-                syncActivity && React.createElement('div', { style: { fontSize: '11px', color: 'var(--t3)', marginTop: '3px' } },
-                  `Activity: ${syncActivity.activityId}`)
-              )
+          // syncing — live progress bar
+          syncState === 'syncing' && syncProgress && React.createElement('div', null,
+            React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '8px' } },
+              React.createElement('span', { style: { fontSize: '13px', fontWeight: '700', color: 'var(--t1)' } }, 'Pushing to Constant Contact…'),
+              React.createElement('span', { style: { fontSize: '13px', fontWeight: '800', color: '#7C3AED' } }, `${syncPct}%`)
             ),
-            syncActivity && React.createElement('div', {
-              style: { background: 'var(--surface-2)', borderRadius: '8px', padding: '10px 12px', fontSize: '12px', color: 'var(--t2)' },
+            // Progress bar
+            React.createElement('div', {
+              style: { height: '8px', borderRadius: '8px', background: 'var(--border)', overflow: 'hidden', marginBottom: '12px' },
             },
-              React.createElement('div', null, `Contacts submitted: ${syncActivity.total ?? '—'}`),
-              React.createElement('div', null, `Status: ${syncActivity.state}`)
+              React.createElement('div', {
+                style: {
+                  height: '100%', borderRadius: '8px',
+                  background: 'linear-gradient(90deg, #7C3AED, #A855F7)',
+                  width: `${syncPct}%`,
+                  transition: 'width 0.4s ease',
+                },
+              })
+            ),
+            // Batch stats
+            React.createElement('div', {
+              style: { display: 'flex', gap: '12px', fontSize: '12px' },
+            },
+              React.createElement('span', { style: { color: 'var(--t2)' } },
+                `${syncProgress.done} / ${syncProgress.total} processed`),
+              React.createElement('span', { style: { color: '#10B981', fontWeight: '700' } },
+                `✓ ${syncProgress.succeeded}`),
+              syncProgress.failed > 0 && React.createElement('span', { style: { color: '#DC2626', fontWeight: '700' } },
+                `✗ ${syncProgress.failed}`)
             )
           ),
 
-          syncState === 'done' && syncActivity && React.createElement('div', null,
-            React.createElement('div', { style: { fontSize: '28px', marginBottom: '8px' } }, '✅'),
-            React.createElement('div', { style: { fontSize: '14px', fontWeight: '800', color: '#065F46', marginBottom: '6px' } }, 'Sync Complete'),
+          // done
+          syncState === 'done' && syncProgress && React.createElement('div', null,
+            React.createElement('div', { style: { fontSize: '28px', marginBottom: '8px' } },
+              syncProgress.failed === 0 ? '✅' : '⚠️'),
+            React.createElement('div', { style: { fontSize: '14px', fontWeight: '800', color: syncProgress.failed === 0 ? '#065F46' : '#92400E', marginBottom: '6px' } },
+              syncProgress.failed === 0 ? 'Sync Complete' : 'Sync Complete (with errors)'),
             React.createElement('div', {
-              style: { background: '#ECFDF5', borderRadius: '8px', padding: '10px 12px', fontSize: '12px', color: '#065F46', marginBottom: '12px' },
+              style: {
+                background: syncProgress.failed === 0 ? '#ECFDF5' : '#FFFBEB',
+                borderRadius: '8px', padding: '10px 12px', fontSize: '12px',
+                color: syncProgress.failed === 0 ? '#065F46' : '#92400E',
+                marginBottom: '12px',
+              },
             },
-              React.createElement('div', null, `${syncActivity.total} contacts sent to CC`),
-              syncActivity.errors > 0 && React.createElement('div', { style: { color: '#D97706', marginTop: '4px' } }, `⚠ ${syncActivity.errors} errors`)
+              React.createElement('div', { style: { fontWeight: '700', marginBottom: '4px' } },
+                `${syncProgress.total} contacts processed`),
+              React.createElement('div', null, `✓ ${syncProgress.succeeded} succeeded`),
+              syncProgress.failed > 0 && React.createElement('div', { style: { color: '#DC2626', marginTop: '2px' } },
+                `✗ ${syncProgress.failed} failed`)
             ),
-            React.createElement('button', { onClick: resetSync, style: btn('var(--surface-2)', 'var(--t2)', '1px solid var(--border)', { width: '100%' }) }, 'Start New Sync')
+            React.createElement('button', {
+              onClick: resetSync,
+              style: btn('var(--surface-2)', 'var(--t2)', '1px solid var(--border)', { width: '100%' }),
+            }, 'Start New Sync')
           ),
 
+          // error
           syncState === 'error' && React.createElement('div', null,
             React.createElement('div', { style: { fontSize: '28px', marginBottom: '8px' } }, '❌'),
             React.createElement('div', { style: { fontSize: '13px', fontWeight: '700', color: '#DC2626', marginBottom: '8px' } }, 'Sync Failed'),
             syncError && React.createElement('div', {
               style: { background: '#FEF2F2', borderRadius: '8px', padding: '10px 12px', fontSize: '11px', color: '#DC2626', marginBottom: '12px', wordBreak: 'break-word' },
             }, syncError),
-            React.createElement('button', { onClick: resetSync, style: btn('var(--surface-2)', 'var(--t2)', '1px solid var(--border)', { width: '100%' }) }, 'Try Again')
+            React.createElement('button', {
+              onClick: resetSync,
+              style: btn('var(--surface-2)', 'var(--t2)', '1px solid var(--border)', { width: '100%' }),
+            }, 'Try Again')
           )
         ),
 
@@ -315,7 +333,10 @@ export default function CCTab({ leads }) {
         React.createElement('div', { style: { ...card(), flex: 1 } },
           React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' } },
             React.createElement('div', { style: { fontSize: '14px', fontWeight: '800', color: 'var(--t1)' } }, '📋 Your CC Lists'),
-            React.createElement('button', { onClick: loadLists, style: btn('var(--surface-2)', 'var(--t3)', '1px solid var(--border)', { padding: '5px 10px', fontSize: '11px' }) }, '↻ Refresh')
+            React.createElement('button', {
+              onClick: loadLists,
+              style: btn('var(--surface-2)', 'var(--t3)', '1px solid var(--border)', { padding: '5px 10px', fontSize: '11px' }),
+            }, '↻ Refresh')
           ),
           listsLoading
             ? React.createElement('div', { style: { fontSize: '12px', color: 'var(--t3)' } }, 'Loading…')
@@ -356,15 +377,16 @@ export default function CCTab({ leads }) {
               border: '1px solid var(--border)',
             },
           },
-            React.createElement('div', { style: { fontSize: '16px', flexShrink: 0 } }, h.state === 'completed' ? '✅' : '❌'),
+            React.createElement('div', { style: { fontSize: '16px', flexShrink: 0 } },
+              h.state === 'completed' ? '✅' : h.state === 'completed_with_errors' ? '⚠️' : '❌'),
             React.createElement('div', { style: { flex: 1, minWidth: 0 } },
               React.createElement('div', { style: { fontSize: '12px', fontWeight: '700', color: 'var(--t1)' } }, h.listName),
               React.createElement('div', { style: { fontSize: '11px', color: 'var(--t3)', marginTop: '2px' } },
                 `${h.count} leads · ${new Date(h.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`)
             ),
-            h.errors > 0 && React.createElement('span', {
+            h.failed > 0 && React.createElement('span', {
               style: { fontSize: '10px', fontWeight: '800', color: '#D97706', background: '#FEF3C7', borderRadius: '5px', padding: '2px 7px' },
-            }, `${h.errors} errors`)
+            }, `${h.failed} errors`)
           )
         )
       )
