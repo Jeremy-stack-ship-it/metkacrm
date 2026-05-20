@@ -126,6 +126,19 @@ const ccFetch = async (path, opts = {}) => {
   return res.status === 204 ? null : res.json();
 };
 
+// ── POLL ACTIVITY STATUS ──────────────────────────────────────────────────────
+// CC bulk imports are async. Poll /activities/{id} until state is completed|failed.
+// Returns { state, total, errors } — caller manages the polling interval.
+export const ccGetActivityStatus = async (activityId) => {
+  if (!activityId) throw new Error('No activityId');
+  const data = await ccFetch(`/activities/${activityId}`);
+  return {
+    state:  data?.state  || 'processing',  // initialized|processing|completed|cancelled|failed
+    total:  data?.status?.total_count  ?? null,
+    errors: data?.status?.errors_count ?? 0,
+  };
+};
+
 // ── GET CONTACT LISTS ─────────────────────────────────────────────────────────
 export const ccGetLists = async () => {
   const data = await ccFetch('/contact_lists?include_count=true&status=ACTIVE');
@@ -146,7 +159,6 @@ export const ccSyncLeads = async (leads, listId) => {
         phone_numbers:    [],
         street_addresses: [],
       };
-      if (l.email) contact.email_address = { address: l.email, permission_to_send: 'implicit' };
       if (l.phone) contact.phone_numbers.push({ phone_number: l.phone.replace(/\D/g,''), kind: 'home' });
       if (l.state) contact.street_addresses.push({ state: l.state, kind: 'home' });
       if (l.city)  contact.street_addresses[0] = { ...contact.street_addresses[0], city: l.city };

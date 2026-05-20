@@ -82,6 +82,7 @@ import DialView from './components/DialView.jsx';
 import FieldMapModal from './components/FieldMapModal.jsx';
 import { ccExchangeCode } from './lib/ccIntegration.js';
 import AppointmentsView from './components/AppointmentsView.jsx';
+import CCTab from './components/CCTab.jsx';
 import ImportModal from './components/ImportModal.jsx';
 import NavSidebar from './components/NavSidebar.jsx';
 import AppHeader from './components/AppHeader.jsx';
@@ -1149,6 +1150,9 @@ const queue = useMemo(() => {
           leads, upd, logActivity,
           setOpenId, setView, setPrevView,
         }),
+
+        // ── CC TAB (v3.15) ──
+        view==="cc" && React.createElement(CCTab, { leads }),
 
         // ── ACTIVITY VIEW (v2.3) ──
         view==="activity" && React.createElement(ActivityDashboard, {
