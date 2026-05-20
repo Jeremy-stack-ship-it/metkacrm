@@ -70,10 +70,11 @@ export const makeLeadManager = (
         patch.notes = baseNotes;
       }
 
-      if (cur && patch.disposition && patch.disposition !== cur.disposition) {
+      if (cur && patch.disposition) {
         const nowIsContact = CONTACT_DISPS.includes(patch.disposition);
-        // v3.15 — removed !wasContact guard: was blocking contacts on all previously-worked leads.
-        // A contact fires whenever disposition changes TO a CONTACT_DISPS value, regardless of prior state.
+        // v3.16 — removed !== cur.disposition guard entirely. A contact fires every time a live-answer
+        // disposition is explicitly set (hung_up, callback, not_interested, etc.) regardless of whether
+        // the lead was already at that disposition from a prior call. Each answered dial = 1 contact.
         if (nowIsContact) {
           queued.push({ type: "contact", leadId: id });
         }
@@ -219,6 +220,6 @@ export const makeLeadManager = (
     logDial,
     lockCB,
     deleteLead,
-    addLead
+    addLead,
   };
 };
