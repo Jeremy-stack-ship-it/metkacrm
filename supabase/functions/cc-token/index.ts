@@ -5,7 +5,7 @@
 // Deploy: supabase functions deploy cc-token
 // Secrets: supabase secrets set CC_CLIENT_ID=... CC_CLIENT_SECRET=...
 
-const CC_TOKEN_URL = 'https://authz.constantcontact.com/oauth2/default/v1/token';
+const CC_TOKEN_URL = 'https://identity.constantcontact.com/oauth2/aus1lm3ry9mF7x2Ja0h8/v1/token';
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',

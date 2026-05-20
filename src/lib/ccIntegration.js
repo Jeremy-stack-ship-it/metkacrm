@@ -41,7 +41,8 @@ export const ccAuthorize = () => {
     scope:         'contact_data campaign_data',
     state:         Math.random().toString(36).slice(2),
   });
-  window.location.href = `${CC_AUTH_URL}?${params}`;
+  const url = `${CC_AUTH_URL}?${params}`;
+  window.location.href = url;
 };
 
 // ── STEP 2: Exchange auth code via Edge Function proxy ────────────────────────
