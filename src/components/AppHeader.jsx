@@ -7,17 +7,21 @@ export default function AppHeader({
   supaStatus, setView,
   setAddForm, fileRef, handleFile,
 }) {
+  const todayDials = activityStats?.today?.dials || 0;
+  const dialGoal   = goals?.dials || 100;
+  const dialPct    = Math.min(todayDials / dialGoal, 1);
+  const barColor   = dialPct < 0.5 ? '#DC2626' : dialPct < 0.8 ? '#F59E0B' : '#10B981';
+
   return React.createElement("header", {
     style: {
       background: "var(--surface)", padding: "0 24px", display: "flex",
       alignItems: "center", justifyContent: "space-between",
-      height: "56px", flexShrink: 0, borderBottom: "1px solid var(--border)",
+      height: "62px", flexShrink: 0, borderBottom: "1px solid var(--border)",
     }
   },
 
     // Brand / Title Area
     React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } },
-      // Hamburger — only visible on dial view
       view === "dial" && React.createElement("button", {
         onClick: () => setNavOpen(o => !o),
         title: navOpen ? "Hide navigation" : "Show navigation",
@@ -36,16 +40,68 @@ export default function AppHeader({
       }, "FIELD OPS"),
     ),
 
-    // Stats Strip (Centered) — Today's activity + critical pipeline signals only
+    // Stats Strip (Centered)
     React.createElement("div", { style: { display: "flex", gap: "5px", alignItems: "center" } },
 
-      // Today's accountability tiles (compact)
+      // ── DIALS TILE — battery fill indicator ──────────────────────────────────
+      React.createElement("button", {
+        onClick: () => setView("activity"),
+        title: todayDials + " / " + dialGoal + " dials today — " + Math.round(dialPct * 100) + "%",
+        style: {
+          position: "relative", overflow: "hidden",
+          display: "flex", alignItems: "center", gap: "6px",
+          padding: "7px 16px", borderRadius: "7px",
+          background: "var(--surface-2)",
+          border: "1.5px solid " + barColor + "60",
+          cursor: "pointer", minWidth: "110px",
+        }
+      },
+        // Battery fill — grows left-to-right
+        React.createElement("div", {
+          style: {
+            position: "absolute", top: 0, left: 0, bottom: 0,
+            width: (dialPct * 100) + "%",
+            background: `linear-gradient(90deg, ${barColor}28, ${barColor}40)`,
+            transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)",
+            pointerEvents: "none",
+          }
+        }),
+        // Count
+        React.createElement("span", {
+          style: {
+            position: "relative", fontSize: "20px", fontWeight: "800",
+            color: dialPct >= 1 ? barColor : dialPct > 0 ? barColor : "var(--t2)",
+            lineHeight: 1, fontFamily: "'JetBrains Mono',monospace",
+            transition: "color 0.4s ease",
+          }
+        }, "" + todayDials),
+        // Goal + label stacked
+        React.createElement("div", {
+          style: { position: "relative", display: "flex", flexDirection: "column", gap: "1px" }
+        },
+          React.createElement("span", {
+            style: { fontSize: "10px", fontWeight: "700", color: "var(--t3)", lineHeight: 1 }
+          }, "/" + dialGoal),
+          React.createElement("span", {
+            style: { fontSize: "10px", fontWeight: "800", letterSpacing: "0.06em", color: barColor, lineHeight: 1 }
+          }, "DIALS"),
+        ),
+        // Percentage badge — right edge
+        React.createElement("span", {
+          style: {
+            position: "relative", marginLeft: "auto",
+            fontSize: "10px", fontWeight: "700",
+            color: barColor, opacity: 0.85,
+          }
+        }, Math.round(dialPct * 100) + "%"),
+      ),
+
+      // Contacts + Appts tiles (unchanged compact style)
       ...(() => {
-        const td = activityStats?.today || { dials: 0, contacts: 0, appointments: 0 };
+        const td = activityStats?.today || { contacts: 0, appointments: 0 };
         return [
-          { val: td.dials,        goal: goals.dials,        label: "DIALS" },
           { val: td.contacts,     goal: goals.contacts,     label: "CONTACTS" },
-          { val: td.appointments, goal: goals.appointments, label: "APPTS" },
+          { val: td.appointments, goal: goals.appointments, label: "APPTS"    },
         ];
       })().map(t => {
         const tone = goalTone(t.val, t.goal);
@@ -74,7 +130,7 @@ export default function AppHeader({
       // Divider
       React.createElement("div", { style: { width: "1px", height: "20px", background: "var(--border)", margin: "0 3px" } }),
 
-      // Critical pipeline signals only — CB TODAY, OVERDUE, UW STUCK
+      // Pipeline signals
       ...[
         [stats.cbToday, "CB TODAY", "#0EA5E9",   "var(--sky-dim)"],
         [stats.overdue, "OVERDUE",  stats.overdue  > 0 ? "#DC2626" : "var(--t3)", stats.overdue  > 0 ? "var(--red-dim)" : "var(--surface-2)"],
@@ -97,9 +153,8 @@ export default function AppHeader({
       ),
     ),
 
-    // Actions (right side) — compact
+    // Actions (right side)
     React.createElement("div", { style: { display: "flex", gap: "6px", alignItems: "center" } },
-      // Cloud sync badge
       React.createElement("div", {
         title: "Supabase — " + supaStatus,
         style: {
@@ -117,13 +172,11 @@ export default function AppHeader({
           }
         }, supaStatus === "ok" ? "OK" : supaStatus === "syncing" ? "SYNC…" : supaStatus === "error" ? "ERR" : "CLOUD")
       ),
-      // Add lead
       React.createElement("button", {
         onClick: () => setAddForm(v => !v),
         title: "Add lead manually",
         style: { padding: "6px 13px", fontSize: "11px", fontWeight: "700", background: "transparent", color: "var(--green)", border: "1.5px solid var(--green)", borderRadius: "7px", cursor: "pointer", letterSpacing: "0.4px" }
       }, "+ ADD"),
-      // Import CSV
       React.createElement("button", {
         onClick: () => fileRef.current?.click(),
         title: "Import leads from CSV",

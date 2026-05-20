@@ -150,29 +150,32 @@ export const ccSyncLeads = async (leads, listId) => {
   if (!listId) throw new Error('No CC list selected');
 
   const contacts = leads
-    .filter(l => l.phone || l.email)
+    .filter(l => l.email)   // email required for CC bulk import
     .map(l => {
       const contact = {
-        first_name:       l.firstName || l.name?.split(' ')[0] || '',
-        last_name:        l.lastName  || l.name?.split(' ').slice(1).join(' ') || '',
-        list_memberships: [listId],
+        email_address: l.email,   // must be plain string for /activities/contacts
+        first_name:    l.firstName || l.name?.split(' ')[0] || '',
+        last_name:     l.lastName  || l.name?.split(' ').slice(1).join(' ') || '',
         phone_numbers:    [],
         street_addresses: [],
       };
       if (l.phone) contact.phone_numbers.push({ phone_number: l.phone.replace(/\D/g,''), kind: 'home' });
-      if (l.state) contact.street_addresses.push({ state: l.state, kind: 'home' });
-      if (l.city)  contact.street_addresses[0] = { ...contact.street_addresses[0], city: l.city };
+      if (l.state || l.city) {
+        const addr = { kind: 'home' };
+        if (l.state) addr.state = l.state;
+        if (l.city)  addr.city  = l.city;
+        contact.street_addresses.push(addr);
+      }
       return contact;
     });
 
-  if (!contacts.length) throw new Error('No contacts with phone or email to sync');
+  if (!contacts.length) throw new Error('No contacts with email to sync');
 
   const result = await ccFetch('/activities/contacts', {
     method: 'POST',
     body: JSON.stringify({
-      import_data:  contacts,
-      list_ids:     [listId],
-      column_names: ['first_name','last_name','email','phone_number','state','city'],
+      import_data: contacts,  // JSON objects — no column_names needed
+      list_ids:    [listId],
     }),
   });
 
