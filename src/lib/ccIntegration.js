@@ -141,7 +141,7 @@ export const ccGetActivityStatus = async (activityId) => {
 
 // ── GET CONTACT LISTS ─────────────────────────────────────────────────────────
 export const ccGetLists = async () => {
-  const data = await ccFetch('/contact_lists?include_count=true&status=ACTIVE');
+  const data = await ccFetch('/contact_lists?include_count=true');
   return (data?.lists || []).map(l => ({ id: l.list_id, name: l.name, count: l.membership_count }));
 };
 
