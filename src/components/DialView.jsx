@@ -215,10 +215,21 @@ export default function DialView({
                           notes: [{ ts: new Date().toISOString(), type: 'appointment', text: '📋 Manual Appt Booked — ' + label }, ...(open.notes || [])]
                         });
                         // Open Google Calendar pre-fill
+                        const LEAD_TYPE_TITLES = {
+                          'Mortgage Protection': '🏠 Mortgage Protection Review',
+                          'Final Expense':       '🛡 Final Expense Review',
+                          'Life Insurance':      '🛡 Life Insurance Review',
+                          'Term Life':           '🛡 Term Life Review',
+                          'Whole Life':          '🛡 Whole Life Review',
+                          'Annuity':             '📈 Annuity Review',
+                        };
+                        const apptTitle = (LEAD_TYPE_TITLES[open.leadType] || '🛡 Protection Review') + ' — ' + (open.name || 'Household');
                         const toGCalTs = ms => new Date(ms).toISOString().replace(/[-:.]/g,'').slice(0,15)+'Z';
                         const startMs = new Date(manualApptTs).getTime();
                         const endMs   = startMs + 30 * 60000;
-                        const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('🛡 Protection Audit — ' + (open.name || 'Household'))}&dates=${toGCalTs(startMs)}/${toGCalTs(endMs)}&details=${encodeURIComponent('Ministry of Protection — Household Protection Audit\n\nLead: ' + (open.name || '') + '\nPhone: ' + (open.phone || '') + '\n\nLogged via Metka Field Ops CRM')}`;
+                        const details = `Lead: ${open.name || ''}\nPhone: ${open.phone || ''}${open.email ? '\nEmail: ' + open.email : ''}\n\nLogged via Metka Field Ops CRM`;
+                        let gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(apptTitle)}&dates=${toGCalTs(startMs)}/${toGCalTs(endMs)}&details=${encodeURIComponent(details)}`;
+                        if (open.email) gcalUrl += `&add=${encodeURIComponent(open.email)}`;
                         window.open(gcalUrl, '_blank');
                         setManualApptOpen(false);
                         setManualApptTs('');

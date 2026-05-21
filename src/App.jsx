@@ -124,6 +124,7 @@ const LS_CALENDLY  = "metka-calendly-v1";        // v2.6
 const LS_BACKUP      = "metka-crm-backup-v1";      // v2.6 pre-import snapshot
 const LS_LAST_EXPORT = "metka-last-export-v1";     // v3.1 weekly backup reminder
 const LS_FINANCIAL   = "metka-financial-config-v1"; // v3.6 financial constants
+const LS_GMAIL       = "metka-gmail-config-v1";     // v3.17 Gmail integration
 const LS_MAPPING   = "metka-field-mapping-v1";   // v2.6 saved CSV column mapping
 const LS_TWILIO    = "metka-twilio-config-v1";   // v3.0 Twilio credentials
 const LS_OPEN_ID   = "metka-open-id-v1";         // v3.0 persist queue position
@@ -233,6 +234,15 @@ function MetkaCRM(){
   const [financialConfig, setFinancialConfig] = useState(DEFAULT_FINANCIAL);
   const [financialDraft,  setFinancialDraft]  = useState(DEFAULT_FINANCIAL);
   const [financialSaved,  setFinancialSaved]  = useState(false);
+  // v3.17 — Gmail integration config (Settings-editable)
+  const DEFAULT_GMAIL = { address: '', signature: '' };
+  const [gmailConfig, setGmailConfig] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(LS_GMAIL) || 'null') || DEFAULT_GMAIL; } catch { return DEFAULT_GMAIL; }
+  });
+  const [gmailDraft, setGmailDraft]   = useState(() => {
+    try { return JSON.parse(localStorage.getItem(LS_GMAIL) || 'null') || DEFAULT_GMAIL; } catch { return DEFAULT_GMAIL; }
+  });
+  const [gmailSaved, setGmailSaved]   = useState(false);
   // v3.0 — Twilio config
   const [twilioConfig, setTwilioConfig]       = useState({accountSid:"",authToken:"",fromNumber:""});
   const [twilioDraft, setTwilioDraft]         = useState({accountSid:"",authToken:"",fromNumber:""});
@@ -1260,6 +1270,9 @@ const queue = useMemo(() => {
           financialConfig, setFinancialConfig,
           financialDraft, setFinancialDraft,
           financialSaved, setFinancialSaved,
+          gmailConfig, setGmailConfig,
+          gmailDraft, setGmailDraft,
+          gmailSaved, setGmailSaved,
           backfillLead, SCHED_COLS, assignSlot,
           backupNeedsAlert, backupDaysSince, backupBg, backupBorder, backupColor,
           backupExists, restoreBackup,

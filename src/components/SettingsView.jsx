@@ -14,6 +14,9 @@ export default function SettingsView({
   financialConfig, setFinancialConfig,
   financialDraft, setFinancialDraft,
   financialSaved, setFinancialSaved,
+  gmailConfig, setGmailConfig,
+  gmailDraft, setGmailDraft,
+  gmailSaved, setGmailSaved,
   backfillLead, SCHED_COLS, assignSlot,
   backupNeedsAlert, backupDaysSince, backupBg, backupBorder, backupColor,
   backupExists, restoreBackup,
@@ -320,6 +323,47 @@ export default function SettingsView({
       ),
 
 
+      // ── GMAIL INTEGRATION CARD ──
+      React.createElement("div",{style:{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"16px",padding:"24px",marginBottom:"16px",boxShadow:"0 4px 16px rgba(0,0,0,0.03)"}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}},
+          React.createElement("div",null,
+            React.createElement("div",{style:{fontSize:"15px",fontWeight:"700",color:"var(--t1)"}},"✉️ Gmail / Email Integration"),
+            React.createElement("div",{style:{fontSize:"12px",color:"var(--t3)",marginTop:"4px",fontWeight:"500",lineHeight:"1.5"}},"Your sending address for lead email links. Opens Gmail compose pre-filled with lead info.")
+          ),
+          gmailSaved && React.createElement("span",{style:{fontSize:"11px",fontWeight:"800",color:"var(--green)",background:"var(--green-dim)",padding:"4px 10px",borderRadius:"20px",border:"1px solid #6EE7B7"}},"SAVED ✓")
+        ),
+        React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"YOUR EMAIL ADDRESS"),
+        React.createElement("input",{
+          type:"email",
+          placeholder:"Jeremy@metkasolutions.com",
+          value: gmailDraft.address || '',
+          onChange: e => setGmailDraft(d => ({...d, address: e.target.value})),
+          style:{width:"100%",padding:"10px 12px",borderRadius:"8px",border:"1px solid var(--border)",background:"var(--surface-2)",color:"var(--t1)",fontSize:"13px",fontFamily:"inherit",boxSizing:"border-box",marginBottom:"14px"}
+        }),
+        React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"DEFAULT EMAIL SIGNATURE (optional)"),
+        React.createElement("textarea",{
+          placeholder:"Jeremy Metka | Senior Field Underwriter\nMinistry of Protection | NPN #21425108\n(405) 555-0000",
+          value: gmailDraft.signature || '',
+          onChange: e => setGmailDraft(d => ({...d, signature: e.target.value})),
+          rows: 4,
+          style:{width:"100%",padding:"10px 12px",borderRadius:"8px",border:"1px solid var(--border)",background:"var(--surface-2)",color:"var(--t1)",fontSize:"12px",fontFamily:"inherit",boxSizing:"border-box",resize:"vertical",marginBottom:"14px"}
+        }),
+        gmailDraft.address && React.createElement("div",{style:{background:"var(--surface-2)",borderRadius:"8px",padding:"10px 14px",marginBottom:"14px",fontSize:"12px",color:"var(--t3)"}},
+          "📬 Email links throughout the CRM will open Gmail compose addressed to your lead, from ",
+          React.createElement("strong",{style:{color:"var(--t1)"}}, gmailDraft.address)
+        ),
+        React.createElement("button",{
+          onClick:()=>{
+            const next = { address: gmailDraft.address.trim(), signature: gmailDraft.signature.trim() };
+            setGmailConfig(next);
+            try { localStorage.setItem('metka-gmail-config-v1', JSON.stringify(next)); } catch {}
+            setGmailSaved(true);
+            setTimeout(()=>setGmailSaved(false),2500);
+          },
+          style:{padding:"10px 24px",background:"var(--navy)",color:"#fff",border:"none",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}
+        },"Save Gmail Config")
+      ),
+
       // ── CONSTANT CONTACT INTEGRATION CARD ──
       React.createElement("div",{style:{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"16px",padding:"24px",marginBottom:"16px",boxShadow:"0 4px 16px rgba(0,0,0,0.03)"}},
         React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}},
@@ -408,13 +452,13 @@ export default function SettingsView({
           )
         ),
         !backupNeedsAlert && React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"10px",padding:"10px 14px",background:"#F0FDF4",border:"1px solid #86EFAC",borderRadius:"10px",marginBottom:"16px"}},
-          React.createElement("span",{style:{fontSize:"16px"}},"✅"),
-          React.createElement("span",{style:{fontSize:"11px",fontWeight:"700",color:"#15803D"}},"Backed up "+backupDaysSince+" day"+(backupDaysSince===1?"":"s")+" ago — next due in "+(7-backupDaysSince)+" day"+(7-backupDaysSince===1?"":"s"))
+          React.createElement("span",{style:{fontSize:"16px"}},"\u2705"),
+          React.createElement("span",{style:{fontSize:"11px",fontWeight:"700",color:"#15803D"}},"Backed up "+backupDaysSince+" day"+(backupDaysSince===1?"":"s")+" ago \u2014 next due in "+(7-backupDaysSince)+" day"+(7-backupDaysSince===1?"":"s"))
         ),
         React.createElement("div",{style:{display:"flex",gap:"12px",flexWrap:"wrap"}},
-          React.createElement("button",{onClick:()=>{const data={leads,templates,scripts};const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`metka-backup-${new Date().toISOString().split("T")[0]}.json`;a.click();URL.revokeObjectURL(url);try{localStorage.setItem('metka-last-export-v1',new Date().toISOString());}catch{}},style:{padding:"10px 22px",background:"var(--green-dim)",color:"var(--green)",border:"1px solid #6EE7B7",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}},"📥 Export JSON"),
+          React.createElement("button",{onClick:()=>{const data={leads,templates,scripts};const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`metka-backup-${new Date().toISOString().split("T")[0]}.json`;a.click();URL.revokeObjectURL(url);try{localStorage.setItem('metka-last-export-v1',new Date().toISOString());}catch{}},style:{padding:"10px 22px",background:"var(--green-dim)",color:"var(--green)",border:"1px solid #6EE7B7",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}},"\ud83d\udce5 Export JSON"),
           React.createElement("label",{style:{padding:"10px 22px",background:"var(--sky-dim)",color:"var(--sky)",border:"1px solid #BAE6FD",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:"6px"}},
-            "📂 Restore JSON",
+            "\ud83d\udcc2 Restore JSON",
             React.createElement("input",{type:"file",accept:".json",style:{display:"none"},onChange:ev=>{
               const file=ev.target.files?.[0]; if(!file) return;
               const rd=new FileReader();
@@ -437,8 +481,8 @@ export default function SettingsView({
           backupExists && React.createElement("button",{
             onClick:()=>{ if(window.confirm("Restore your pre-import backup? This will replace current leads.")) restoreBackup(); },
             style:{padding:"10px 22px",background:"var(--amber-dim)",color:"var(--amber)",border:"1px solid var(--amber)",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}
-          },"↩ Restore Pre-Import Backup"),
-          React.createElement("button",{onClick:()=>{if(confirm("WIPE ALL LEADS? This cannot be undone.\n\nExport a backup first.")){saveLeads([]);alert("All leads cleared. Ready for fresh import.");}},style:{padding:"10px 22px",background:"var(--red-dim)",color:"var(--red)",border:"1px solid #FCA5A5",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}},"🗑 Wipe All Leads")
+          },"\u21a9 Restore Pre-Import Backup"),
+          React.createElement("button",{onClick:()=>{if(confirm("WIPE ALL LEADS? This cannot be undone.\n\nExport a backup first.")){saveLeads([]);alert("All leads cleared. Ready for fresh import.");}},style:{padding:"10px 22px",background:"var(--red-dim)",color:"var(--red)",border:"1px solid #FCA5A5",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}},"\ud83d\uddd1 Wipe All Leads")
         )
       )
     )
