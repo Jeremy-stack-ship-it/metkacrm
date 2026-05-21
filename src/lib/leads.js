@@ -4,7 +4,7 @@
 
 import { sbUpsertLead, sbAppendActivity, sbDeleteLead } from './supabaseSync.js';
 import { dayKey, CONTACT_DISPS, computeActivityQueue, makeActivityEvent } from './activityLog.js';
-import { backfillLead } from './phaseEngine.js';
+import { backfillLead, assignSlot } from './phaseEngine.js';
 
 // ── LEAD MANAGEMENT FACTORY ───────────────────────────────────────────────────────
 // Creates bound lead mutation functions. State mutation is delegated to parent component.
