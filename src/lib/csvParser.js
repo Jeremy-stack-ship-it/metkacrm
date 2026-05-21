@@ -30,9 +30,14 @@ export function autoDetectMapping(lowerHeaders) {
     fn:          fi(["firstname","first_name","first"]),
     ln:          fi(["lastname","last_name","last"]),
     name:        fi(["name","fullname","full_name","client"]),
-    phone:       fi(["cellphone","mobile","cell","phone","phone_number"]),
+    // phone: try cell first, then plain phone, then home/work as last resort
+    phone:       fi(["cellphone","mobile","cell"]),
+    phone2:      fi(["phone","phone_number"]),
+    phone3:      fi(["homephone","home_phone","workphone","work_phone"]),
     state:       fi(["state","st","province"]),
     city:        fi(["city","town"]),
+    county:      fi(["county"]),
+    zip:         fi(["zip","zipcode","zip_code","postal","postalcode"]),
     loan:        fi(["loanamount","loan_amount","mortgage","amount","loan"]),
     score:       fi(["score","ai_score","aiscore"]),
     tier:        fi(["tier","dial_tier","priority_tier"]),
@@ -47,7 +52,7 @@ export function autoDetectMapping(lowerHeaders) {
     status:      fi(["status","leadstatus","lead_status"]),
     assignDate:  fi(["assign_date","assigndate","date_assigned"]),
     daysOld:     fi(["days_old","days","age_days"]),
-    pdfUrl:      fi(["pdf_url","pdfurl","pdf","pdfurl"]),
+    pdfUrl:      fi(["pdf_url","pdfurl","pdf"]),
     importStage: fi(["stage","lead_stage"]),
     emailOpener: fi(["emailopener","email_opener","email_openers"]),
   };
@@ -62,6 +67,7 @@ export function parseCSV(txt, customIdxMap = null) {
   const mapDisp = s => {
     if (!s) return "not_called";
     const l = s.toLowerCase();
+    if (l.includes("sold") || l.includes("application taken") || l.includes("submitted")) return "submitted";
     if (l.includes("appointment")) return "interested";
     if (l.includes("no contact") || l.includes("unreachable")) return "no_answer";
     if (l.includes("no interest")) return "not_interested";
@@ -97,7 +103,8 @@ export function parseCSV(txt, customIdxMap = null) {
     const get = (idx) => idx > -1 ? (cols[idx] || "").replace(/^"|"$/g,"").trim() : "";
     let finalName = get(idxMap.name);
     if (!finalName) finalName = [get(idxMap.fn), get(idxMap.ln)].filter(Boolean).join(" ");
-    const rawPhone = get(idxMap.phone).replace(/\D/g, "");
+    // fall through cell → phone → home/work until we find a number
+    const rawPhone = (get(idxMap.phone) || get(idxMap.phone2 ?? -1) || get(idxMap.phone3 ?? -1)).replace(/\D/g, "");
     if (!rawPhone) return null;
     const aiScore      = parseInt(get(idxMap.score)) || 0;
     const tier         = get(idxMap.tier);
@@ -119,6 +126,8 @@ export function parseCSV(txt, customIdxMap = null) {
       phone: rawPhone.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3"),
       state: get(idxMap.state) || "OK",
       city: get(idxMap.city),
+      county: get(idxMap.county),
+      zip: get(idxMap.zip),
       email: get(idxMap.email),
       age: get(idxMap.age),
       loanAmount: get(idxMap.loan),
