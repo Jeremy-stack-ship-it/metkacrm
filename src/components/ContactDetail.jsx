@@ -96,15 +96,35 @@ const UnderwritingCard = ({ lead, upd, newReqText, setNewReqText, initUWReqs, to
     ),
 
     // Premium
-    React.createElement("div", { style:{ marginBottom:"16px" } },
+    React.createElement("div", { style:{ marginBottom:"12px" } },
       React.createElement("label", { style:{ fontSize: "11px", fontWeight:"700", color:"var(--t3)", letterSpacing:"0.6px", display:"block", marginBottom:"4px" } }, "EXPECTED PREMIUM (MONTHLY)"),
-      React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:"8px" } },
+      React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:"8px", flexWrap:"wrap" } },
         React.createElement("span", { style:{ fontSize:"14px", color:"var(--t3)", fontFamily:"'JetBrains Mono',monospace", fontWeight:"600" } }, "$"),
         React.createElement("input", { key:"premium-"+lead.id, placeholder:"0.00", defaultValue:lead.expectedPremium||"", onBlur:e=>{ const v=e.target.value.trim().replace(/[^0-9.]/g,""); if(v!==(lead.expectedPremium||"")) upd(lead.id,{expectedPremium:v}); }, style:{...inp(),width:"160px",fontSize:"13px",fontFamily:"'JetBrains Mono',monospace"} }),
         lead.expectedPremium && React.createElement("span", { style:{ fontSize:"11px", color:"var(--t3)", fontWeight:"500" } },
           "annual ≈ ",
-          React.createElement("span", { style:{ color:"var(--t2)", fontFamily:"'JetBrains Mono',monospace", fontWeight:"600" } }, currency(Number(lead.expectedPremium)*12) || "—")
+          React.createElement("span", { style:{ color:"var(--t2)", fontFamily:"'JetBrains Mono',monospace", fontWeight:"600" } },
+            (() => {
+              const apv = Number(lead.expectedPremium) * 12;
+              const splitPct = lead.splitDeal ? (Number(lead.splitPct) || 50) : 100;
+              return currency(apv * splitPct / 100) || "—";
+            })()
+          ),
+          lead.splitDeal && React.createElement("span", { style:{ color:"var(--amber)", fontWeight:"700", marginLeft:"4px" } },
+            " (my " + (lead.splitPct || 50) + "%)"
+          )
         )
+      )
+    ),
+
+    // Split Deal
+    React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"16px", padding:"8px 12px", background: lead.splitDeal ? "var(--amber-dim)" : "var(--surface-2)", borderRadius:"8px", border:"1px solid " + (lead.splitDeal ? "var(--amber)" : "var(--border)"), transition:"all 0.2s" } },
+      React.createElement("input", { type:"checkbox", id:"split-"+lead.id, checked:!!lead.splitDeal, onChange:e=>upd(lead.id,{splitDeal:e.target.checked, splitPct: lead.splitPct||50}), style:{ width:"15px", height:"15px", cursor:"pointer", accentColor:"var(--amber)" } }),
+      React.createElement("label", { htmlFor:"split-"+lead.id, style:{ fontSize:"12px", fontWeight:"700", color: lead.splitDeal ? "var(--amber)" : "var(--t3)", cursor:"pointer", flex:1 } }, "🤝 Split Deal"),
+      lead.splitDeal && React.createElement(React.Fragment, null,
+        React.createElement("span", { style:{ fontSize:"11px", color:"var(--t3)", fontWeight:"600" } }, "My share:"),
+        React.createElement("input", { key:"splitpct-"+lead.id, type:"number", min:"1", max:"99", defaultValue:lead.splitPct||50, onBlur:e=>{ const v=Math.min(99,Math.max(1,parseInt(e.target.value)||50)); upd(lead.id,{splitPct:v}); }, style:{...inp(),width:"64px",fontSize:"13px",fontFamily:"'JetBrains Mono',monospace",textAlign:"center"} }),
+        React.createElement("span", { style:{ fontSize:"12px", color:"var(--t3)", fontWeight:"600" } }, "%")
       )
     ),
 
@@ -303,8 +323,8 @@ export default function ContactDetail({
         React.createElement("div", { style:{ background:"var(--surface)", borderRadius:"12px", border:"1px solid var(--border)", padding:"20px 24px" } },
           React.createElement("div", { style:{ fontSize: "11px", fontWeight:"800", color:"var(--t3)", letterSpacing:"1.5px", marginBottom:"12px" } }, "SET CALLBACK"),
           open.nextCallback && React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"12px", padding:"10px 16px", background:"var(--sky-dim)", borderRadius:"10px", border:"1px solid #BAE6FD" } },
-            React.createElement("span", { style:{ fontSize:"13px", color:"var(--sky)", fontWeight:"700" } }, "📅 "+fmt(open.nextCallback)),
-            React.createElement("button", { onClick:()=>upd(open.id,{nextCallback:null}), style:{ marginLeft:"auto", background:"none", border:"none", color:"var(--t3)", cursor:"pointer", fontSize:"20px", lineHeight:1 } }, "×")
+            React.createElement("span", { style:{ fontSize:"13px", color:"var(--sky)", fontWeight:"700" } }, "\ud83d\udcc5 "+fmt(open.nextCallback)),
+            React.createElement("button", { onClick:()=>upd(open.id,{nextCallback:null}), style:{ marginLeft:"auto", background:"none", border:"none", color:"var(--t3)", cursor:"pointer", fontSize:"20px", lineHeight:1 } }, "\u00d7")
           ),
           React.createElement("div", { style:{ display:"flex", gap:"10px", flexWrap:"wrap" } },
             React.createElement("input", { type:"date", value:cbDate, onChange:e=>setCbDate(e.target.value), style:{...inp(),flex:1,minWidth:"140px"} }),
