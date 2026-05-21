@@ -122,9 +122,10 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
   const CONTRACT_LEVEL     = financialConfig.contractLevel     || '85%';
   const CONTRACT_TARGET    = financialConfig.contractTarget    || '100%';
 
+  // APV = monthly premium × 12 (Annual Policy Value)
   const weekAPV = activeLeads
     .filter(l => l.submittedDate && WEEK_KEYS.includes(l.submittedDate.substring(0,10)))
-    .reduce((sum, l) => sum + (parseFloat(l.expectedPremium) || 0), 0);
+    .reduce((sum, l) => sum + (parseFloat(l.expectedPremium) || 0) * 12, 0);
   const estWeekCommission = Math.round(weekAPV * AVG_PAYOUT_PCT);
   const breakEvenPct = WEEKLY_TARGET > 0
     ? Math.min(Math.round((estWeekCommission / WEEKLY_TARGET) * 100), 100)
