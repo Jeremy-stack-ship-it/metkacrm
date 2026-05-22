@@ -13,6 +13,10 @@ import {
   fmt, fmtDate, currency,
   chip, inp,
 } from '../constants.js';
+import {
+  getSequenceStatus, getSequenceBadgeColor, getNextTouchDate,
+  pauseSequence, resumeSequence, advanceSequence,
+} from '../lib/sequenceEngine.js';
 
 // ── STAGE STEPPER (local — only used in ContactDetail) ───────────
 const StageStepper = ({ stage, onSelect }) => {
@@ -333,15 +337,164 @@ export default function ContactDetail({
           )
         ),
 
-        // Underwriting card
-        React.createElement(UnderwritingCard, {
-          lead:open, key:"uw-cp-"+open.id,
-          upd, newReqText, setNewReqText,
-          initUWReqs, toggleUWReq, removeUWReq, addUWReq,
-        })
-      )
-    )
-  );
-}
+        // Sequence control panel
+        (() => {
+              const seqStatus = getSequenceStatus(open);
+              const seqColor  = getSequenceBadgeColor(open);
+              const nextTouch = getNextTouchDate(open);
+              const isPaused  = !!open.seqPaused;
+              const isExited  = !!open.seqExitReason && open.seqExitReason !== 'manual';
+              const track     = open.seqTrack || 'new';
+              const step      = open.seqStep  ?? 0;
+              const TRACK_LABELS = { new:'New Lead', 're-engage':'Re-Engage', ghost:'Ghost' };
+              const EXIT_OPTIONS = [
+                { value:'not_interested', label:'Not Interested' },
+                { value:'dnc',            label:'DNC — Do Not Contact' },
+                { value:'sold',           label:'Sold — Protection Placed' },
+                { value:'manual',         label:'Manual Hold' },
+              ];
 
-export { StageStepper, UnderwritingCard };
+              // Background tint based on state
+              const panelBg = isExited ? 'var(--surface)'
+                : isPaused   ? '#FFFBEB'
+                : seqColor === 'var(--red)' ? '#FFF5F5'
+                : 'var(--surface)';
+              const panelBorder = isExited ? 'var(--border)'
+                : isPaused   ? '#FCD34D'
+                : seqColor === 'var(--red)' ? '#FCA5A5'
+                : 'var(--border)';
+
+              return React.createElement("div", {
+                style:{ background:panelBg, borderRadius:"12px", border:"1px solid "+panelBorder, padding:"20px 24px" }
+              },
+                // Header
+                React.createElement("div", { style:{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"14px", gap:"8px", flexWrap:"wrap" } },
+                  React.createElement("div", { style:{ fontSize:"11px", fontWeight:"800", color:"var(--t3)", letterSpacing:"1.5px" } }, "🤖 SEQUENCE"),
+                  React.createElement("span", {
+                    style:{
+                      fontSize:"11px", fontWeight:"700", padding:"3px 10px", borderRadius:"var(--radius-pill)",
+                      color: seqColor,
+                      background: seqColor === 'var(--red)'   ? '#FEE2E2'
+                                : seqColor === 'var(--amber)' ? '#FEF3C7'
+                                : seqColor === 'var(--green)' ? '#ECFDF5'
+                                : seqColor === 'var(--blue)'  ? '#EFF6FF'
+                                : 'var(--surface-2)',
+                      border: "1px solid " + (
+                        seqColor === 'var(--red)'   ? '#FCA5A5'
+                      : seqColor === 'var(--amber)' ? '#FCD34D'
+                      : seqColor === 'var(--green)' ? '#6EE7B7'
+                      : seqColor === 'var(--blue)'  ? 'var(--blue-mid)'
+                      : 'var(--border)'
+                      )
+                    }
+                  }, seqStatus)
+                ),
+
+                // Track + Step row
+                React.createElement("div", { style:{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"10px", marginBottom:"12px" } },
+                  React.createElement("div", null,
+                    React.createElement("div", { style:{ fontSize:"10px", fontWeight:"700", color:"var(--t4)", letterSpacing:"0.6px", marginBottom:"4px" } }, "TRACK"),
+                    React.createElement("div", { style:{ fontSize:"13px", fontWeight:"700", color:"var(--t1)" } }, TRACK_LABELS[track] || track)
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("div", { style:{ fontSize:"10px", fontWeight:"700", color:"var(--t4)", letterSpacing:"0.6px", marginBottom:"4px" } }, "STEP"),
+                    React.createElement("div", { style:{ fontSize:"13px", fontWeight:"700", color:"var(--t1)", fontFamily:"'JetBrains Mono',monospace" } }, step)
+                  )
+                ),
+
+                // Next touch date
+                !isExited && React.createElement("div", {
+                  style:{ fontSize:"12px", color:"var(--t3)", marginBottom:"14px", padding:"8px 12px", background:"var(--surface-2)", borderRadius:"8px", border:"1px solid var(--border)", fontWeight:"500" }
+                },
+                  isPaused
+                    ? "Sequence paused — no automated touches will fire."
+                    : nextTouch
+                      ? React.createElement(React.Fragment, null,
+                          "Next touch: ",
+                          React.createElement("span", { style:{ color:"var(--t1)", fontWeight:"700", fontFamily:"'JetBrains Mono',monospace" } },
+                            nextTouch.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+                          )
+                        )
+                      : "No upcoming touches scheduled."
+                ),
+
+                // Action buttons
+                !isExited && React.createElement("div", { style:{ display:"flex", gap:"8px", marginBottom:"12px" } },
+                  isPaused
+                    ? React.createElement("button", {
+                        onClick: () => upd(open.id, resumeSequence()),
+                        style:{ flex:1, padding:"10px 14px", background:"var(--green)", color:"#fff", border:"none", borderRadius:"8px", fontSize:"12px", fontWeight:"700", cursor:"pointer" }
+                      }, "▶ Resume Sequence")
+                    : React.createElement("button", {
+                        onClick: () => upd(open.id, pauseSequence('manual')),
+                        style:{ flex:1, padding:"10px 14px", background:"var(--surface-2)", color:"var(--amber)", border:"1px solid #FCD34D", borderRadius:"8px", fontSize:"12px", fontWeight:"700", cursor:"pointer" }
+                      }, "⏸ Pause"),
+                  !isPaused && React.createElement("button", {
+                    onClick: () => upd(open.id, advanceSequence(open)),
+                    title: "Skip current step and advance to next",
+                    style:{ padding:"10px 14px", background:"var(--blue-dim)", color:"var(--blue)", border:"1px solid var(--blue-mid)", borderRadius:"8px", fontSize:"12px", fontWeight:"700", cursor:"pointer" }
+                  }, "Skip →")
+                ),
+
+                // Change track
+                !isExited && React.createElement("div", { style:{ marginBottom:"12px" } },
+                  React.createElement("div", { style:{ fontSize:"10px", fontWeight:"700", color:"var(--t4)", letterSpacing:"0.6px", marginBottom:"6px" } }, "CHANGE TRACK"),
+                  React.createElement("div", { style:{ display:"flex", gap:"6px" } },
+                    ['new','re-engage','ghost'].map(t =>
+                      React.createElement("button", {
+                        key: t,
+                        onClick: () => upd(open.id, {
+                          seqTrack:      t,
+                          seqStep:       0,
+                          seqStartDate:  new Date().toISOString(),
+                          seqPaused:     false,
+                          seqExitReason: null,
+                        }),
+                        style:{
+                          flex:1, padding:"7px 0", fontSize:"11px", fontWeight:"700", cursor:"pointer", borderRadius:"6px", textAlign:"center",
+                          background: track === t ? 'var(--navy)' : 'var(--surface-2)',
+                          color:      track === t ? '#fff'        : 'var(--t3)',
+                          border:     track === t ? 'none'        : '1px solid var(--border)',
+                        }
+                      }, { new:'New', 're-engage':'Re-Engage', ghost:'Ghost' }[t])
+                    )
+                  )
+                ),
+
+                // Exit sequence dropdown
+                React.createElement("div", null,
+                  React.createElement("div", { style:{ fontSize:"10px", fontWeight:"700", color:"var(--t4)", letterSpacing:"0.6px", marginBottom:"6px" } }, "EXIT SEQUENCE"),
+                  React.createElement("select", {
+                    value: open.seqExitReason || '',
+                    onChange: e => {
+                      const reason = e.target.value;
+                      if (!reason) return;
+                      upd(open.id, pauseSequence(reason));
+                    },
+                    style:{...inp(), width:"100%", fontSize:"12px", cursor:"pointer" }
+                  },
+                    React.createElement("option", { value:"" }, "— Select exit reason —"),
+                    EXIT_OPTIONS.map(o =>
+                      React.createElement("option", { key:o.value, value:o.value }, o.label)
+                    )
+                  ),
+                  isExited && React.createElement("button", {
+                    onClick: () => upd(open.id, resumeSequence()),
+                    style:{ marginTop:"8px", width:"100%", padding:"9px 0", background:"var(--surface-2)", color:"var(--blue)", border:"1px solid var(--blue-mid)", borderRadius:"8px", fontSize:"12px", fontWeight:"700", cursor:"pointer" }
+                  }, "↩ Re-Enter Sequence")
+                )
+              );
+            })(),
+
+            // Underwriting card
+            React.createElement(UnderwritingCard, {
+              lead:open, key:"uw-cp-"+open.id,
+              upd, newReqText, setNewReqText,
+              initUWReqs, toggleUWReq, removeUWReq, addUWReq,
+            })
+          )
+        )
+      );
+    }
+
+    export { StageStepper, UnderwritingCard };

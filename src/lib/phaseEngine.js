@@ -178,11 +178,18 @@ export const isDueToday = (lead) => {
 };
 
 export const backfillLead = (lead) => {
-  if (lead.phase) return lead;
+  const seqDefaults = {
+    seqTrack:      lead.seqTrack      ?? 'new',
+    seqStep:       lead.seqStep       ?? 0,
+    seqStartDate:  lead.seqStartDate  ?? new Date().toISOString(),
+    seqPaused:     lead.seqPaused     ?? false,
+    seqExitReason: lead.seqExitReason ?? null,
+  };
+  if (lead.phase) return { ...lead, ...seqDefaults };
   const phase = phaseFromBucket(lead);
-  if (phase === 'EXIT') return { ...lead, phase, next_dial: null };
+  if (phase === 'EXIT') return { ...lead, phase, next_dial: null, ...seqDefaults };
   const sched = buildSchedule(new Date());
-  return { ...lead, phase, phase_start: new Date().toISOString(), next_dial: sched.p1_1, ...sched };
+  return { ...lead, phase, phase_start: new Date().toISOString(), next_dial: sched.p1_1, ...sched, ...seqDefaults };
 };
 
 // ── NURTURE SMS SEQUENCES ────────────────────────────────────────

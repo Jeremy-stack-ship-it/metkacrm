@@ -125,6 +125,7 @@ const LS_BACKUP      = "metka-crm-backup-v1";      // v2.6 pre-import snapshot
 const LS_LAST_EXPORT = "metka-last-export-v1";     // v3.1 weekly backup reminder
 const LS_FINANCIAL   = "metka-financial-config-v1"; // v3.6 financial constants
 const LS_GMAIL       = "metka-gmail-config-v1";     // v3.17 Gmail integration
+const LS_SEQ_CONFIG  = "metka-seq-config-v1";       // v3.18 Sequence Engine (Apps Script + Calendly)
 const LS_MAPPING   = "metka-field-mapping-v1";   // v2.6 saved CSV column mapping
 const LS_TWILIO    = "metka-twilio-config-v1";   // v3.0 Twilio credentials
 const LS_OPEN_ID   = "metka-open-id-v1";         // v3.0 persist queue position
@@ -243,6 +244,15 @@ function MetkaCRM(){
     try { return JSON.parse(localStorage.getItem(LS_GMAIL) || 'null') || DEFAULT_GMAIL; } catch { return DEFAULT_GMAIL; }
   });
   const [gmailSaved, setGmailSaved]   = useState(false);
+  // v3.18 — Sequence Engine config (Apps Script URL, Calendly, agent phone)
+  const DEFAULT_SEQ_CONFIG = { appsScriptUrl: '', calendlyUrl: '', agentPhone: '' };
+  const [seqConfig, setSeqConfig] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(LS_SEQ_CONFIG) || 'null') || DEFAULT_SEQ_CONFIG; } catch { return DEFAULT_SEQ_CONFIG; }
+  });
+  const [seqDraft, setSeqDraft]   = useState(() => {
+    try { return JSON.parse(localStorage.getItem(LS_SEQ_CONFIG) || 'null') || DEFAULT_SEQ_CONFIG; } catch { return DEFAULT_SEQ_CONFIG; }
+  });
+  const [seqSaved, setSeqSaved]   = useState(false);
   // v3.0 — Twilio config
   const [twilioConfig, setTwilioConfig]       = useState({accountSid:"",authToken:"",fromNumber:""});
   const [twilioDraft, setTwilioDraft]         = useState({accountSid:"",authToken:"",fromNumber:""});
@@ -1273,6 +1283,9 @@ const queue = useMemo(() => {
           gmailConfig, setGmailConfig,
           gmailDraft, setGmailDraft,
           gmailSaved, setGmailSaved,
+          seqConfig, setSeqConfig,
+          seqDraft, setSeqDraft,
+          seqSaved, setSeqSaved,
           backfillLead, SCHED_COLS, assignSlot,
           backupNeedsAlert, backupDaysSince, backupBg, backupBorder, backupColor,
           backupExists, restoreBackup,
@@ -1295,10 +1308,4 @@ const queue = useMemo(() => {
   );
 }
 
-function App() {
-  const [authed, markAuthed] = useAuth();
-  if (!authed) return React.createElement(LoginGate, { onAuth: markAuthed });
-  return React.createElement(MetkaCRM);
-}
-
-export default App;
+export default MetkaCRM;

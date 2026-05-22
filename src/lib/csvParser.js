@@ -64,17 +64,32 @@ export function parseCSV(txt, customIdxMap = null) {
   const headers = lines[0].split(",").map(h => h.replace(/^"|"$/g, "").trim().toLowerCase());
   const idxMap = customIdxMap || autoDetectMapping(headers);
 
-  const mapDisp = s => {
-    if (!s) return "not_called";
-    const l = s.toLowerCase();
-    if (l.includes("sold") || l.includes("application taken") || l.includes("submitted")) return "submitted";
-    if (l.includes("appointment")) return "interested";
-    if (l.includes("no contact") || l.includes("unreachable")) return "no_answer";
-    if (l.includes("no interest")) return "not_interested";
-    if (l.includes("dnc") || l.includes("do not call")) return "dnc";
-    if (l.includes("active") || l.includes("contacting")) return "callback";
-    return "not_called";
+  // Full status map — returns disposition + sequence fields from raw Lighthouse LeadStatus
+  const mapStatus = s => {
+    const l = (s || "").toLowerCase();
+    if (l.includes("sold") || l.includes("application taken") || l.includes("application submitted") || (l.includes("submitted") && !l.includes("contact")))
+      return { disposition:"submitted",     seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"sold"           };
+    if (l.includes("credit approved"))
+      return { disposition:"interested",    seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"booked"         };
+    if (l.includes("appointment set") || l.includes("appointment"))
+      return { disposition:"interested",    seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"booked"         };
+    if (l.includes("no interest") || l.includes("not interested"))
+      return { disposition:"not_interested",seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"not_interested" };
+    if (l.includes("dnc") || l.includes("do not call"))
+      return { disposition:"dnc",           seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"dnc"            };
+    if (l.includes("credit denied") || l.includes("declined"))
+      return { disposition:"not_interested",seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"credit_denied"  };
+    if (l.includes("no contact") || l.includes("unreachable"))
+      return { disposition:"no_answer",     seqTrack:"ghost",      seqStep:0, seqPaused:false, seqExitReason:null             };
+    if (l.includes("contact attempted"))
+      return { disposition:"callback",      seqTrack:"re-engage",  seqStep:0, seqPaused:false, seqExitReason:null             };
+    if (l.includes("active") || l.includes("contacting"))
+      return { disposition:"callback",      seqTrack:"re-engage",  seqStep:1, seqPaused:false, seqExitReason:null             };
+    // "New Lead" and anything unrecognised → fresh, never touched
+    return { disposition:"not_called",      seqTrack:"new",        seqStep:0, seqPaused:false, seqExitReason:null             };
   };
+
+  const mapDisp = s => mapStatus(s).disposition;
 
   const mapBucket = (bv, tv, dv, assignDateRaw) => {
     if (bv && ["A","B","C"].includes(bv.toUpperCase())) return bv.toUpperCase();
@@ -114,7 +129,8 @@ export function parseCSV(txt, customIdxMap = null) {
     const flags        = get(idxMap.flags);
     const rationale    = get(idxMap.rationale);
     const statusRaw    = get(idxMap.status);
-    const disposition  = mapDisp(statusRaw);
+    const statusFields = mapStatus(statusRaw);
+    const { disposition, seqTrack, seqStep, seqPaused, seqExitReason } = statusFields;
     const notes = [];
     const commentsTxt = get(idxMap.comments);
     if (commentsTxt) notes.push({ ts: new Date().toISOString(), type: "note", text: commentsTxt });
@@ -138,6 +154,7 @@ export function parseCSV(txt, customIdxMap = null) {
       stage: (get(idxMap.importStage) && STAGES.find(s => s.id === get(idxMap.importStage))) ? get(idxMap.importStage) : (disposition === "interested" ? "audit_set" : "new"),
       emailOpener: get(idxMap.emailOpener).toUpperCase() === "YES",
       disposition, notes, assignDate,
+      seqTrack, seqStep, seqStartDate: assignDate, seqPaused, seqExitReason,
       lastContact: null, nextCallback: null,
     };
   }).filter(l => l && l.phone);

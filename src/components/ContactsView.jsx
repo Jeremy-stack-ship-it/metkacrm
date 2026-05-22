@@ -1,6 +1,7 @@
 // ── CONTACTS VIEW ─────────────────────────────────────────────────
 import React from 'react';
 import { STAGES, DISPS, BC, BL, isUWStuck, daysInUW, inp } from '../constants.js';
+import { getSequenceStatus, getSequenceBadgeColor, isSeqDueToday } from '../lib/sequenceEngine.js';
 
 export default function ContactsView({
   leads,
@@ -150,7 +151,19 @@ export default function ContactsView({
                  _cbod && React.createElement("span",{style:{marginLeft:"6px",fontSize: "11px",padding:"2px 7px",borderRadius:"var(--radius-pill)",background:"#FEF9C3",color:"#CA8A04",fontWeight:"800"}},"📞 CB OD"),
                  _due && React.createElement("span",{style:{marginLeft:"6px",fontSize: "11px",padding:"2px 7px",borderRadius:"var(--radius-pill)",background:"#FEE2E2",color:"#DC2626",fontWeight:"800"}},"🔴 DUE"),
                  _undialed && !_due && React.createElement("span",{style:{marginLeft:"6px",fontSize: "11px",padding:"2px 7px",borderRadius:"var(--radius-pill)",background:"#ECFDF5",color:"#059669",fontWeight:"800"}},"● NEW"),
-                 lead.emailOpener && React.createElement("span",{style:{marginLeft:"6px",fontSize: "11px",padding:"2px 7px",borderRadius:"var(--radius-pill)",background:"var(--amber-dim)",color:"var(--amber)",fontWeight:"800",border:"1px solid var(--amber)"}},"📧 OPENER")
+                 lead.emailOpener && React.createElement("span",{style:{marginLeft:"6px",fontSize: "11px",padding:"2px 7px",borderRadius:"var(--radius-pill)",background:"var(--amber-dim)",color:"var(--amber)",fontWeight:"800",border:"1px solid var(--amber)"}},"📧 OPENER"),
+                 // Sequence status badge — only show when actionable (active, due, or paused with meaning)
+                 (()=>{
+                   if (lead.seqExitReason === 'sold' || lead.seqExitReason === 'booked') return null;
+                   const status = getSequenceStatus(lead);
+                   if (!status || status === 'No Sequence') return null;
+                   const color = getSequenceBadgeColor(lead);
+                   const due = isSeqDueToday(lead);
+                   const bg = due ? '#FEE2E2' : (lead.seqPaused ? '#FEF3C7' : '#EFF6FF');
+                   const border = due ? '#FCA5A5' : (lead.seqPaused ? '#FCD34D' : '#BFDBFE');
+                   const label = status.length > 20 ? status.slice(0, 18) + '…' : status;
+                   return React.createElement("span",{style:{marginLeft:"6px",fontSize:"10px",padding:"2px 7px",borderRadius:"var(--radius-pill)",background:bg,color:color,fontWeight:"800",border:"1px solid "+border,whiteSpace:"nowrap"}},label);
+                 })()
                ),
                // Dial — Twilio if enabled, tel: fallback
                React.createElement("td", {style: {padding: "14px 20px"}},

@@ -5,6 +5,7 @@
 import { sbUpsertLead, sbAppendActivity, sbDeleteLead } from './supabaseSync.js';
 import { dayKey, CONTACT_DISPS, computeActivityQueue, makeActivityEvent } from './activityLog.js';
 import { backfillLead, assignSlot } from './phaseEngine.js';
+import { seqPatchForDisposition, initSequence } from './sequenceEngine.js';
 
 // ── LEAD MANAGEMENT FACTORY ───────────────────────────────────────────────────────
 // Creates bound lead mutation functions. State mutation is delegated to parent component.
@@ -77,6 +78,11 @@ export const makeLeadManager = (
         // the lead was already at that disposition from a prior call. Each answered dial = 1 contact.
         if (nowIsContact) {
           queued.push({ type: "contact", leadId: id });
+        }
+        // v3.18 — auto-pause sequence on terminal/booked dispositions
+        const seqPatch = seqPatchForDisposition(patch.disposition);
+        if (seqPatch && Object.keys(seqPatch).length) {
+          Object.assign(patch, seqPatch);
         }
       }
 
@@ -207,7 +213,7 @@ export const makeLeadManager = (
       firstName: newL.name.split(" ")[0] || "",
             lastName: newL.name.split(" ").slice(1).join(" ") || ""
     };
-    const l = { ...backfillLead(rawL), slot: assignSlot(rawL) }; // v3.1 phase schedule + v3.14 hash-based slot
+    const l = { ...backfillLead(rawL), slot: assignSlot(rawL), ...initSequence(rawL) }; // v3.18 + phase + seq fields
     saveLeads([l, ...leads]);
     setNewL({ name: "", phone: "", state: "OK", bucket: "A", leadType: "Mortgage Protection" });
     setAddForm(false);
