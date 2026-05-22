@@ -219,17 +219,31 @@ serve(async (req) => {
       const trackLabel = TRACK_LABEL[track] || track;
 
       // ── ARCHIVE STEP ──────────────────────────────────────────────
+      // Sequence stops sending (seqExitReason: exhausted) but lead stage is NOT
+      // changed to "archived" until 2 years have passed from assignDate.
+      // This keeps the lead visible in the pipeline for potential re-engagement.
       if (entry.channels.includes("archive")) {
+        const assignDateStr = (lead.assignDate as string) || startDate;
+        const assignedOn    = new Date(assignDateStr);
+        const twoYearsAgo   = new Date();
+        twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+        const isPastTwoYears = assignedOn <= twoYearsAgo;
+
         const archiveNote = makeNote(
-          `[SEQ] Sequence exhausted — Track: ${trackLabel} | Step ${step} | File archived automatically.`
+          isPastTwoYears
+            ? `[SEQ] Sequence exhausted — Track: ${trackLabel} | Step ${step} | File archived (2yr+).`
+            : `[SEQ] Sequence exhausted — Track: ${trackLabel} | Step ${step} | Lead marked Dormant. Will auto-archive after 2 years from assign date.`
         );
         const existingNotes = (lead.notes as CRMNote[]) || [];
         const updated = {
           ...lead,
           seqPaused:     true,
           seqExitReason: "exhausted",
-          stage:         (lead.stage === "new" || lead.stage === "contacted") ? "archived" : lead.stage,
-          notes:         [archiveNote, ...existingNotes],
+          // Only flip stage to archived if 2 full years have passed since assignDate
+          stage: isPastTwoYears && (lead.stage === "new" || lead.stage === "contacted")
+            ? "archived"
+            : lead.stage,
+          notes: [archiveNote, ...existingNotes],
         };
         await supabase.from("leads")
           .update({ data: updated, updated_at: new Date().toISOString() })

@@ -135,7 +135,7 @@ export const getSequenceStatus = (lead) => {
   if (lead.seqExitReason === 'not_interested') return '🚫 Not Interested';
   if (lead.seqExitReason === 'dnc')            return '⛔ DNC';
   if (lead.seqExitReason === 'credit_denied')  return '❌ Credit Denied';
-  if (lead.seqExitReason === 'exhausted')      return '📁 Archived';
+  if (lead.seqExitReason === 'exhausted')      return '📬 Dormant';
   if (lead.seqExitReason === 'manual')         return '⏸ Paused';
   if (lead.seqPaused)                          return '⏸ Paused';
   const track = lead.seqTrack || 'new';
