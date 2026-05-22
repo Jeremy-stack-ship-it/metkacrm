@@ -1,6 +1,8 @@
 // ── PROCESS-SEQUENCE Edge Function ────────────────────────────────────────────
 // Daily cron: queries all active sequence leads, fires due touches (SMS + email),
 // advances seqStep, auto-archives exhausted tracks.
+// Every action (email sent, SMS sent, dial reminder flagged, archive, errors)
+// is written back to the lead's notes array so CRM activity history is complete.
 //
 // Called by pg_cron at 8:00 AM UTC daily (see DEPLOY_INSTRUCTIONS.md).
 // Also callable manually via POST for testing.
@@ -24,7 +26,6 @@ const CORS = {
 };
 
 // ── TRACK SCHEDULES ────────────────────────────────────────────────────────────
-// Mirrors src/lib/sequenceTemplates.js — keep in sync if schedules change.
 type SchedEntry = { step: number; day: number; channels: string[] };
 const TRACK_SCHEDULES: Record<string, SchedEntry[]> = {
   new: [
@@ -53,8 +54,6 @@ const TRACK_SCHEDULES: Record<string, SchedEntry[]> = {
 };
 
 // ── SMS TEMPLATES ─────────────────────────────────────────────────────────────
-// Short, compliant. No Calendly links per A2P rules until campaign approved.
-// Always include "Reply STOP to opt out."
 type SmsFn = (firstName: string) => string;
 
 const SMS: Record<string, { mp: SmsFn; li: SmsFn }> = {
@@ -139,6 +138,23 @@ function leadCat(leadType: string): "mp" | "li" {
   return (leadType || "").toLowerCase().includes("mortgage") ? "mp" : "li";
 }
 
+// ── NOTE FACTORY ──────────────────────────────────────────────────────────────
+// Produces a note object matching CRM leads.js format:
+//   { ts: ISO string, type: "note", text: string }
+// Prepended to lead.notes — appears at top of contact card timeline.
+type CRMNote = { ts: string; type: string; text: string };
+
+function makeNote(text: string): CRMNote {
+  return { ts: new Date().toISOString(), type: "note", text };
+}
+
+// ── TRACK LABELS ──────────────────────────────────────────────────────────────
+const TRACK_LABEL: Record<string, string> = {
+  "new":        "New Lead",
+  "re-engage":  "Re-Engage",
+  "ghost":      "Ghost Protocol",
+};
+
 // ── MAIN ──────────────────────────────────────────────────────────────────────
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -200,13 +216,20 @@ serve(async (req) => {
       const startDate = (lead.seqStartDate as string) || (lead.assignDate as string) || new Date().toISOString();
       if (!isDueToday(startDate, entry.day)) { results.skipped++; continue; }
 
+      const trackLabel = TRACK_LABEL[track] || track;
+
       // ── ARCHIVE STEP ──────────────────────────────────────────────
       if (entry.channels.includes("archive")) {
+        const archiveNote = makeNote(
+          `[SEQ] Sequence exhausted — Track: ${trackLabel} | Step ${step} | File archived automatically.`
+        );
+        const existingNotes = (lead.notes as CRMNote[]) || [];
         const updated = {
           ...lead,
           seqPaused:     true,
           seqExitReason: "exhausted",
           stage:         (lead.stage === "new" || lead.stage === "contacted") ? "archived" : lead.stage,
+          notes:         [archiveNote, ...existingNotes],
         };
         await supabase.from("leads")
           .update({ data: updated, updated_at: new Date().toISOString() })
@@ -217,6 +240,9 @@ serve(async (req) => {
 
       const firstName = (lead.firstName as string) || ((lead.name as string) || "").split(" ")[0] || "there";
       const cat       = leadCat((lead.leadType as string) || "");
+
+      // Collect all activity notes for this lead this run
+      const activityNotes: CRMNote[] = [];
 
       // ── SEND SMS ──────────────────────────────────────────────────
       if (entry.channels.includes("sms") && lead.phone) {
@@ -233,12 +259,23 @@ serve(async (req) => {
             });
             if (resp.ok) {
               results.smsSent++;
+              activityNotes.push(makeNote(
+                `[SEQ] SMS sent — Track: ${trackLabel} | Step ${step} | To: ${lead.phone}`
+              ));
             } else {
               const errText = await resp.text();
-              results.errors.push(`SMS[${row.id}]: ${errText.slice(0, 120)}`);
+              const errMsg = errText.slice(0, 120);
+              results.errors.push(`SMS[${row.id}]: ${errMsg}`);
+              activityNotes.push(makeNote(
+                `[SEQ] SMS FAILED — Track: ${trackLabel} | Step ${step} | Error: ${errMsg}`
+              ));
             }
           } catch (e) {
-            results.errors.push(`SMS[${row.id}]: ${(e as Error).message}`);
+            const errMsg = (e as Error).message;
+            results.errors.push(`SMS[${row.id}]: ${errMsg}`);
+            activityNotes.push(makeNote(
+              `[SEQ] SMS FAILED — Track: ${trackLabel} | Step ${step} | Error: ${errMsg}`
+            ));
           }
         }
       }
@@ -261,13 +298,33 @@ serve(async (req) => {
           });
           if (resp.ok) {
             results.emailsSent++;
+            activityNotes.push(makeNote(
+              `[SEQ] Email sent — Track: ${trackLabel} | Step ${step} | To: ${lead.email}`
+            ));
           } else {
             const errText = await resp.text();
-            results.errors.push(`Email[${row.id}]: ${errText.slice(0, 120)}`);
+            const errMsg = errText.slice(0, 120);
+            results.errors.push(`Email[${row.id}]: ${errMsg}`);
+            activityNotes.push(makeNote(
+              `[SEQ] Email FAILED — Track: ${trackLabel} | Step ${step} | Error: ${errMsg}`
+            ));
           }
         } catch (e) {
-          results.errors.push(`Email[${row.id}]: ${(e as Error).message}`);
+          const errMsg = (e as Error).message;
+          results.errors.push(`Email[${row.id}]: ${errMsg}`);
+          activityNotes.push(makeNote(
+            `[SEQ] Email FAILED — Track: ${trackLabel} | Step ${step} | Error: ${errMsg}`
+          ));
         }
+      }
+
+      // ── DIAL REMINDER ─────────────────────────────────────────────
+      // dial_reminder = no automated message; flags lead for manual call.
+      // Log it so it appears in the CRM timeline as a to-do reminder.
+      if (entry.channels.includes("dial_reminder")) {
+        activityNotes.push(makeNote(
+          `[SEQ] Dial reminder — Track: ${trackLabel} | Step ${step} | Manual call due today.`
+        ));
       }
 
       // ── ADVANCE STEP ──────────────────────────────────────────────
@@ -277,7 +334,14 @@ serve(async (req) => {
         ? { seqStep: nextStep, seqPaused: true, seqExitReason: "exhausted" }
         : { seqStep: nextStep };
 
-      const updatedLead = { ...lead, ...seqPatch };
+      // Prepend all activity notes to existing lead notes
+      const existingNotes = (lead.notes as CRMNote[]) || [];
+      const updatedLead = {
+        ...lead,
+        ...seqPatch,
+        notes: [...activityNotes, ...existingNotes],
+      };
+
       await supabase.from("leads")
         .update({ data: updatedLead, updated_at: new Date().toISOString() })
         .eq("id", row.id);
