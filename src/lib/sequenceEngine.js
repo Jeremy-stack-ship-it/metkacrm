@@ -141,7 +141,7 @@ export const getSequenceStatus = (lead) => {
   const track = lead.seqTrack || 'new';
   const step  = lead.seqStep  ?? 0;
   const next  = getNextTouchDate(lead);
-  const trackLabel = track === 'new' ? 'New' : track === 're-engage' ? 'Re-Engage' : 'Ghost';
+  const trackLabel = track === 'new' ? 'New' : track === 're-engage' ? 'Re-Engage' : track === 'nurture' ? 'Nurture' : 'Ghost';
   if (!next) return `${trackLabel} · Step ${step}`;
   const today = new Date(); today.setHours(0,0,0,0);
   const nextDay = new Date(next); nextDay.setHours(0,0,0,0);

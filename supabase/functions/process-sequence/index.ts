@@ -51,6 +51,16 @@ const TRACK_SCHEDULES: Record<string, SchedEntry[]> = {
     { step: 1, day: 3, channels: ["sms"]          },
     { step: 2, day: 7, channels: ["archive"]      },
   ],
+  // Email-only. Day offsets from original assignDate. Archives at 2yr mark.
+  nurture: [
+    { step: 0, day: 60,  channels: ["email"]                },
+    { step: 1, day: 120, channels: ["email"]                },
+    { step: 2, day: 180, channels: ["email", "dial_reminder"]},
+    { step: 3, day: 270, channels: ["email"]                },
+    { step: 4, day: 365, channels: ["email", "dial_reminder"]},
+    { step: 5, day: 540, channels: ["email"]                },
+    { step: 6, day: 730, channels: ["archive"]              },
+  ],
 };
 
 // ── SMS TEMPLATES ─────────────────────────────────────────────────────────────
@@ -219,36 +229,47 @@ serve(async (req) => {
       const trackLabel = TRACK_LABEL[track] || track;
 
       // ── ARCHIVE STEP ──────────────────────────────────────────────
-      // Sequence stops sending (seqExitReason: exhausted) but lead stage is NOT
-      // changed to "archived" until 2 years have passed from assignDate.
-      // This keeps the lead visible in the pipeline for potential re-engagement.
+      // When a non-nurture track exhausts → auto-enroll in nurture (email-only
+      // slow drip to 2yr mark). When nurture itself exhausts → real archive.
       if (entry.channels.includes("archive")) {
         const assignDateStr = (lead.assignDate as string) || startDate;
-        const assignedOn    = new Date(assignDateStr);
-        const twoYearsAgo   = new Date();
-        twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
-        const isPastTwoYears = assignedOn <= twoYearsAgo;
-
-        const archiveNote = makeNote(
-          isPastTwoYears
-            ? `[SEQ] Sequence exhausted — Track: ${trackLabel} | Step ${step} | File archived (2yr+).`
-            : `[SEQ] Sequence exhausted — Track: ${trackLabel} | Step ${step} | Lead marked Dormant. Will auto-archive after 2 years from assign date.`
-        );
         const existingNotes = (lead.notes as CRMNote[]) || [];
-        const updated = {
-          ...lead,
-          seqPaused:     true,
-          seqExitReason: "exhausted",
-          // Only flip stage to archived if 2 full years have passed since assignDate
-          stage: isPastTwoYears && (lead.stage === "new" || lead.stage === "contacted")
-            ? "archived"
-            : lead.stage,
-          notes: [archiveNote, ...existingNotes],
-        };
-        await supabase.from("leads")
-          .update({ data: updated, updated_at: new Date().toISOString() })
-          .eq("id", row.id);
-        results.archived++;
+
+        if (track !== "nurture") {
+          // Enroll in nurture — keep seqStartDate as assignDate so day offsets align
+          const enrollNote = makeNote(
+            `[SEQ] ${trackLabel} track complete — enrolled in Nurture drip (email-only to 2yr mark).`
+          );
+          const enrolled = {
+            ...lead,
+            seqTrack:      "nurture",
+            seqStep:       0,
+            seqPaused:     false,
+            seqExitReason: null,
+            seqStartDate:  assignDateStr, // offsets measured from original assign date
+            notes:         [enrollNote, ...existingNotes],
+          };
+          await supabase.from("leads")
+            .update({ data: enrolled, updated_at: new Date().toISOString() })
+            .eq("id", row.id);
+          results.processed++;
+        } else {
+          // Nurture exhausted = true 2yr archive
+          const archiveNote = makeNote(
+            `[SEQ] Nurture complete — Track: Nurture | Step ${step} | File archived at 2yr mark.`
+          );
+          const archived = {
+            ...lead,
+            seqPaused:     true,
+            seqExitReason: "exhausted",
+            stage: (lead.stage === "new" || lead.stage === "contacted") ? "archived" : lead.stage,
+            notes: [archiveNote, ...existingNotes],
+          };
+          await supabase.from("leads")
+            .update({ data: archived, updated_at: new Date().toISOString() })
+            .eq("id", row.id);
+          results.archived++;
+        }
         continue;
       }
 

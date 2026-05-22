@@ -37,6 +37,17 @@ export const TRACK_SCHEDULES = {
     { step:1,  day:3,  channels:["sms"]                  }, // Day 3 final SMS
     { step:2,  day:7,  channels:["archive"]              }, // Day 7 auto-archive
   ],
+  // ── NURTURE: auto-enrolled after any track exhausts. Email-only.
+  // Day offsets are from original assignDate — leads archive at 2yr mark.
+  nurture: [
+    { step:0,  day:60,  channels:["email"]               }, // 2-month check-in
+    { step:1,  day:120, channels:["email"]               }, // 4-month living benefits
+    { step:2,  day:180, channels:["email","dial_reminder"]}, // 6-month re-engage
+    { step:3,  day:270, channels:["email"]               }, // 9-month life change angle
+    { step:4,  day:365, channels:["email","dial_reminder"]}, // 1-year anniversary
+    { step:5,  day:540, channels:["email"]               }, // 18-month final nurture
+    { step:6,  day:730, channels:["archive"]             }, // 2-year auto-archive
+  ],
 };
 
 // ── SMS TEMPLATES ─────────────────────────────────────────────────────────────
@@ -396,4 +407,90 @@ export const getTrackLength = (track) => {
   const sched = TRACK_SCHEDULES[track];
   if (!sched) return 0;
   return sched.filter(s => !s.channels.includes("archive")).length;
+};
+
+// ── NURTURE TRACK — EMAIL TEMPLATES ──────────────────────────────────────────
+// Email-only. Low-frequency, value-focused. No SMS for long-term nurture.
+export const NURTURE_EMAIL = {
+  0: {
+    subject: (n) => `${n} — still here if the timing is right`,
+    body: (n, ph, c) => `Hi ${n},
+
+A couple of months ago I reached out about your life insurance review and we didn't connect. No pressure — life gets busy.
+
+I wanted to check in because one thing most families don't know is that today's life insurance plans include Living Benefits — meaning the plan can pay out cash while you're still alive if you're diagnosed with cancer, stroke, or heart attack.
+
+That's a different conversation than what most people expect.
+
+If you'd like a no-obligation review of what's available in your state, I'm 15 minutes away: ${c}
+
+Jeremy Metka
+${ph}`,
+  },
+  1: {
+    subject: (n) => `One thing most families never hear about life insurance`,
+    body: (n, ph, c) => `Hi ${n},
+
+Most people think life insurance only pays when you die. The plans I work with pay cash for critical illness while you're alive — cancer diagnosis, heart attack, stroke.
+
+That's what I call a Living Benefit. It's the part most agents never explain.
+
+If that's worth 15 minutes of your time, here's my calendar: ${c}
+
+Jeremy Metka
+${ph}`,
+  },
+  2: {
+    subject: (n) => `6 months in — still keeping your file open`,
+    body: (n, ph, c) => `Hi ${n},
+
+It's been about six months since you first requested a life insurance review. I've kept your file open because timing matters and circumstances change.
+
+If anything has shifted — new job, growing family, new mortgage — now may be the right time to revisit.
+
+I have availability this week: ${c}
+
+Jeremy Metka
+${ph}`,
+  },
+  3: {
+    subject: (n) => `Life changes. Coverage should too.`,
+    body: (n, ph, c) => `Hi ${n},
+
+I work with families across the region and the #1 thing I hear is "I kept putting it off."
+
+Life insurance is one of those things that gets harder — not easier — to qualify for as time passes. Health changes. Rates go up.
+
+If you're in a good health window right now, this is worth 15 minutes: ${c}
+
+Jeremy Metka
+${ph}`,
+  },
+  4: {
+    subject: (n) => `One year later — your file is still open`,
+    body: (n, ph, c) => `Hi ${n},
+
+It's been about a year since your original life insurance inquiry. I still have your file open.
+
+A lot can change in a year. If you're ready to revisit — or if someone in your household has had a health change and you want to lock in coverage while it's still available — I'm here.
+
+15 minutes: ${c}
+
+Jeremy Metka
+${ph}`,
+  },
+  5: {
+    subject: (n) => `Final check-in before I close your file`,
+    body: (n, ph, c) => `Hi ${n},
+
+This is my last outreach before I close your file after nearly two years. No hard feelings at all — I know the timing just wasn't right.
+
+If anything changes down the road, you can always reach me at ${ph}.
+
+Wishing you and your family the best.
+
+Jeremy Metka
+Senior Field Underwriter | Metka Solutions
+NPN #21425108`,
+  },
 };

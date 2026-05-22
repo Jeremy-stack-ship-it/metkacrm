@@ -348,6 +348,186 @@ function getTemplate(track, step, cat) {
       },
     },
 
+
+    // ── TRACK: NURTURE ──────────────────────────────────────────────────────
+    // Email-only slow drip. Enrolled automatically after any track exhausts.
+    "nurture:0": {
+      mp: {
+        subject: function(n){ return n + " — still here if the timing is right"; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "A couple of months ago I reached out about your Mortgage Protection review and we didn't connect. No pressure — life gets busy.",
+          "",
+          "One thing most families don't know: today's plans include Living Benefits that pay cash for cancer, stroke, or heart attack — while you're still alive.",
+          "",
+          "If you'd like a quick no-obligation review: " + c,
+          "",
+          "Jeremy Metka",
+          AGENT_TITLE, AGENT_NPN, ph,
+        ].join("\n"); },
+      },
+      li: {
+        subject: function(n){ return n + " — still here if the timing is right"; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "A couple of months ago I reached out about your life insurance inquiry. Just checking in — no pressure.",
+          "",
+          "Today's plans include Living Benefits — cash paid while you're still alive for cancer, stroke, or heart attack. Worth knowing.",
+          "",
+          "15 minutes if you're ready: " + c,
+          "",
+          "Jeremy Metka",
+          AGENT_TITLE, AGENT_NPN, ph,
+        ].join("\n"); },
+      },
+    },
+    "nurture:1": {
+      mp: {
+        subject: function(n){ return "One thing most families never hear about Mortgage Protection"; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "Most people think Mortgage Protection only pays the bank when they die. The plans I work with also pay YOU cash if you're diagnosed with cancer, heart attack, or stroke while your mortgage is active.",
+          "",
+          "That's a Living Benefit — and most agents never explain it.",
+          "",
+          "Worth 15 minutes: " + c,
+          "",
+          "Jeremy Metka",
+          AGENT_TITLE, ph,
+        ].join("\n"); },
+      },
+      li: {
+        subject: function(n){ return "One thing most families never hear about life insurance"; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "Most people think life insurance only pays when you die. The plans I work with pay cash for critical illness while you're alive.",
+          "",
+          "That's what I call a Living Benefit. It changes the whole conversation.",
+          "",
+          "15 minutes: " + c,
+          "",
+          "Jeremy Metka",
+          AGENT_TITLE, ph,
+        ].join("\n"); },
+      },
+    },
+    "nurture:2": {
+      mp: {
+        subject: function(n){ return "6 months in — keeping your file open, " + n; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "It's been about six months since your Mortgage Protection request. Circumstances change — new job, refinance, growing family.",
+          "",
+          "If now is a better time, I have availability this week: " + c,
+          "",
+          "Jeremy Metka",
+          AGENT_TITLE, ph,
+        ].join("\n"); },
+      },
+      li: {
+        subject: function(n){ return "6 months in — keeping your file open, " + n; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "Six months since your life insurance inquiry. A lot can shift in that time.",
+          "",
+          "If now is the right window, I'm here: " + c,
+          "",
+          "Jeremy Metka",
+          AGENT_TITLE, ph,
+        ].join("\n"); },
+      },
+    },
+    "nurture:3": {
+      mp: {
+        subject: function(n){ return "Life changes. Coverage should too."; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "The #1 thing I hear from families: 'I kept putting it off.' Health changes and rates go up. If you're in a good health window right now, this is worth 15 minutes.",
+          "",
+          c,
+          "",
+          "Jeremy Metka",
+          AGENT_TITLE, ph,
+        ].join("\n"); },
+      },
+      li: {
+        subject: function(n){ return "Life changes. Coverage should too."; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "Life insurance gets harder — not easier — to qualify for as time passes. If you're healthy right now, this is worth 15 minutes: " + c,
+          "",
+          "Jeremy Metka",
+          AGENT_TITLE, ph,
+        ].join("\n"); },
+      },
+    },
+    "nurture:4": {
+      mp: {
+        subject: function(n){ return "One year later — your file is still open"; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "It's been about a year since your Mortgage Protection inquiry. I still have your file open.",
+          "",
+          "If your situation has changed — or you want to lock in coverage before health windows close — I'm here: " + c,
+          "",
+          "Jeremy Metka",
+          AGENT_TITLE, AGENT_NPN, ph,
+        ].join("\n"); },
+      },
+      li: {
+        subject: function(n){ return "One year later — your file is still open"; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "One year since your life insurance inquiry. Still keeping your file open.",
+          "",
+          "If you're ready to revisit: " + c,
+          "",
+          "Jeremy Metka",
+          AGENT_TITLE, AGENT_NPN, ph,
+        ].join("\n"); },
+      },
+    },
+    "nurture:5": {
+      mp: {
+        subject: function(n){ return "Final check-in before I close your file"; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "This is my last outreach before I close your Mortgage Protection file. It's been nearly two years and I respect your time.",
+          "",
+          "If you ever want to revisit, you can always reach me directly at " + ph + ".",
+          "",
+          "Wishing you and your family well.",
+          "",
+          "Jeremy Metka",
+          AGENT_TITLE, AGENT_NPN,
+        ].join("\n"); },
+      },
+      li: {
+        subject: function(n){ return "Final check-in before I close your file"; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "Last outreach before I close your life insurance file after nearly two years. No hard feelings at all.",
+          "",
+          "Reach me anytime at " + ph + " if things change.",
+          "",
+          "Jeremy Metka",
+          AGENT_TITLE, AGENT_NPN,
+        ].join("\n"); },
+      },
+    },
+
   }; // end templates
 
   var key = track + ":" + step;
