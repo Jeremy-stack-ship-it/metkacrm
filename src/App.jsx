@@ -130,7 +130,8 @@ const LS_MAPPING   = "metka-field-mapping-v1";   // v2.6 saved CSV column mappin
 const LS_TWILIO    = "metka-twilio-config-v1";   // v3.0 Twilio credentials
 const LS_OPEN_ID   = "metka-open-id-v1";         // v3.0 persist queue position
 const LS_SESSION   = "metka-session-v1";          // v3.0 dialing session
-const LS_CB_PRESETS = "metka-cb-presets-v1";       // v3.8 callback scheduler presets
+const LS_CB_PRESETS   = "metka-cb-presets-v1";       // v3.8 callback scheduler presets
+const LS_DELETED_IDS  = "metka-deleted-ids-v1";      // v3.14 tombstone map { [id]: deletedAtTs } for sync merge
 
 const DEFAULT_CB_PRESETS = [
   { id: "2h",     label: "2 Hours",     minOffset: 120, daysAhead: 0, hour: null },
@@ -415,47 +416,73 @@ function MetkaCRM(){
     }
     setLoading(false);
 
-    // v2.6 — Load from Supabase (reconcile, but local WINS if it has more leads)
-    // localStorage above gave us an instant render; now reconcile with cloud.
-    // RULE: only accept remote if remote.length >= local.length.
-    // If local has more, local is source of truth — push it up to fix Supabase.
+    // v3.14 — Per-lead _ts merge: Supabase is source of truth on a per-lead basis.
+    // Replaces the fragile array-length comparison with accurate per-lead timestamp comparison.
+    // Deleted leads are tracked via LS_DELETED_IDS tombstone map so they can't ghost-walk back.
     setSupaStatus("syncing");
+
+    // Load + auto-prune deletion tombstones
+    let deletedIds = {};
+    try {
+      const raw = localStorage.getItem(LS_DELETED_IDS);
+      if (raw) deletedIds = JSON.parse(raw);
+    } catch {}
+    const _tombstoneCutoff = Date.now() - 60 * 24 * 60 * 60 * 1000; // 60 days
+    let _tombstonePruned = false;
+    Object.keys(deletedIds).forEach(id => {
+      if (deletedIds[id] < _tombstoneCutoff) { delete deletedIds[id]; _tombstonePruned = true; }
+    });
+    if (_tombstonePruned) {
+      try { localStorage.setItem(LS_DELETED_IDS, JSON.stringify(deletedIds)); } catch {}
+    }
+
     sbLoadAll().then(remote => {
-      if (remote && Array.isArray(remote) && remote.length > 0) {
-        setLeads(prev => {
-          if (remote.length >= prev.length) {
-            // Supabase is equal or larger — use it, then reconcile orphans
-            try {
-              localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(remote)));
-            } catch {}
-            setSupaStatus("ok");
-            sbReconcileDeletes(remote).catch(()=>{});
-            return remote;
-          } else {
-            // Local has MORE leads — local wins, repair Supabase in background
-            console.warn(`[Supabase] Remote has ${remote.length} leads but local has ${prev.length}. Local wins — pushing local up.`);
-            sbUpsertAll(prev).then(() => setSupaStatus("ok")).catch(() => setSupaStatus("error"));
-            // Also clean up orphaned Supabase rows that aren't in local set
-            sbReconcileDeletes(prev).catch(()=>{});
-            return prev;
+      if (!remote) { setSupaStatus("error"); return; }
+
+      setLeads(prev => {
+        if (remote.length === 0) {
+          // Supabase is empty — first run or wiped. Push local up.
+          console.log('[v3.14] Supabase empty — seeding from localStorage');
+          sbUpsertAll(prev).then(() => setSupaStatus("ok")).catch(() => setSupaStatus("error"));
+          sbReconcileDeletes(prev).catch(() => {});
+          return prev;
+        }
+
+        // Per-lead merge: newest _ts wins per ID
+        const merged = new Map();
+        // Seed with local leads
+        prev.forEach(l => merged.set(l.id, l));
+        // Walk remote: add new IDs, overwrite if remote lead is newer
+        let remoteAdded = 0;
+        remote.forEach(r => {
+          if (deletedIds[r.id]) return; // intentionally deleted locally — skip
+          const local = merged.get(r.id);
+          if (!local) {
+            merged.set(r.id, r); // lead exists only in remote (added on another device)
+            remoteAdded++;
+          } else if ((r._ts || 0) > (local._ts || 0)) {
+            merged.set(r.id, r); // remote is newer — take it
           }
+          // else: local is newer or equal — keep local (already in map)
         });
-      } else if (remote && remote.length === 0) {
-        // Supabase is empty — first run, push local leads up
-        setSupaStatus("syncing");
-        const localRaw = localStorage.getItem(LS_LEADS);
-        if (localRaw) {
-          try {
-            const dec = LZString.decompressFromUTF16(localRaw);
-            const localLeads = JSON.parse(dec || localRaw);
-            if (Array.isArray(localLeads) && localLeads.length > 0) {
-              sbUpsertAll(localLeads).then(() => setSupaStatus("ok"));
-            } else { setSupaStatus("ok"); }
-          } catch { setSupaStatus("ok"); }
-        } else { setSupaStatus("ok"); }
-      } else {
-        setSupaStatus("error");
-      }
+
+        const result = Array.from(merged.values());
+        console.log(`[v3.14] Hydration merge: local=${prev.length} remote=${remote.length} result=${result.length} remoteAdded=${remoteAdded}`);
+
+        // Update localStorage cache with merged result
+        try {
+          localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(result)));
+        } catch {}
+
+        // If remote had leads we didn't have locally, push merged set up to Supabase
+        if (remoteAdded > 0) {
+          sbUpsertAll(result).catch(() => {});
+        }
+
+        setSupaStatus("ok");
+        sbReconcileDeletes(result).catch(() => {});
+        return result;
+      });
     }).catch(() => setSupaStatus("error"));
 
     // v3.1 — Load activity log from Supabase (local wins if it has more events)
@@ -482,7 +509,9 @@ const saveLeads = useCallback((next, opts = {}) => {
   next.forEach(l => seen.set(l.id, l));
   const deduped = Array.from(seen.values());
   if (deduped.length !== next.length) console.warn(`[saveLeads] Removed ${next.length - deduped.length} duplicate IDs`);
-  next = deduped;
+  // v3.14 — stamp _ts on any lead that doesn't have one yet (new leads, imports, first run)
+  const _now = Date.now();
+  next = deduped.map(l => l._ts ? l : { ...l, _ts: _now });
   setLeads(next);
   try {
     const stringData = JSON.stringify(next);
@@ -504,14 +533,19 @@ const saveLeads = useCallback((next, opts = {}) => {
   // v3.12 — single-lead persist used by upd() functional updater (avoids stale-closure race in PD mode)
   // Writes compressed localStorage + fires Supabase single-row upsert. Does NOT call setLeads (already done).
   const persistLeads = useCallback((next, updatedLead) => {
+    // v3.14 — stamp _ts on the modified lead so per-lead merge has an accurate timestamp
+    const stamped = updatedLead ? { ...updatedLead, _ts: Date.now() } : updatedLead;
+    const toStore = stamped
+      ? next.map(l => l.id === stamped.id ? stamped : l)
+      : next;
     try {
-      const stringData = JSON.stringify(next);
+      const stringData = JSON.stringify(toStore);
       const compressed = LZString.compressToUTF16(stringData);
       localStorage.setItem(LS_LEADS, compressed);
     } catch (e) {
       alert("Storage Full! Even with compression, the browser cannot save more leads.");
     }
-    if (updatedLead) sbUpsertLead(updatedLead);
+    if (stamped) sbUpsertLead(stamped);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

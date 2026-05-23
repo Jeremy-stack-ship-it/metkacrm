@@ -189,6 +189,13 @@ export const makeLeadManager = (
     const next = leads.filter(l => l.id !== id);
     saveLeads(next);
     sbDeleteLead(id);
+    // v3.14 — write tombstone so this lead can't ghost-walk back from Supabase on next hydration
+    try {
+      const raw = localStorage.getItem('metka-deleted-ids-v1');
+      const map = raw ? JSON.parse(raw) : {};
+      map[id] = Date.now();
+      localStorage.setItem('metka-deleted-ids-v1', JSON.stringify(map));
+    } catch {}
     setOpenId(null);
     setView(prevView || "contacts");
   };
