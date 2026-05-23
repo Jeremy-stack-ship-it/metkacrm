@@ -357,7 +357,15 @@ export const buildSessionQueue = (leads, session) => {
     return (l.slot || 'AM') === session.slot;
   });
 
-  const sorted    = [...candidates].sort((a, b) => getPhasePriority(b) - getPhasePriority(a));
+  // v3.14 — composite sort: phase priority first, then most-recently-due within phase
+  // Prevents ancient overdue leads from burying fresh contacts at top of queue
+  const sorted    = [...candidates].sort((a, b) => {
+    const pDiff = getPhasePriority(b) - getPhasePriority(a);
+    if (pDiff !== 0) return pDiff;
+    const aTs = a.next_dial ? new Date(a.next_dial).getTime() : 0;
+    const bTs = b.next_dial ? new Date(b.next_dial).getTime() : 0;
+    return bTs - aTs; // more recent due date first within same phase
+  });
   const callbacks = sorted.filter(l => CALLBACK_DISPS.has(l.disposition));
   const fresh     = sorted.filter(l => !CALLBACK_DISPS.has(l.disposition));
 
@@ -369,15 +377,4 @@ export const buildSessionQueue = (leads, session) => {
   return [...cappedFresh, ...cappedCb];
 };
 
-// Counts today's leads per slot — used for session header display.
-export const countTodayBySlot = (leads) => {
-  const SKIP_DISPS = new Set(['dnc','not_interested','withdrawn','chargeback','appointment_booked']);
-  let am = 0, pm = 0;
-  (leads || []).forEach(l => {
-    if (l.phase === 'EXIT')            return;
-    if (SKIP_DISPS.has(l.disposition)) return;
-    if (!isDueToday(l))                return;
-    if ((l.slot || 'AM') === 'AM') am++; else pm++;
-  });
-  return { am, pm };
-};
+// Counts today's leads per slot — used for session header
