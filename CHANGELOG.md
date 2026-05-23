@@ -1,65 +1,136 @@
 # Changelog — Metka Field Ops CRM
 
 All notable changes to this project are documented here. Format: [Date] v[Version] — [Theme]
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-VERSION: v3.14 | DATE: May 19, 2026 | SESSION: Security Hardening + PM Slot Fix
+
+VERSION: v3.18 | DATE: May 22, 2026 | SESSION: Sequence Engine UI + Infrastructure
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-CHANGE: Security — credentials to .env, remove window globals, CSP headers, Supabase RLS
-FILES: metka-crm/.env (new), src/lib/supabaseSync.js, src/components/LoginGate.jsx,
-  src/App.jsx, vite.config.js, index.html, rls-setup.sql (new)
-WHAT: Full security audit and remediation.
-  1. VITE_SUPABASE_URL, VITE_SUPABASE_KEY, VITE_CRM_PASSWORD moved to .env (env vars)
-  2. window.supabase and window.LZString globals removed from App.jsx + supabaseSync.js
-  3. CSP meta tag added to index.html (single-line, covers Supabase + Calendly + fonts)
-  4. Security headers added to vite.config.js dev server (X-Frame-Options, nosniff, etc.)
-  5. RLS policies generated (rls-setup.sql) — Jeremy ran in Supabase SQL Editor
-BEFORE: Credentials in source code, window globals, no CSP, no RLS.
-REVERT: Remove meta CSP tag from index.html, restore hardcoded keys in supabaseSync.js
-  and LoginGate.jsx, restore window globals in App.jsx. RLS stays.
-COMMIT: 02261be
+CHANGE: Sequence Engine — core logic + SMS/email infrastructure
+FILE: src/lib/sequenceEngine.js (new), src/lib/sequenceTemplates.js (new)
+WHAT: Full sequence automation engine built.
+  - Three tracks: new (8 steps), re-engage (4 steps), ghost (2 steps)
+  - Exports: getSequenceStatus, getSequenceBadgeColor, getNextTouchDate,
+    pauseSequence, resumeSequence, advanceSequence, getTodayCallList,
+    isSeqDueToday, initSequence
+  - sequenceTemplates.js: all SMS + email copy per track and lead type
+REVERT: Remove both files, remove seq field imports from ContactDetail/Dashboard.
 
 ────────────────────────────────────────────────────────
 
-CHANGE: CSP widened to cover all Twilio Voice SDK endpoints
-FILE: index.html (connect-src directive)
-WHAT: Twilio Voice SDK + Functions hit *.twilio.com and *.twil.io subdomains.
-  Original CSP only allowed api.twilio.com and voice.twilio.com — blocked token
-  fetch from Twilio Function URL (.twil.io domain) and SDK WSS connections.
-  Widened to: https://*.twilio.com wss://*.twilio.com https://*.twil.io
-BEFORE: Browser calling failed silently — token fetch blocked by CSP.
-REVERT: Narrow connect-src back to specific Twilio subdomains (not recommended).
-COMMIT: ab97f41
+CHANGE: Sequence control panel — ContactDetail.jsx UW card
+FILE: src/components/ContactDetail.jsx (lines 342–500)
+WHAT: Full sequence control panel injected above the Underwriting card.
+  - Status badge (red/amber/green/blue based on state)
+  - Track + Step display (New Lead / Re-Engage / Ghost)
+  - Next touch date display with pause-aware messaging
+  - Pause / Resume / Skip buttons
+  - Change Track buttons (New / Re-Engage / Ghost) — resets step + startDate
+  - Exit Sequence dropdown (Not Interested / DNC / Sold / Manual Hold)
+  - Re-Enter Sequence button when exited
+  - Panel background tints: yellow when paused, red-tint when overdue
+REVERT: Remove the (() => { ... })() IIFE block from ContactDetail.jsx (lines 341–489).
 
 ────────────────────────────────────────────────────────
 
-CHANGE: PM slot always shows 0 — removed next_dial time inference from assignSlot
-FILE: src/lib/phaseEngine.js (assignSlot), src/lib/leads.js (addLead)
-WHAT: Root cause: buildSchedule hardcodes 9 AM for all next_dial times, so the
-  old time-based inference (hour < 12 → AM) always returned AM. assignSlot now
-  uses ID hash only (hash % 2 === 0 ? AM : PM) for unslotted leads.
-  addLead fixed to call assignSlot() instead of hardcoding slot:'AM'.
-BEFORE: All new leads got slot:'AM'. PM count was permanently 0.
-REVERT: Restore next_dial time inference block in assignSlot; restore slot:'AM'
-  hardcode in addLead.
-COMMIT: e6fd522
+CHANGE: Today's Sequence Dials panel — DashboardTab.jsx
+FILE: src/components/DashboardTab.jsx (Today panel section)
+WHAT: "Today's Sequence Dials" widget added to dashboard.
+  - Pulls getTodayCallList() from sequenceEngine — leads due today
+  - Each card shows name, phone, track badge, step number, next touch date
+  - Color-coded borders (red = overdue, amber = due today, green = upcoming)
+  - Empty state when no dials due
+REVERT: Remove the Today's Sequence Dials section from DashboardTab.jsx.
 
 ────────────────────────────────────────────────────────
 
-CHANGE: Balance AM/PM button now rebalances ALL active leads, not just unscheduled
-FILE: src/components/SettingsView.jsx (Balance AM/PM Slots button handler)
-WHAT: Previous fix skipped leads with next_dial (i.e., everyone phase-scheduled),
-  so existing leads with slot:'AM' stamped were never touched — PM stayed 0.
-  Button now strips slot from ALL non-removed, non-EXIT leads and hash-assigns.
-  Schedule dates, phases, and all other fields preserved — only slot changes.
-BEFORE: Button redistributed 0 leads (all had next_dial). PM count unchanged.
-REVERT: Restore if(l.next_dial) return l guard in the rebalanced map.
-COMMIT: 2d4c0c9
+CHANGE: Supabase Edge Functions — SMS proxy + daily cron
+FILE: supabase/functions/send-sms/index.ts (new),
+      supabase/functions/process-sequence/index.ts (new),
+      supabase/functions/send-sms/DEPLOY_INSTRUCTIONS.md (new)
+WHAT: Backend sequence automation infrastructure.
+  - send-sms: Twilio proxy Edge Function — credentials NEVER in frontend
+  - process-sequence: daily cron job that evaluates seq fields + fires touches
+  - Full deploy instructions in DEPLOY_INSTRUCTIONS.md
+REVERT: Delete supabase/functions/send-sms/ and supabase/functions/process-sequence/
 
 ────────────────────────────────────────────────────────
 
-VERSION: v3.12 | DATE: May 18, 2026 | SESSION: Dial Flow + Calendly Fixes
+CHANGE: Google Apps Script email web app
+FILE: supabase/apps-script/Code.gs (new)
+WHAT: Full Apps Script deployment for sequence email sends.
+  - All email templates per track + lead type
+  - Deployed as web app; URL stored in Settings → Sequence Engine
+REVERT: Delete supabase/apps-script/Code.gs
+
+────────────────────────────────────────────────────────
+
+CHANGE: Truncation fixes — 6 files restored (OneDrive sync divergence)
+FILE: src/components/ContactDetail.jsx, DashboardTab.jsx, ContactsView.jsx,
+      SettingsView.jsx, src/lib/csvParser.js, src/lib/leads.js, src/App.jsx
+WHAT: All files were truncated at bash mount layer due to OneDrive sync
+      divergence. Restored via head + heredoc append. Added missing
+      export default MetkaCRM to App.jsx.
+REVERT: N/A — restores correct content.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VERSION: v3.13 | DATE: May 19–20, 2026 | SESSION: Constant Contact OAuth Integration
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CHANGE: Constant Contact OAuth2 integration — full build
+FILE: src/lib/ccIntegration.js (new file, v1.2), supabase/functions/cc-token/index.ts (new), .env (added CC vars)
+WHAT: Complete CC integration built from scratch. Settings tab now shows "Connect Constant Contact" button.
+  OAuth flow: ccAuthorize() → CC login page → redirect to /cc-callback → ccExchangeCode() → tokens stored.
+  Once connected: list selector appears, "Sync Bucket A Leads" bulk pushes leads to CC contact list via /activities/contacts.
+
+ARCHITECTURE — Edge Function Proxy:
+  CC's Okta OAuth server rejects browser token requests (Origin header triggers PKCE enforcement).
+  Solution: Supabase Edge Function (cc-token) acts as server-to-server proxy.
+  Browser sends auth code → Edge Function uses Basic auth (clientId:clientSecret) → CC returns tokens → passed back to browser.
+  No PKCE anywhere — not needed for confidential client app type.
+
+KEY DISCOVERIES (hard-won, do not forget):
+  - CC_CLIENT_ID  = UUID format: a69afa05-1c37-4db4-9db5-9dc4b06dcd75  (labeled "API Key (Client Id)" in CC portal)
+  - CC_CLIENT_SECRET = short alphanumeric: mhOHPXHQRl75w48NAKSWMg
+  - These were backwards in earlier attempts — UUID is always the client_id
+  - Real Okta auth server ID: aus1lm3ry9mF7x2Ja0h8 (discovered by watching CC redirect URL)
+  - Authorize URL: https://authz.constantcontact.com/oauth2/default/v1/authorize  (this is correct as-is)
+  - Token URL (in Edge Function): https://identity.constantcontact.com/oauth2/aus1lm3ry9mF7x2Ja0h8/v1/token
+  - Scope: contact_data campaign_data
+  - PKCE must NOT be added to authorize URL — CC confidential clients reject it with 400
+
+SUPABASE PROJECT: brskbcdaefmkcgctlhlb
+EDGE FUNCTION: cc-token (deployed v3)
+SECRETS SET IN SUPABASE DASHBOARD:
+  CC_CLIENT_ID=a69afa05-1c37-4db4-9db5-9dc4b06dcd75
+  CC_CLIENT_SECRET=mhOHPXHQRl75w48NAKSWMg
+
+ENV VARS ADDED (.env — do not commit):
+  VITE_CC_CLIENT_ID=a69afa05-1c37-4db4-9db5-9dc4b06dcd75
+  VITE_CC_CLIENT_SECRET=mhOHPXHQRl75w48NAKSWMg
+  VITE_CC_REDIRECT_URI=http://localhost:5173/cc-callback
+  VITE_CC_TOKEN_PROXY_URL=https://brskbcdaefmkcgctlhlb.supabase.co/functions/v1/cc-token
+
+COMMITS: c2caf94 (integration build), d4c0ce2 (cleanup — removed PKCE remnants, restored both scopes)
+STATUS: CONFIRMED WORKING — Jeremy: "it is connected great workl"
+
+REVERT: Remove ccIntegration.js import from App.jsx. Remove /cc-callback route handler.
+Remove Settings CC card (Connect button + list selector + Sync button). Delete supabase/functions/cc-token/.
+Remove VITE_CC_* vars from .env. Delete Supabase secret CC_CLIENT_ID and CC_CLIENT_SECRET.
+
+────────────────────────────────────────────────────────
+
+CHANGE: Update Last Updated header
+FILE: CRM Change Log (this doc)
+WHAT: Updated "Last Updated" from May 6, 2026 → May 20, 2026
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+v3.13 — Security Hardening (May 19, 2026)
+Moved Supabase credentials and CRM password to .env (removed from source). Removed window.supabase and window.LZString globals. Added CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, and Permissions-Policy headers. Enabled Supabase RLS on leads and activity tables.
+
+
 
 CHANGE: Today Panel — two-block AM/PM session overview in Dial Queue
 FILE: src/components/DialQueuePanel.jsx (Section 1.5 replacement)
@@ -86,7 +157,9 @@ REVERT: Remove newNote block and notes spread from the upd() call in the
 COMMIT: 6e9a32c
 
 ────────────────────────────────────────────────────────
-
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VERSION: v3.12 | DATE: May 18, 2026 | SESSION: Dial Flow + Calendly Fixes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CHANGE: Add "Appt Booked" disposition button + fix PD auto-advance
 FILE: src/components/DialView.jsx (secondaryDisps array, ~line 339)
       src/lib/usePowerDialer.js (KEEP_CALL_DISPS, line 21)
@@ -124,4 +197,81 @@ COMMIT: 2db7fcc
 - Extracted core business logic from App.jsx to lib/ modules (no behavior change, pure refactor)
 - Activity logging now uses append-only pattern (v3.5 schema: individual event rows, never rewrites)
 - Lead creation and updates now centralized in makeLeadManager factory
-- App.jsx line 74: Removed duplicate `applyP
+- App.jsx line 74: Removed duplicate `applyPhaseTransition` import (already imported from TodaysBlock on line 56). Now imports only unique functions: `backfillLead, phaseFromBucket`
+
+### Fixed
+- Resolved esbuild parser error on duplicate identifier in phaseEngine.js imports
+- Production build now completes successfully (131 modules transformed, bundle size 770.54 kB gzip)
+
+### Dependencies
+- All lib/ modules use pure functions and explicit dependency injection
+- No new npm packages added; existing stack (React, Supabase, LZ-String) unchanged
+
+### Notes
+- Full backward compatibility: v3.5 activity schema with v1.0 legacy blob fallback
+- App.jsx now 30% smaller, focused on React component lifecycle
+- Original v2.3 → v3.5 algorithms fully preserved in extracted modules
+- v3.6 build verified: `npm run build` succeeds with no parser or runtime errors
+
+---
+
+## [2026-05-01] v2.0.0 — Ministry Lead Operating System
+
+### Added
+- TODAY block: Structured 30-dial daily work engine with live timer and priority sorting
+- Phase Lifecycle Engine: Auto-calculated 17-point forward schedule per phase (P1–P3, M2, EXIT)
+- SMS modal: 4 Ministry-voice templates with STOP compliance
+- Phase summary: Live lead counts by phase in Settings
+- Dashboard: 4 KPI cards (Contact Rate, Show Rate, Close Rate, Week Dials)
+- Financial Tracker: Weekly overhead vs. commission tracking
+- Ghost Protocol messaging for non-responsive leads
+- Click-to-dial via tel: links with auto-logging
+- Activity log with dial counter and goal tracking
+
+### Fixed
+- vite.config.js: Added .jsx/.js loader for Windows esbuild compatibility
+
+---
+
+## [2026-04-01] v1.0.0 — Initial Build
+
+### Added
+- Single-file React CRM with Supabase cloud sync + localStorage dual-write
+- Lead queue with stage/disposition tracking
+- Activity log with dial counter
+- Settings: Supabase config, CSV import/export, manual lead entry
+- 2,440 leads pre-loaded across Bucket A (Hot), B (Warm), C (Cold)
+
+---
+
+## [2026-05-14] v3.6.1 — Power Dialer + Audit Fixes
+
+### Added
+- **Power Dialer engine** moved from TodaysBlock → DialView (18s attempt 1, 30s attempt 2, auto-hangup)
+- **`fireDisp()` wrapper** in DialView: disposition buttons now advance PD to next lead when answered
+- **GitHub repository**: https://github.com/Jeremy-stack-ship-it/metkacrm (version control live)
+
+### Changed
+- TodaysBlock stripped to read-only planning view — all execution machinery removed
+- `TOKEN_FIELDS`, `renderLiveTokens`, `ATTEMPT1_SEC`, `ATTEMPT2_SEC` hoisted to module scope (no per-render redefinition)
+- `saveLeads` + `saveActivity` wrapped in `useCallback([])` — stable references
+- `makeLeadManager` + `makeActivityManager` wrapped in `useMemo` — downstream components no longer re-render on unrelated state changes
+- `todayLeads` moved to `useMemo` in App.jsx (was inline sort on every render)
+- Removed Bucket A→B→C and Name A–Z sort options from DialView (not needed in phase-engine workflow)
+- Deleted 3 dead source files: `src/TodaysBlock.jsx`, `src/DashboardTab.jsx`, `src/App.jsx.bak`
+
+### Fixed
+- `filteredContacts` useMemo missing 3 deps (`exclBucket`, `exclStage`, `exclDisp`)
+- Note history React keys using index → now `n.ts || n.id || i` (prevents full re-render on prepend)
+- Templates destructuring `[name, text]` → `[key, tpl]` with `tpl.name`/`tpl.text` (was producing `[object Object]`)
+- AppHeader null guard: `activityStats?.today` safe default prevents crash before Supabase reconciles
+- PD advance-after-disposition: answered calls now auto-advance instead of freezing
+
+### Build
+- `npm run build` ✅ 0 errors — 144 modules, 775.68 kB (207.09 kB gzip)
+
+---
+
+**Last Updated**: 2026-05-14
+**Current Version**: v3.6.1
+**Status**: ✅ Production ready. Power Dialer functional end-to-end. GitHub live.

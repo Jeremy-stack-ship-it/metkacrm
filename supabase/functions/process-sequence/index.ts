@@ -8,9 +8,12 @@
 // Also callable manually via POST for testing.
 //
 // Secrets required (Supabase dashboard → Settings → Edge Functions → Secrets):
-//   APPS_SCRIPT_EMAIL_URL   — deployed Google Apps Script web app URL
-//   AGENT_PHONE             — Jeremy's phone number for email signatures
-//   CALENDLY_URL            — Calendly booking link for email CTAs
+//   GMAIL_CLIENT_ID      — OAuth2 client ID (from Google Cloud Console)
+//   GMAIL_CLIENT_SECRET  — OAuth2 client secret
+//   GMAIL_REFRESH_TOKEN  — Long-lived refresh token (from OAuth2 consent flow)
+//   AGENT_PHONE          — Jeremy's phone number for email signatures
+//   CALENDLY_URL         — Calendly booking link for email CTAs
+//   UNSUBSCRIBE_URL      — Base URL for unsubscribe endpoint (e.g. https://brskbcdaefmkcgctlhlb.supabase.co/functions/v1/unsubscribe?email=)
 //
 // Auto-injected by Supabase:
 //   SUPABASE_URL
@@ -53,13 +56,13 @@ const TRACK_SCHEDULES: Record<string, SchedEntry[]> = {
   ],
   // Email-only. Day offsets from original assignDate. Archives at 2yr mark.
   nurture: [
-    { step: 0, day: 60,  channels: ["email"]                },
-    { step: 1, day: 120, channels: ["email"]                },
+    { step: 0, day: 60,  channels: ["email"]                 },
+    { step: 1, day: 120, channels: ["email"]                 },
     { step: 2, day: 180, channels: ["email", "dial_reminder"]},
-    { step: 3, day: 270, channels: ["email"]                },
+    { step: 3, day: 270, channels: ["email"]                 },
     { step: 4, day: 365, channels: ["email", "dial_reminder"]},
-    { step: 5, day: 540, channels: ["email"]                },
-    { step: 6, day: 730, channels: ["archive"]              },
+    { step: 5, day: 540, channels: ["email"]                 },
+    { step: 6, day: 730, channels: ["archive"]               },
   ],
 };
 
@@ -149,9 +152,6 @@ function leadCat(leadType: string): "mp" | "li" {
 }
 
 // ── NOTE FACTORY ──────────────────────────────────────────────────────────────
-// Produces a note object matching CRM leads.js format:
-//   { ts: ISO string, type: "note", text: string }
-// Prepended to lead.notes — appears at top of contact card timeline.
 type CRMNote = { ts: string; type: string; text: string };
 
 function makeNote(text: string): CRMNote {
@@ -165,6 +165,367 @@ const TRACK_LABEL: Record<string, string> = {
   "ghost":      "Ghost Protocol",
 };
 
+// ── GMAIL API ─────────────────────────────────────────────────────────────────
+
+async function getGmailAccessToken(
+  clientId: string,
+  clientSecret: string,
+  refreshToken: string
+): Promise<string> {
+  const resp = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type:    "refresh_token",
+      client_id:     clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+    }),
+  });
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`Gmail token refresh failed: ${err.slice(0, 300)}`);
+  }
+  const json = await resp.json() as { access_token: string };
+  if (!json.access_token) throw new Error("Gmail token refresh: no access_token in response");
+  return json.access_token;
+}
+
+function base64urlEncode(input: string): string {
+  // Proper UTF-8 → bytes → base64url
+  const bytes = new TextEncoder().encode(input);
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+async function sendGmailEmail(params: {
+  accessToken: string;
+  to: string;
+  subject: string;
+  htmlBody: string;
+}): Promise<void> {
+  const { accessToken, to, subject, htmlBody } = params;
+
+  // RFC 2047 encoded-word for non-ASCII subject characters (em dash, etc.)
+  const subjectBytes = new TextEncoder().encode(subject);
+  let subjectBinary = "";
+  for (const byte of subjectBytes) { subjectBinary += String.fromCharCode(byte); }
+  const encodedSubject = `=?UTF-8?B?${btoa(subjectBinary)}?=`;
+
+  const rawMessage = [
+    `From: Jeremy Metka <Jeremy@metkasolutions.com>`,
+    `To: ${to}`,
+    `Subject: ${encodedSubject}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: text/html; charset=utf-8`,
+    ``,
+    htmlBody,
+  ].join("\r\n");
+
+  const encoded = base64urlEncode(rawMessage);
+
+  const resp = await fetch(
+    "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type":  "application/json",
+      },
+      body: JSON.stringify({ raw: encoded }),
+    }
+  );
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`Gmail send failed (${resp.status}): ${err.slice(0, 300)}`);
+  }
+}
+
+// ── EMAIL TEMPLATES ────────────────────────────────────────────────────────────
+
+type EmailContent = { subject: string; bodyHtml: string };
+
+/**
+ * Returns subject + inner body HTML snippet (not the full wrapper).
+ * Returns null if no email template exists for this track/step combo.
+ */
+function getEmailContent(
+  track: string,
+  step: number,
+  cat: "mp" | "li",
+  firstName: string
+): EmailContent | null {
+  const isMp = cat === "mp";
+
+  // ── NEW TRACK ─────────────────────────────────────────────────────────────
+  if (track === "new") {
+    if (step === 0) {
+      return {
+        subject: isMp
+          ? `Your Mortgage Protection Review — Living Benefits Included`
+          : `Your Life Insurance Inquiry — What Most Families Never Hear`,
+        bodyHtml: isMp
+          ? `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Thank you for requesting a Mortgage Protection review. Before we talk numbers, I want to make sure you know something most families never hear about.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">The plans I work with include <strong>Living Benefits</strong> — meaning if you're ever diagnosed with cancer, suffer a heart attack, or have a stroke, your plan pays cash directly to you while you're still alive. Not to a hospital. To you. To use however your family needs it most.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I'd love to walk you through what's available in your state in a quick 15-minute call. There's no obligation, and you'll leave knowing exactly where you stand.</p>`
+          : `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Thank you for your life insurance inquiry. Before we go any further, there's something important most families never hear.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">The plans I specialize in include <strong>Living Benefits</strong> — cash paid directly to you if you're diagnosed with cancer, have a heart attack, or suffer a stroke. You don't have to die to collect. The money is yours to use however your family needs it.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I'd love to walk you through your options in a quick 15-minute call. No pressure, no jargon — just a clear picture of what's available and what it costs.</p>`,
+      };
+    }
+    if (step === 2) {
+      return {
+        subject: isMp
+          ? `Following Up — Your Mortgage Protection Review`
+          : `Following Up on Your Life Insurance Inquiry`,
+        bodyHtml: isMp
+          ? `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I wanted to follow up on your Mortgage Protection request — I still have your file open.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">One thing that surprises most families: protecting your mortgage isn't just about what happens if you pass away. The plans I work with also pay a cash benefit if you're diagnosed with a critical illness — so your family doesn't lose the home while you're still fighting to get well.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">A 15-minute call is all it takes to see what you qualify for. I'll do the heavy lifting.</p>`
+          : `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Following up on your life insurance inquiry — I still have your file open and wanted to reach out.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">A lot of people come to me thinking life insurance is just a death benefit. The plans I specialize in also pay a cash benefit for critical illness — cancer, heart attack, stroke — while you're still alive. That changes the whole conversation.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If you're still exploring options, let's find 15 minutes. I'll show you exactly what's available in your state.</p>`,
+      };
+    }
+    if (step === 4) {
+      return {
+        subject: isMp
+          ? `Still Have Your File Open, ${firstName}`
+          : `Still Here — Your Life Insurance File`,
+        bodyHtml: isMp
+          ? `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I've reached out a couple of times and I don't want to be a nuisance — but I also don't want to close your file without making sure you had a real chance to see what's available.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Mortgage Protection plans that include Living Benefits are something most families wish they'd known about sooner. The cash benefit for cancer, heart attack, or stroke can be the difference between keeping your home and losing it during the hardest season of your life.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If now's not the right time, just say the word and I'll close your file. Otherwise — 15 minutes and we'll get you taken care of.</p>`
+          : `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I've followed up a couple of times — I don't want to crowd your inbox, but I also want to make sure you had a real opportunity here.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">The plans I work with pay cash for critical illness — cancer, heart attack, stroke — while you're still alive. That's money your family can use for treatment, bills, or whatever they need most. Most people don't know this is even an option.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If you're still interested, let's talk. If not, just let me know and I'll close your file — no hard feelings.</p>`,
+      };
+    }
+    if (step === 6) {
+      return {
+        subject: isMp
+          ? `Wrapping Up Household Files — One Last Note, ${firstName}`
+          : `Closing Your File — One Last Note, ${firstName}`,
+        bodyHtml: isMp
+          ? `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I'm wrapping up household files in your area this week. Before I archive yours, I wanted to send one final note.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If protecting your home and your family from a critical illness is still something you want to address — the Living Benefits on these plans pay cash for cancer, heart attack, or stroke while your mortgage is active — I'm still here and happy to help.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If life's gotten busy and now's not the time, I completely understand. No hard feelings. Reach out anytime and I'll reopen your file.</p>`
+          : `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I'm closing out regional files this week. Before I archive yours, I want to send one last note.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If life insurance — especially the kind that pays cash for a critical illness diagnosis while you're still alive — is still on your list, I'm here.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If the timing isn't right, that's completely okay. Reach out anytime and I'll pick your file right back up. Take care, ${firstName}.</p>`,
+      };
+    }
+  }
+
+  // ── RE-ENGAGE TRACK ────────────────────────────────────────────────────────
+  if (track === "re-engage") {
+    if (step === 0) {
+      return {
+        subject: isMp
+          ? `Picking Up Where We Left Off — Mortgage Protection`
+          : `Picking Up Where We Left Off — Life Insurance`,
+        bodyHtml: isMp
+          ? `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I know we haven't been able to connect yet on your Mortgage Protection review. I wanted to try one more time.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">The thing that sets these plans apart is the <strong>Living Benefits</strong> component — if you're ever diagnosed with cancer, suffer a heart attack, or have a stroke, your plan pays cash directly to you while your mortgage is still active. Your family keeps the home whether or not you're able to work.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Most families don't know this exists until it's too late to qualify. 15 minutes is all I need. Would this week work?</p>`
+          : `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I wanted to reach back out on your life insurance inquiry. We haven't had a chance to connect, and I didn't want to close your file without one more try.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">The plans I specialize in include <strong>Living Benefits</strong> — meaning a cancer diagnosis, heart attack, or stroke triggers a cash payout to you while you're still alive. That's not standard with most life insurance, and it's the part that changes the conversation for most families.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If you have 15 minutes this week, I'd love to show you what you qualify for.</p>`,
+      };
+    }
+    if (step === 2) {
+      return {
+        subject: isMp
+          ? `Final Attempt — Your Mortgage Protection Review`
+          : `Final Attempt — Your Life Insurance Review`,
+        bodyHtml: isMp
+          ? `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">This will be my last email — I don't want to keep filling your inbox.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If protecting your mortgage and your family from a critical illness is something you still want to address, I hope you'll reach out when the timing is right. The door doesn't close just because I stop emailing.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I genuinely wish you and your family well, ${firstName}. Reach out any time.</p>`
+          : `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">This will be my last outreach for now. I don't want to wear out my welcome.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If life insurance — especially coverage that pays cash for a critical illness while you're still alive — is ever something you want to explore, I'm always just a call away. I'm closing your file, not the door.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Take care, ${firstName}. Reach out any time and I'll be happy to help.</p>`,
+      };
+    }
+  }
+
+  // ── GHOST TRACK ────────────────────────────────────────────────────────────
+  if (track === "ghost") {
+    if (step === 0) {
+      return {
+        subject: isMp
+          ? `Archiving Your Household File — Last Note, ${firstName}`
+          : `Archiving Your File — Last Note, ${firstName}`,
+        bodyHtml: isMp
+          ? `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I've made several attempts to reach you and I understand life gets busy. This is my last note before I close your household file.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If protecting your home and your family from a critical illness is still on your list — the Living Benefits on these plans pay cash for cancer, heart attack, or stroke while your mortgage is active — I hope you'll reach out when the timing is right.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">No hard feelings. The door is always open. I wish you and your family well.</p>`
+          : `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I've reached out several times and I don't want to keep interrupting your day. This is my final note before I close your file.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If life insurance — especially coverage that pays cash for a critical illness while you're still alive — ever becomes a priority, please don't hesitate to reach out. I'll pick your file right back up.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I wish you and your family all the best, ${firstName}.</p>`,
+      };
+    }
+  }
+
+  // ── NURTURE TRACK ─────────────────────────────────────────────────────────
+  if (track === "nurture") {
+    if (step === 0) {
+      return {
+        subject: `Still Here When You're Ready — Jeremy Metka`,
+        bodyHtml: `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">It's been a couple of months since we last connected. I wanted to check in — no pressure, just keeping the line open.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If protecting your family with life insurance is back on your radar, I'm still here. The plans I work with still include <strong>Living Benefits</strong> — cash paid directly to you for a cancer diagnosis, heart attack, or stroke. That's money your family controls, not a hospital.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Whenever you're ready, just reach out or book a call below. I'll take it from there.</p>`,
+      };
+    }
+    if (step === 1) {
+      return {
+        subject: `Something Most Families Never Know About Life Insurance`,
+        bodyHtml: `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I wanted to share something that most people never hear until it's too late to qualify for it.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">The life insurance plans I specialize in include <strong>Living Benefits</strong> — a provision that pays a portion of the benefit directly to you, in cash, if you're diagnosed with cancer, have a heart attack, or suffer a stroke while the policy is active.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">The money goes to you — not a hospital, not a creditor. You decide how it gets used. Medical bills, mortgage payments, time off to recover — whatever your family needs most.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If that sounds like the kind of coverage your family deserves, I'd love to show you what you qualify for. A 15-minute call is all it takes.</p>`,
+      };
+    }
+    if (step === 2) {
+      return {
+        subject: `Six Months Later — Any Changes in Your Situation?`,
+        bodyHtml: `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">It's been about six months since we first connected. A lot can change in that time — new home, growing family, changes in health — and I wanted to check in.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If life insurance or mortgage protection has come back to mind, this is a good time to revisit. The plans I work with include <strong>Living Benefits</strong>, and qualifying while you're in good health is always easier than waiting.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Happy to do a quick 15-minute review — no cost, no commitment. Just a clear picture of where you stand.</p>`,
+      };
+    }
+    if (step === 3) {
+      return {
+        subject: `What Happens to Your Family If You Can't Work?`,
+        bodyHtml: `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Most families plan for death. Very few plan for the things that happen before it.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">A cancer diagnosis. A heart attack at 45. A stroke that takes months of recovery. These events happen every day — and without a plan, they can devastate a family financially long before death enters the picture.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">The life insurance plans I specialize in address exactly this. <strong>Living Benefits</strong> pay cash directly to you for a qualifying critical illness — so your family can focus on recovery, not financial survival.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If that's a conversation worth having, I'm here. Book a call below whenever you're ready.</p>`,
+      };
+    }
+    if (step === 4) {
+      return {
+        subject: `One Year Out — Still Thinking of You, ${firstName}`,
+        bodyHtml: `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">It's been about a year since we first connected. I keep reaching out because I've seen what happens to families who had the right coverage in place — and what happens to the ones who didn't.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If you've been meaning to get life insurance sorted out, there's no better time than now. Rates are based on current age and health, and both tend to work against us as time goes by.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">A quick 15-minute call and I can show you exactly what's available and what it would cost your family. No pressure. Just information.</p>`,
+      };
+    }
+    if (step === 5) {
+      return {
+        subject: `One Final Note From Me, ${firstName}`,
+        bodyHtml: `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">This will be my last email to you for a long while — I don't want to stay in your inbox indefinitely.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If protecting your family with life insurance that includes <strong>Living Benefits</strong> — cash paid for a critical illness while you're still alive — ever rises to the top of your list, please reach out. I'll be here.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">It has been a privilege staying in touch. I wish you and your family every blessing. Take good care, ${firstName}.</p>`,
+      };
+    }
+  }
+
+  return null; // No email template for this track/step
+}
+
+/**
+ * Wraps inner body HTML in the full branded email template.
+ */
+function buildEmailHtml(params: {
+  bodyContent: string;
+  agentPhone: string;
+  calendlyUrl: string;
+  email: string;
+  unsubscribeBaseUrl: string;
+}): string {
+  const { bodyContent, agentPhone, calendlyUrl, email, unsubscribeBaseUrl } = params;
+  const unsubLink = `${unsubscribeBaseUrl}${encodeURIComponent(email)}`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5;padding:24px 0;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;">
+
+        <!-- HEADER -->
+        <tr>
+          <td style="background:#1a2a44;padding:24px 32px;">
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:22px;color:#ffffff;font-weight:bold;line-height:1.2;">Jeremy Metka</p>
+            <p style="margin:6px 0 0;font-size:13px;color:#8fadc8;letter-spacing:0.3px;">Senior Field Underwriter &nbsp;|&nbsp; NPN #21425108</p>
+          </td>
+        </tr>
+
+        <!-- BODY -->
+        <tr>
+          <td style="padding:32px 32px 24px;">
+            ${bodyContent}
+          </td>
+        </tr>
+
+        <!-- LIVING BENEFITS CALLOUT -->
+        <tr>
+          <td style="padding:0 32px 28px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="background:#eef2f7;border-left:4px solid #1a2a44;padding:16px 20px;">
+                  <p style="margin:0 0 6px;font-family:Georgia,'Times New Roman',serif;font-size:14px;font-weight:bold;color:#1a2a44;">What Are Living Benefits?</p>
+                  <p style="margin:0;font-size:13px;color:#555;line-height:1.6;">The plans I work with pay a cash benefit directly to you — not a hospital, not a creditor — if you are diagnosed with cancer, have a heart attack, or suffer a stroke. You decide how to use the money.</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- CTA -->
+        <tr>
+          <td style="padding:0 32px 32px;text-align:center;">
+            <a href="${calendlyUrl}" style="display:inline-block;background:#1a2a44;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;padding:15px 36px;text-decoration:none;letter-spacing:0.3px;">Schedule Your Protection Audit &rarr;</a>
+          </td>
+        </tr>
+
+        <!-- SIGNATURE -->
+        <tr>
+          <td style="padding:20px 32px 24px;border-top:1px solid #e5e5e5;">
+            <p style="margin:0 0 4px;font-size:14px;color:#222;line-height:1.7;">
+              <strong>Jeremy Metka</strong><br>
+              Senior Field Underwriter | Metka Solutions<br>
+              NPN #21425108<br>
+              <a href="tel:${agentPhone}" style="color:#1a2a44;text-decoration:none;">${agentPhone}</a>
+              &nbsp;|&nbsp;
+              <a href="mailto:Jeremy@metkasolutions.com" style="color:#1a2a44;text-decoration:none;">Jeremy@metkasolutions.com</a>
+            </p>
+            <p style="margin:10px 0 0;font-size:13px;">
+              <a href="https://hihello.com/p/6cc69b25-86ec-4c39-a45b-fd48bee85403" style="color:#1a2a44;text-decoration:none;">&#x1F4F1; View My Digital Business Card</a>
+            </p>
+          </td>
+        </tr>
+
+        <!-- FOOTER -->
+        <tr>
+          <td style="background:#f7f7f7;padding:16px 32px;text-align:center;border-top:1px solid #e5e5e5;">
+            <p style="margin:0;font-size:11px;color:#aaa;line-height:1.6;">
+              Metka Solutions | Durant, OK 74701<br>
+              Licensed in OK, TX, VA, OH, NC, IL, MO, NJ, PA, AZ, NY, WA, AL, FL, GA, CA<br>
+              <a href="${unsubLink}" style="color:#aaa;">Unsubscribe</a>
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
 // ── MAIN ──────────────────────────────────────────────────────────────────────
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -174,14 +535,21 @@ serve(async (req) => {
   try {
     const supabaseUrl    = Deno.env.get("SUPABASE_URL")!;
     const serviceKey     = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const appsScriptUrl  = Deno.env.get("APPS_SCRIPT_EMAIL_URL") || "";
-    const agentPhone     = Deno.env.get("AGENT_PHONE")   || "";
-    const calendlyUrl    = Deno.env.get("CALENDLY_URL")  || "";
+    const gmailClientId  = Deno.env.get("GMAIL_CLIENT_ID")     || "";
+    const gmailSecret    = Deno.env.get("GMAIL_CLIENT_SECRET") || "";
+    const gmailRefresh   = Deno.env.get("GMAIL_REFRESH_TOKEN") || "";
+    const agentPhone     = Deno.env.get("AGENT_PHONE")         || "(580) 775-7564";
+    const calendlyUrl    = Deno.env.get("CALENDLY_URL")        || "";
+    const unsubBaseUrl   = Deno.env.get("UNSUBSCRIBE_URL")     || `${supabaseUrl}/functions/v1/unsubscribe?email=`;
 
     const supabase = createClient(supabaseUrl, serviceKey);
     const smsFnUrl = `${supabaseUrl}/functions/v1/send-sms`;
 
-    // Load all leads — data is a JSONB blob per the leads table schema.
+    // Cache Gmail access token for the duration of this run (tokens last 1hr)
+    let gmailAccessToken: string | null = null;
+    const emailEnabled = !!(gmailClientId && gmailSecret && gmailRefresh);
+
+    // ── LOAD LEADS ────────────────────────────────────────────────────────────
     const PAGE = 1000;
     let allRows: { id: string; data: Record<string, unknown> }[] = [];
     let from = 0, done = false;
@@ -196,10 +564,12 @@ serve(async (req) => {
       from += PAGE;
     }
 
-    // Filter to active sequence leads only
+    // Filter to EXPLICITLY enrolled sequence leads only.
+    // seqTrack MUST be set — never default unset leads to any track.
     const active = allRows.filter(row => {
       const d = row.data || {};
-      return !d.seqPaused && !d.seqExitReason;
+      const track = d.seqTrack as string;
+      return !!track && !d.seqPaused && !d.seqExitReason;
     });
 
     const results = {
@@ -215,7 +585,9 @@ serve(async (req) => {
 
     for (const row of active) {
       const lead = row.data as Record<string, unknown>;
-      const track = (lead.seqTrack as string) || "new";
+      const track = lead.seqTrack as string;
+      // Hard skip — never process a lead without an explicit seqTrack enrollment
+      if (!track) { results.skipped++; continue; }
       const sched = TRACK_SCHEDULES[track];
       if (!sched) { results.skipped++; continue; }
 
@@ -229,8 +601,6 @@ serve(async (req) => {
       const trackLabel = TRACK_LABEL[track] || track;
 
       // ── ARCHIVE STEP ──────────────────────────────────────────────
-      // When a non-nurture track exhausts → auto-enroll in nurture (email-only
-      // slow drip to 2yr mark). When nurture itself exhausts → real archive.
       if (entry.channels.includes("archive")) {
         const assignDateStr = (lead.assignDate as string) || startDate;
         const existingNotes = (lead.notes as CRMNote[]) || [];
@@ -246,7 +616,7 @@ serve(async (req) => {
             seqStep:       0,
             seqPaused:     false,
             seqExitReason: null,
-            seqStartDate:  assignDateStr, // offsets measured from original assign date
+            seqStartDate:  assignDateStr,
             notes:         [enrollNote, ...existingNotes],
           };
           await supabase.from("leads")
@@ -276,7 +646,6 @@ serve(async (req) => {
       const firstName = (lead.firstName as string) || ((lead.name as string) || "").split(" ")[0] || "there";
       const cat       = leadCat((lead.leadType as string) || "");
 
-      // Collect all activity notes for this lead this run
       const activityNotes: CRMNote[] = [];
 
       // ── SEND SMS ──────────────────────────────────────────────────
@@ -315,47 +684,47 @@ serve(async (req) => {
         }
       }
 
-      // ── SEND EMAIL ────────────────────────────────────────────────
-      if (entry.channels.includes("email") && lead.email && appsScriptUrl) {
-        try {
-          const resp = await fetch(appsScriptUrl, {
-            method:  "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              firstName,
-              email:       lead.email,
-              leadType:    lead.leadType    || "Mortgage Protection",
-              track,
-              step,
+      // ── SEND EMAIL (Gmail API) ─────────────────────────────────────
+      if (entry.channels.includes("email") && lead.email && emailEnabled) {
+        const emailContent = getEmailContent(track, step, cat, firstName);
+        if (emailContent) {
+          try {
+            // Lazy-load access token once per run
+            if (!gmailAccessToken) {
+              gmailAccessToken = await getGmailAccessToken(gmailClientId, gmailSecret, gmailRefresh);
+            }
+            const htmlBody = buildEmailHtml({
+              bodyContent:       emailContent.bodyHtml,
               agentPhone,
               calendlyUrl,
-            }),
-          });
-          if (resp.ok) {
+              email:             lead.email as string,
+              unsubscribeBaseUrl: unsubBaseUrl,
+            });
+            await sendGmailEmail({
+              accessToken: gmailAccessToken,
+              to:          lead.email as string,
+              subject:     emailContent.subject,
+              htmlBody,
+            });
             results.emailsSent++;
             activityNotes.push(makeNote(
-              `[SEQ] Email sent — Track: ${trackLabel} | Step ${step} | To: ${lead.email}`
+              `[SEQ] Email sent — Track: ${trackLabel} | Step ${step} | Subject: "${emailContent.subject}" | To: ${lead.email}`
             ));
-          } else {
-            const errText = await resp.text();
-            const errMsg = errText.slice(0, 120);
+          } catch (e) {
+            const errMsg = (e as Error).message;
             results.errors.push(`Email[${row.id}]: ${errMsg}`);
             activityNotes.push(makeNote(
               `[SEQ] Email FAILED — Track: ${trackLabel} | Step ${step} | Error: ${errMsg}`
             ));
           }
-        } catch (e) {
-          const errMsg = (e as Error).message;
-          results.errors.push(`Email[${row.id}]: ${errMsg}`);
-          activityNotes.push(makeNote(
-            `[SEQ] Email FAILED — Track: ${trackLabel} | Step ${step} | Error: ${errMsg}`
-          ));
         }
+      } else if (entry.channels.includes("email") && lead.email && !emailEnabled) {
+        activityNotes.push(makeNote(
+          `[SEQ] Email SKIPPED — Gmail secrets not configured | Track: ${trackLabel} | Step ${step}`
+        ));
       }
 
       // ── DIAL REMINDER ─────────────────────────────────────────────
-      // dial_reminder = no automated message; flags lead for manual call.
-      // Log it so it appears in the CRM timeline as a to-do reminder.
       if (entry.channels.includes("dial_reminder")) {
         activityNotes.push(makeNote(
           `[SEQ] Dial reminder — Track: ${trackLabel} | Step ${step} | Manual call due today.`
@@ -369,7 +738,6 @@ serve(async (req) => {
         ? { seqStep: nextStep, seqPaused: true, seqExitReason: "exhausted" }
         : { seqStep: nextStep };
 
-      // Prepend all activity notes to existing lead notes
       const existingNotes = (lead.notes as CRMNote[]) || [];
       const updatedLead = {
         ...lead,
@@ -378,24 +746,4 @@ serve(async (req) => {
       };
 
       await supabase.from("leads")
-        .update({ data: updatedLead, updated_at: new Date().toISOString() })
-        .eq("id", row.id);
-
-      results.processed++;
-    }
-
-    console.log("[process-sequence] run complete:", JSON.stringify(results));
-
-    return new Response(
-      JSON.stringify({ success: true, ...results }),
-      { headers: { ...CORS, "Content-Type": "application/json" } }
-    );
-
-  } catch (err) {
-    console.error("[process-sequence] fatal:", err);
-    return new Response(
-      JSON.stringify({ success: false, error: (err as Error).message }),
-      { status: 500, headers: { ...CORS, "Content-Type": "application/json" } }
-    );
-  }
-});
+        .update({ data: updatedLead, updated_at: new Date(
