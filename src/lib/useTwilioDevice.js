@@ -16,7 +16,7 @@ export function useTwilioDevice({ upd, logDial }) {
   const [voiceDeviceStatus, setVoiceDeviceStatus] = useState('idle'); // idle | registering | ready | error
   const [activeCall,        setActiveCall]        = useState(null);
   const [activeCallLead,    setActiveCallLead]    = useState(null);
-  const [callStatus,        setCallStatus]        = useState(null); // null | 'connecting' | 'connected'
+  const [callStatus,        setCallStatus]        = useState(null); // null | 'connecting' | 'ringing' | 'connected'
   const [callMuted,         setCallMuted]         = useState(false);
   const [callElapsed,       setCallElapsed]       = useState(0);
 
@@ -50,7 +50,7 @@ export function useTwilioDevice({ upd, logDial }) {
     return () => { if (twilioDevice) { try { twilioDevice.destroy(); } catch(e){} } };
   }, [useTwilioCalling, tokenServiceUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Call elapsed timer
+  // Call elapsed timer — only ticks when connected
   useEffect(() => {
     if (callStatus !== 'connected') return;
     const iv = setInterval(() => setCallElapsed(n => n + 1), 1000);
@@ -62,7 +62,7 @@ export function useTwilioDevice({ upd, logDial }) {
     const phoneClean = (lead.phone || '').replace(/\D/g, '');
     if (!phoneClean) return;
 
-    // v3.7 — DNC / removed guard
+    // DNC / removed guard
     const HARD_STOPS = ['dnc', 'not_interested', 'withdrawn', 'chargeback'];
     if (HARD_STOPS.includes(lead.disposition) || lead.stage === 'removed') {
       const label = lead.disposition === 'dnc' ? 'DNC' : lead.stage === 'removed' ? 'Removed' : 'Not Interested';
@@ -79,6 +79,9 @@ export function useTwilioDevice({ upd, logDial }) {
       twilioDevice.connect({ params: { To: '+1' + phoneClean } })
         .then(call => {
           setActiveCall(call);
+          // Fire 'ringing' status when carrier confirms the phone is ringing
+          // Power dialer uses this event to start its ring timer
+          call.on('ringing', () => setCallStatus('ringing'));
           call.on('accept', () => {
             setCallStatus('connected');
             // Auto-clear callback badge when call connects
@@ -103,8 +106,9 @@ export function useTwilioDevice({ upd, logDial }) {
     }
   };
 
-  const hangUp      = () => { if (activeCall) activeCall.disconnect(); };
-  const toggleMute  = () => { if (activeCall) { const m = !callMuted; activeCall.mute(m); setCallMuted(m); } };
+  const hangUp     = () => { if (activeCall) activeCall.disconnect(); };
+  const toggleMute = () => { if (activeCall) { const m = !callMuted; activeCall.mute(m); setCallMuted(m); } };
+  const sendDigit  = (digit) => { if (activeCall) activeCall.sendDigits(digit); };
 
   return {
     twilioDevice,      setTwilioDevice,
@@ -120,5 +124,6 @@ export function useTwilioDevice({ upd, logDial }) {
     dialLead,
     hangUp,
     toggleMute,
+    sendDigit,
   };
 }

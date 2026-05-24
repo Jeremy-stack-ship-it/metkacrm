@@ -481,6 +481,7 @@ const saveLeads = useCallback((next, opts = {}) => {
     dialLead,
     hangUp,
     toggleMute,
+    sendDigit,
   } = useTwilioDevice({ upd, logDial });
 
   // ── Import handlers (extracted → lib/useImportHandlers.js v3.14) ────────────────────────
@@ -1148,7 +1149,7 @@ const queue = useMemo(() => {
 
 
            // ── FLOATING CALL CONTROL BAR ──
-        view !== 'dial' && React.createElement(CallBar, {activeCall, callStatus, callElapsed, callMuted, activeCallLead, toggleMute, hangUp}),
+        view !== 'dial' && React.createElement(CallBar, {activeCall, callStatus, callElapsed, callMuted, activeCallLead, toggleMute, hangUp, sendDigit}),
 
     // ── APPOINTMENT CONFIRMATION MODAL ── full-screen lock, no escape
     (open && open.disposition === 'appointment_booked' && open.nextCallback && new Date(open.nextCallback) < new Date() && !open.apptConfirmed) &&
