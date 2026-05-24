@@ -92,6 +92,7 @@ import { priority, autoFollowUp, openCalendlyPopup } from './lib/leadScoring.js'
 import { useContactFilters } from './lib/useContactFilters.js';
 import { useTwilioDevice } from './lib/useTwilioDevice.js';
 import { useSettingsConfig } from './lib/useSettingsConfig.js';
+import { useSupabaseHydration } from './lib/useSupabaseHydration.js';
 
 // ── SUPABASE CLIENT ──────────────────────────────────────────────
 // (All Supabase functions imported from lib/supabaseSync.js v3.6)
@@ -369,92 +370,11 @@ function MetkaCRM(){
       setLeads(SEEDS);
     }
     setLoading(false);
-
-    // v3.14 — Per-lead _ts merge: Supabase is source of truth on a per-lead basis.
-    // Replaces the fragile array-length comparison with accurate per-lead timestamp comparison.
-    // Deleted leads are tracked via LS_DELETED_IDS tombstone map so they can't ghost-walk back.
-    setSupaStatus("syncing");
-
-    // Load + auto-prune deletion tombstones
-    let deletedIds = {};
-    try {
-      const raw = localStorage.getItem(LS_DELETED_IDS);
-      if (raw) deletedIds = JSON.parse(raw);
-    } catch {}
-    const _tombstoneCutoff = Date.now() - 60 * 24 * 60 * 60 * 1000; // 60 days
-    let _tombstonePruned = false;
-    Object.keys(deletedIds).forEach(id => {
-      if (deletedIds[id] < _tombstoneCutoff) { delete deletedIds[id]; _tombstonePruned = true; }
-    });
-    if (_tombstonePruned) {
-      try { localStorage.setItem(LS_DELETED_IDS, JSON.stringify(deletedIds)); } catch {}
-    }
-
-    sbLoadAll().then(remote => {
-      if (!remote) { setSupaStatus("error"); return; }
-
-      setLeads(prev => {
-        if (remote.length === 0) {
-          // Supabase is empty — first run or wiped. Push local up.
-          console.log('[v3.14] Supabase empty — seeding from localStorage');
-          sbUpsertAll(prev).then(() => setSupaStatus("ok")).catch(() => setSupaStatus("error"));
-          sbReconcileDeletes(prev).catch(() => {});
-          return prev;
-        }
-
-        // Per-lead merge: newest _ts wins per ID
-        const merged = new Map();
-        // Seed with local leads
-        prev.forEach(l => merged.set(l.id, l));
-        // Walk remote: add new IDs, overwrite if remote lead is newer
-        let remoteAdded = 0;
-        remote.forEach(r => {
-          if (deletedIds[r.id]) return; // intentionally deleted locally — skip
-          const local = merged.get(r.id);
-          if (!local) {
-            merged.set(r.id, r); // lead exists only in remote (added on another device)
-            remoteAdded++;
-          } else if ((r._ts || 0) > (local._ts || 0)) {
-            merged.set(r.id, r); // remote is newer — take it
-          }
-          // else: local is newer or equal — keep local (already in map)
-        });
-
-        const result = Array.from(merged.values());
-        console.log(`[v3.14] Hydration merge: local=${prev.length} remote=${remote.length} result=${result.length} remoteAdded=${remoteAdded}`);
-
-        // Update localStorage cache with merged result
-        try {
-          localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(result)));
-        } catch {}
-
-        // If remote had leads we didn't have locally, push merged set up to Supabase
-        if (remoteAdded > 0) {
-          sbUpsertAll(result).catch(() => {});
-        }
-
-        setSupaStatus("ok");
-        sbReconcileDeletes(result).catch(() => {});
-        return result;
-      });
-    }).catch(() => setSupaStatus("error"));
-
-    // v3.1 — Load activity log from Supabase (local wins if it has more events)
-    sbLoadActivity().then(remote => {
-      if (remote && Array.isArray(remote) && remote.length > 0) {
-        setActivity(prev => {
-          if (remote.length >= prev.length) {
-            try { localStorage.setItem(LS_ACTIVITY, JSON.stringify(remote)); } catch {}
-            return remote;
-          }
-          // Local has more — push it up to repair Supabase
-          sbSaveActivity(prev).catch(()=>{});
-          return prev;
-        });
-      }
-    }).catch(()=>{});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
+
+  // ── Supabase cloud hydration (extracted → lib/useSupabaseHydration.js v3.14) ──
+  useSupabaseHydration(setLeads, setActivity, setSupaStatus);
 
   // ── SAVE: local-first, Supabase cloud sync (non-blocking) ──
 const saveLeads = useCallback((next, opts = {}) => {
