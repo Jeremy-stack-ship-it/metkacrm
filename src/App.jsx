@@ -734,6 +734,31 @@ const saveLeads = useCallback((next, opts = {}) => {
       }
     }
   };
+// ── Named callbacks hoisted out of JSX (v3.14 cleanup) ──────────────────────
+  // TodaysBlock — phase-aware disposition handler
+  const handleTodayDispose = useCallback((id, dispId) => {
+    const lead = leads.find(l => l.id === id);
+    const phasePatch = lead ? applyPhaseTransition(lead, dispId) : {};
+    const DISP_STAGE_MAP = {
+      vm_left: 'contacted', callback: 'contacted', hung_up: 'contacted', no_show: 'contacted',
+      appointment_booked: 'appointment_set', follow_up_needed: 'follow_up',
+      not_interested: 'removed', dnc: 'removed', withdrawn: 'removed', chargeback: 'removed',
+    };
+    const stagePatch = DISP_STAGE_MAP[dispId] ? { stage: DISP_STAGE_MAP[dispId] } : {};
+    upd(id, { disposition: dispId, lastContact: new Date().toLocaleDateString('en-CA'), ...stagePatch, ...phasePatch });
+  }, [leads, upd]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // DashboardTab — start a locked dial session from the priority queue widget
+  const startDialSession = useCallback((orderedIds) => {
+    const ids = (orderedIds && orderedIds.length > 0) ? orderedIds : queue.map(l => l.id);
+    if (ids.length === 0) { alert('No priority leads in queue right now.'); return; }
+    const s = { ids, idx: 0, total: ids.length, startedAt: new Date().toISOString() };
+    setSession(s); setSessionPaused(false);
+    try { localStorage.setItem(LS_SESSION, JSON.stringify(s)); } catch {}
+    setOpenId(ids[0]); setDialSessionActive(true); setView('dial'); setNoteText(''); setDetailTab('live');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queue, setSession, setSessionPaused, setOpenId, setDialSessionActive, setView, setNoteText, setDetailTab]);
+
 const queue = useMemo(() => {
   // During an active session, keep all session leads visible regardless of calledToday.
   // Agent needs the full list in front of them — leads shouldn't vanish as they work through them.
@@ -1032,41 +1057,18 @@ const queue = useMemo(() => {
         // ── TODAY'S BLOCK VIEW (v3.1 — Phase Lifecycle Engine) ──
         view==="today" && !dialSessionActive && React.createElement(TodaysBlock, {
           leads,
-          onDispose: (id, dispId) => {
-            // Compute phase transition patch
-            const lead = leads.find(l => l.id === id);
-            const phasePatch = lead ? applyPhaseTransition(lead, dispId) : {};
-            const DISP_STAGE_MAP = {
-              vm_left:            "contacted",
-              callback:           "contacted",
-              hung_up:            "contacted",
-              no_show:            "contacted",
-              appointment_booked: "appointment_set",
-              follow_up_needed:   "follow_up",
-              not_interested:     "removed",
-              dnc:                "removed",
-              withdrawn:          "removed",
-              chargeback:         "removed",
-            };
-            const stagePatch = DISP_STAGE_MAP[dispId] ? { stage: DISP_STAGE_MAP[dispId] } : {};
-            upd(id, { disposition: dispId, lastContact: new Date().toLocaleDateString('en-CA'), ...stagePatch, ...phasePatch });
-          },
+          onDispose: handleTodayDispose,
           onOpen: (id) => { setOpenId(id); setPrevView("today"); setView("contact"); setDetailTab("activity"); },
           onUpdate: upd,
           calendlyUrl,
         }),
 
-	// ── DASHBOARD VIEW ──
-	 view==="dashboard" && React.createElement(DashboardTab, {leads, activity, goals, financialConfig, setView, setOpenId, setPrevView, refreshQueueOrder, startDialSession: (orderedIds) => {
-	   // orderedIds = IDs in the exact order shown on the dashboard dial queue widget.
-	   // Falls back to App-level queue if called without them.
-	   const ids = (orderedIds && orderedIds.length > 0) ? orderedIds : queue.map(l=>l.id);
-	   if(ids.length===0){alert("No priority leads in queue right now.");return;}
-	   const s={ids,idx:0,total:ids.length,startedAt:new Date().toISOString()};
-	   setSession(s); setSessionPaused(false);
-	   try{localStorage.setItem(LS_SESSION,JSON.stringify(s));}catch{}
-	   setOpenId(ids[0]); setDialSessionActive(true); setView('dial'); setNoteText(""); setDetailTab("live");
-	 }}),
+        // ── DASHBOARD VIEW ──
+        view==="dashboard" && React.createElement(DashboardTab, {
+          leads, activity, goals, financialConfig,
+          setView, setOpenId, setPrevView,
+          refreshQueueOrder, startDialSession,
+        }),
 
         // ── CALLBACK QUEUE VIEW (v3.1) ──
         view==="callbacks" && React.createElement(CallbackQueue, {
@@ -1174,7 +1176,6 @@ const queue = useMemo(() => {
           addTemplate, deleteTemplate,
         }),
 
-        // ── SETTINGS VIEW ──
         // ── SETTINGS VIEW ──
         view==="settings" && React.createElement(SettingsView, {
           leads, setLeads, saveLeads,
