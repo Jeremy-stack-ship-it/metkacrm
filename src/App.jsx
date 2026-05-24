@@ -93,6 +93,7 @@ import { useContactFilters } from './lib/useContactFilters.js';
 import { useTwilioDevice } from './lib/useTwilioDevice.js';
 import { useSettingsConfig } from './lib/useSettingsConfig.js';
 import { useSupabaseHydration } from './lib/useSupabaseHydration.js';
+import { useImportHandlers } from './lib/useImportHandlers.js';
 
 // ── SUPABASE CLIENT ──────────────────────────────────────────────
 // (All Supabase functions imported from lib/supabaseSync.js v3.6)
@@ -163,8 +164,6 @@ function MetkaCRM(){
   const [cbTime,setCbTime]=useState("");
   const [addForm,setAddForm]=useState(false);
   const [newL,setNewL]=useState({name:"",phone:"",state:"OK",bucket:"A",leadType:"Mortgage Protection"});
-  const [importModal,setImportModal]=useState(false);
-  const [importPreview,setImportPreview]=useState(null);
   const [scripts,setScripts]=useState(DEFAULT_SCRIPTS);
   const [scriptType,setScriptType]=useState("Mortgage Protection");
   const [scriptSection,setScriptSection]=useState("phone");
@@ -204,7 +203,6 @@ function MetkaCRM(){
     page, setPage,
   } = useContactFilters();
   const [prevView, setPrevView] = useState("contacts");
-  const [healthOpen, setHealthOpen] = useState(false);
   const [clockNow, setClockNow]     = useState(new Date());
   const [dupeLead, setDupeLead]     = useState(null);
   // ── Settings config (extracted → lib/useSettingsConfig.js v3.14) ──────────
@@ -220,15 +218,22 @@ function MetkaCRM(){
   } = useSettingsConfig();
   const [backupExists, setBackupExists]       = useState(false);
   const [supaStatus, setSupaStatus]           = useState("idle"); // idle | syncing | ok | error
-  const [replaceConfirm, setReplaceConfirm]   = useState("");
-  const [fieldMapModal, setFieldMapModal]     = useState(false);
-  const [csvRawText, setCsvRawText]           = useState("");
-  const [csvHeaders, setCsvHeaders]           = useState([]);
-  const [fieldMapDraft, setFieldMapDraft]     = useState({});
-  const [saveMappingCb, setSaveMappingCb]     = useState(true);
-  const [savedMapping, setSavedMapping]       = useState({});
-  const [commsCache, setCommsCache]           = useState({}); // {leadId: [{id,ts,type,direction,body,status}]}
-  const [commsLoading, setCommsLoading]       = useState(false);
+  // ── Import handlers (extracted → lib/useImportHandlers.js v3.14) ────────────────────────
+  const {
+    importModal,    setImportModal,
+    importPreview,  setImportPreview,
+    replaceConfirm, setReplaceConfirm,
+    fieldMapModal,  setFieldMapModal,
+    csvRawText,     setCsvRawText,
+    csvHeaders,     setCsvHeaders,
+    fieldMapDraft,  setFieldMapDraft,
+    saveMappingCb,  setSaveMappingCb,
+    savedMapping,   setSavedMapping,
+    handleFile,
+    confirmFieldMapping,
+    confirmImport,
+    restoreBackup,
+  } = useImportHandlers({ leads, saveLeads, backfillLead, setBackupExists });
   // v4.0 — Twilio Voice state (extracted → lib/useTwilioDevice.js, wired after leadMgr)
   // v3.0 — Dialing session
   const [session, setSession]                 = useState(()=>{ try{ const s=localStorage.getItem(LS_SESSION); return s?JSON.parse(s):null; }catch{ return null; }});
@@ -348,9 +353,6 @@ function MetkaCRM(){
       if(a){ try{ const arr=JSON.parse(a); if(Array.isArray(arr)) setActivity(arr); }catch{} }
       // v2.6 — Check if backup exists
       if(localStorage.getItem(LS_BACKUP)) setBackupExists(true);
-      // v2.6 — Load saved field mapping
-      const fm = localStorage.getItem(LS_MAPPING);
-      if(fm){ try{ setSavedMapping(JSON.parse(fm)); }catch{} }
       // v4.0 — Restore Twilio Voice calling toggle
       const savedTokenUrl = localStorage.getItem('metka-twilio-token-url') || '';
       if(savedTokenUrl){ setTokenServiceUrl(savedTokenUrl); setTokenUrlDraft(savedTokenUrl); }
@@ -489,85 +491,6 @@ const saveLeads = useCallback((next, opts = {}) => {
     toggleMute,
   } = useTwilioDevice({ upd, logDial });
 
-  const handleFile=e=>{
-    const file=e.target.files?.[0]; if(!file) return;
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      const txt=ev.target.result;
-      const firstLine=txt.split(/\r?\n/)[0]||"";
-      // Parse headers preserving original case for display
-      const headers=firstLine.split(",").map(h=>h.replace(/^"|"$/g,"").trim());
-      const lowerHeaders=headers.map(h=>h.toLowerCase());
-      // Auto-detect mapping
-      const autoMap=autoDetectMapping(lowerHeaders);
-      // Build initial draft: prefer saved column names, fall back to auto-detect
-      const draft={};
-      // Include all keys (displayed + hidden)
-      const allKeys=[...FIELD_MAP_DEFS.map(f=>f.key),"score","tier","daysOld","flags","rationale","leadLevel","importStage"];
-      allKeys.forEach(k=>{
-        if(savedMapping[k]!==undefined){
-          const savedIdx=lowerHeaders.indexOf(savedMapping[k].toLowerCase());
-          draft[k]=savedIdx>-1?savedIdx:(autoMap[k]??-1);
-        } else {
-          draft[k]=autoMap[k]??-1;
-        }
-      });
-      setCsvRawText(txt);
-      setCsvHeaders(headers);
-      setFieldMapDraft(draft);
-      setFieldMapModal(true);
-    };
-    reader.readAsText(file); e.target.value="";
-  };
-  const confirmImport=mode=>{
-    if(!importPreview) return;
-    // Auto-backup current leads before any import
-    try{
-      const snap=LZString.compressToUTF16(JSON.stringify(leads));
-      localStorage.setItem(LS_BACKUP,snap);
-      setBackupExists(true);
-    }catch{}
-    // v3.1 — auto-assign phases to imported leads that don't have one
-    const withPhases = (arr) => arr.map(l => backfillLead(l));
-    saveLeads(mode==="append"
-      ? [...withPhases(importPreview.newLeads),...leads]
-      : withPhases(importPreview.all)
-    );
-    setImportModal(false);setImportPreview(null);setReplaceConfirm("");
-  };
-  const confirmFieldMapping=()=>{
-    // Optionally persist the mapping by column name (not index, so it survives different CSVs)
-    if(saveMappingCb){
-      const toSave={};
-      Object.entries(fieldMapDraft).forEach(([k,idx])=>{
-        if(idx>-1 && csvHeaders[idx]) toSave[k]=csvHeaders[idx].toLowerCase();
-      });
-      setSavedMapping(toSave);
-      try{localStorage.setItem(LS_MAPPING,JSON.stringify(toSave));}catch{}
-    }
-    // Parse CSV with confirmed mapping
-    const parsed=parseCSV(csvRawText,fieldMapDraft);
-    const existing=new Set(leads.map(l=>l.phone.replace(/\D/g,"")));
-    setImportPreview({
-      all:parsed,
-      newLeads:parsed.filter(l=>!existing.has(l.phone.replace(/\D/g,""))),
-      dupes:parsed.filter(l=>existing.has(l.phone.replace(/\D/g,"")))
-    });
-    setFieldMapModal(false);
-    setImportModal(true);
-  };
-  const restoreBackup=()=>{
-    const raw=localStorage.getItem(LS_BACKUP);
-    if(!raw){alert("No backup found.");return;}
-    try{
-      const dec=LZString.decompressFromUTF16(raw);
-      const arr=JSON.parse(dec);
-      if(Array.isArray(arr)&&arr.length>0){
-        saveLeads(arr);
-        alert("✓ Restored "+arr.length+" leads from backup.");
-      }
-    }catch{alert("Backup could not be read.");}
-  };
   const addTemplate=()=>{
     if(!newTemplateName.trim()||!newTemplateText.trim()) return;
     const key=`t_${Date.now()}`;

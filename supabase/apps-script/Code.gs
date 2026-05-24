@@ -1,31 +1,29 @@
 /**
  * METKA SOLUTIONS — Sequence Email Web App
- * Google Apps Script — deployed as a Web App (Execute as: Me)
- *
- * Receives POST from Supabase Edge Function process-sequence.
- * Sends sequence emails from Jeremy's Gmail using GmailApp.
+ * Google Apps Script — Merged v2 (Grok improvements + full coverage)
  *
  * DEPLOY INSTRUCTIONS (do this once):
  * 1. Go to script.google.com
- * 2. Create new project → name it "Metka Email Sequence"
+ * 2. Create new project → name it "Metka Sequence Mailer"
  * 3. Paste this entire file into Code.gs
- * 4. Click Deploy → New deployment
- * 5. Type: Web App
- * 6. Execute as: Me (Jeremy@metkasolutions.com)
- * 7. Who has access: Anyone
- * 8. Click Deploy → Copy the web app URL
- * 9. Paste that URL into CRM Settings → Sequence Engine → Apps Script URL
- *    AND into Supabase secrets: APPS_SCRIPT_EMAIL_URL
+ * 4. Update CALENDLY, UNSUBSCRIBE_URL, and BUSINESS_ADDRESS below
+ * 5. Click Deploy → New deployment → Web App
+ * 6. Execute as: Me | Who has access: Anyone
+ * 7. Click Deploy → copy the Web App URL
+ * 8. Paste URL into CRM Settings → Sequence Engine → Apps Script URL
+ *    AND into Supabase secret: APPS_SCRIPT_EMAIL_URL
  *
- * To update: make edits here → Deploy → Manage deployments → New version
+ * To update: edit here → Deploy → Manage deployments → New version
  */
 
 // ── CONFIG ───────────────────────────────────────────────────────────────────
-var AGENT_NAME  = "Jeremy Metka";
-var AGENT_TITLE = "Senior Field Underwriter | Metka Solutions";
-var AGENT_NPN   = "NPN #21425108";
-var AGENT_PHONE = "(405) 555-XXXX"; // UPDATE with your real number
-var CALENDLY    = "https://calendly.com/YOUR_LINK"; // UPDATE with your Calendly link
+var AGENT_NAME       = "Jeremy Metka";
+var AGENT_TITLE      = "Senior Field Underwriter | Metka Solutions";
+var AGENT_NPN        = "NPN #21425108";
+var AGENT_PHONE      = "(580) 775-7564";
+var CALENDLY         = "https://calendly.com/YOUR_LINK";         // ← UPDATE
+var UNSUBSCRIBE_URL  = "https://YOUR-PROJECT.supabase.co/functions/v1/unsubscribe?email="; // ← UPDATE (or remove until endpoint is built)
+var BUSINESS_ADDRESS = "Metka Solutions, Durant, OK 74701";      // ← UPDATE if needed
 
 // ── ENTRY POINT ──────────────────────────────────────────────────────────────
 function doPost(e) {
@@ -61,17 +59,16 @@ function sendSequenceEmail(payload) {
 
   if (!email) return { success: false, error: "No email address provided" };
 
-  var cat = leadType.toLowerCase().indexOf("mortgage") >= 0 ? "mp" : "li";
+  var cat  = leadType.toLowerCase().indexOf("mortgage") >= 0 ? "mp" : "li";
   var tmpl = getTemplate(track, step, cat);
 
   if (!tmpl) {
-    // No template for this step — silently skip (not all steps have emails)
     return { success: true, skipped: true, reason: "No email template for track:" + track + " step:" + step };
   }
 
   var subject = tmpl.subject(firstName);
   var body    = tmpl.body(firstName, agentPhone, calendly);
-  var html    = wrapHtml(body, firstName);
+  var html    = wrapHtml(body, firstName, email);
 
   GmailApp.sendEmail(email, subject, body, {
     name:     AGENT_NAME,
@@ -81,26 +78,48 @@ function sendSequenceEmail(payload) {
   return { success: true, to: email, subject: subject, track: track, step: step };
 }
 
-// ── HTML WRAPPER ─────────────────────────────────────────────────────────────
-function wrapHtml(plainBody, firstName) {
+// ── HTML WRAPPER with HiHello Signature ─────────────────────────────────────
+function wrapHtml(plainBody, firstName, email) {
   var lines = plainBody.split("\n").map(function(l) {
     return "<p style='margin:0 0 12px 0;'>" + l.replace(/&/g,"&amp;").replace(/</g,"&lt;") + "</p>";
   }).join("");
 
+  var unsubscribeLink = UNSUBSCRIBE_URL + encodeURIComponent(email);
+
   return [
     "<div style='font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#1a1a1a;font-size:15px;line-height:1.7;'>",
+
     "<div style='background:#1a2a44;padding:16px 24px;border-radius:6px 6px 0 0;'>",
     "<span style='color:#fff;font-size:13px;font-weight:bold;letter-spacing:0.5px;'>METKA SOLUTIONS</span>",
     "</div>",
+
     "<div style='padding:28px 32px;background:#fff;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 6px 6px;'>",
     lines,
+
+    // HiHello Digital Business Card
+    "<div style='margin-top:32px;'>",
+    "<a href='https://hihello.com/p/6cc69b25-86ec-4c39-a45b-fd48bee85403' target='_blank' style='display:inline-block;'>",
+    "<img src='https://cdn.hihello.me/cards/6cc69b25-86ec-4c39-a45b-fd48bee85403/signature_imagelogo.png?generated=1779479464429' ",
+    "alt='Jeremy Metka - Metka Solutions' width='360' style='display:block;max-width:100%;height:auto;' />",
+    "</a>",
     "</div>",
+
+    // Footer
+    "<div style='margin-top:32px;padding-top:20px;border-top:1px solid #e8e8e8;font-size:13px;color:#666;'>",
+    "Metka Solutions &bull; " + BUSINESS_ADDRESS + "<br>",
+    "<a href='" + unsubscribeLink + "' style='color:#666;text-decoration:underline;'>Unsubscribe</a>",
     "</div>",
+
+    "</div></div>"
   ].join("");
 }
 
 // ── TEMPLATES ────────────────────────────────────────────────────────────────
-// Returns {subject: fn, body: fn} or null if no template for this track/step.
+// Email steps only. Steps with SMS/dial-only channels return null → silently skipped.
+// new track email steps:      0, 2, 4, 6
+// re-engage track email steps: 0, 2
+// ghost track email steps:     0
+// nurture track email steps:   0–5
 
 function getTemplate(track, step, cat) {
   var templates = {
@@ -126,12 +145,6 @@ function getTemplate(track, step, cat) {
           "",
           "Or reply to this email and we'll find something that works.",
           "",
-          "Looking forward to connecting,",
-          "",
-          "Jeremy Metka",
-          "Senior Field Underwriter | Metka Solutions",
-          "NPN #21425108",
-          ph,
         ].join("\n"); },
       },
       li: {
@@ -153,17 +166,42 @@ function getTemplate(track, step, cat) {
           "",
           "Or just reply and we'll find something that works.",
           "",
-          "Jeremy Metka",
-          "Senior Field Underwriter | Metka Solutions",
-          "NPN #21425108",
-          ph,
+        ].join("\n"); },
+      },
+    },
+
+    "new:2": {
+      mp: {
+        subject: function(n){ return n + ", still trying to connect"; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "Tried reaching you by phone — wanted to follow up here as well on your Mortgage Protection request.",
+          "",
+          "Quick thing worth knowing: the plans I work with can pay you cash if you get a serious diagnosis — cancer, heart attack, stroke — while your mortgage is still active. Not just a death benefit. Living Benefits.",
+          "",
+          "Worth 15 minutes. Here's my calendar: " + c,
+          "",
+        ].join("\n"); },
+      },
+      li: {
+        subject: function(n){ return n + ", still trying to connect"; },
+        body: function(n,ph,c){ return [
+          "Hi " + n + ",",
+          "",
+          "Following up on your life insurance inquiry. Tried to reach you by phone — wanted to make sure this didn't slip through.",
+          "",
+          "Today's life insurance can pay cash for critical illness while you're still alive. That's worth knowing before you decide anything.",
+          "",
+          "15 minutes: " + c,
+          "",
         ].join("\n"); },
       },
     },
 
     "new:4": {
       mp: {
-        subject: function(n){ return "Something most families don't know — " + n; },
+        subject: function(n){ return "Most families don't know this about Mortgage Protection, " + n; },
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
@@ -177,9 +215,6 @@ function getTemplate(track, step, cat) {
           "",
           "I'd love to show you how it works. Takes 15 minutes: " + c,
           "",
-          "Jeremy Metka",
-          "Senior Field Underwriter | Metka Solutions",
-          ph,
         ].join("\n"); },
       },
       li: {
@@ -195,16 +230,13 @@ function getTemplate(track, step, cat) {
           "",
           "I'd love to walk you through what's available in your state. 15 minutes: " + c,
           "",
-          "Jeremy Metka",
-          "Senior Field Underwriter | Metka Solutions",
-          ph,
         ].join("\n"); },
       },
     },
 
     "new:6": {
       mp: {
-        subject: function(n){ return "Closing your household file — " + n; },
+        subject: function(n){ return "Last attempt before I close your file, " + n; },
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
@@ -216,13 +248,10 @@ function getTemplate(track, step, cat) {
           "",
           "If I don't hear back, I'll go ahead and archive your file. No hard feelings — life gets busy.",
           "",
-          "Jeremy Metka",
-          "Senior Field Underwriter | Metka Solutions",
-          ph,
         ].join("\n"); },
       },
       li: {
-        subject: function(n){ return "Closing your file — " + n; },
+        subject: function(n){ return "Last attempt before I close your file, " + n; },
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
@@ -234,17 +263,15 @@ function getTemplate(track, step, cat) {
           "",
           "If I don't hear back, I'll archive your file. No hard feelings.",
           "",
-          "Jeremy Metka",
-          "Senior Field Underwriter | Metka Solutions",
-          ph,
         ].join("\n"); },
       },
     },
 
     // ── TRACK: RE-ENGAGE ────────────────────────────────────────────────────
+    // Step 1 and 3 are SMS + dial_reminder only — no email template needed.
     "re-engage:0": {
       mp: {
-        subject: function(n){ return "Still here — your Mortgage Protection review"; },
+        subject: function(n){ return "Still here for your Mortgage Protection review, " + n; },
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
@@ -256,13 +283,10 @@ function getTemplate(track, step, cat) {
           "",
           "Grab a time here: " + c,
           "",
-          "Jeremy Metka",
-          "Senior Field Underwriter | Metka Solutions",
-          ph,
         ].join("\n"); },
       },
       li: {
-        subject: function(n){ return "Still here — your life insurance review"; },
+        subject: function(n){ return "Still here for your life insurance review, " + n; },
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
@@ -272,16 +296,13 @@ function getTemplate(track, step, cat) {
           "",
           "Worth 15 minutes. Here's my calendar: " + c,
           "",
-          "Jeremy Metka",
-          "Senior Field Underwriter | Metka Solutions",
-          ph,
         ].join("\n"); },
       },
     },
 
     "re-engage:2": {
       mp: {
-        subject: function(n){ return "Wrapping up your household file — " + n; },
+        subject: function(n){ return "Wrapping up your household file, " + n; },
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
@@ -289,13 +310,10 @@ function getTemplate(track, step, cat) {
           "",
           "If Mortgage Protection is still on your radar, I'm here. 15 minutes: " + c,
           "",
-          "Jeremy Metka",
-          "Senior Field Underwriter | Metka Solutions",
-          ph,
         ].join("\n"); },
       },
       li: {
-        subject: function(n){ return "Closing your life insurance file — " + n; },
+        subject: function(n){ return "Closing your life insurance file, " + n; },
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
@@ -303,17 +321,15 @@ function getTemplate(track, step, cat) {
           "",
           c,
           "",
-          "Jeremy Metka",
-          "Senior Field Underwriter | Metka Solutions",
-          ph,
         ].join("\n"); },
       },
     },
 
     // ── TRACK: GHOST ────────────────────────────────────────────────────────
+    // Step 1 is SMS only — no email needed.
     "ghost:0": {
       mp: {
-        subject: function(n){ return "Last attempt — your Mortgage Protection file"; },
+        subject: function(n){ return "Final outreach — Mortgage Protection, " + n; },
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
@@ -325,14 +341,10 @@ function getTemplate(track, step, cat) {
           "",
           "If I don't hear back, I'll go ahead and close your file. No hard feelings at all.",
           "",
-          "Jeremy Metka",
-          "Senior Field Underwriter | Metka Solutions",
-          "NPN #21425108",
-          ph,
         ].join("\n"); },
       },
       li: {
-        subject: function(n){ return "Last attempt — your life insurance file"; },
+        subject: function(n){ return "Final outreach — Life Insurance, " + n; },
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
@@ -340,17 +352,13 @@ function getTemplate(track, step, cat) {
           "",
           "If it's still something you want to address, I'm here: " + c,
           "",
-          "Jeremy Metka",
-          "Senior Field Underwriter | Metka Solutions",
-          "NPN #21425108",
-          ph,
         ].join("\n"); },
       },
     },
 
-
     // ── TRACK: NURTURE ──────────────────────────────────────────────────────
-    // Email-only slow drip. Enrolled automatically after any track exhausts.
+    // Email-only slow drip. Auto-enrolled after any track exhausts.
+    // Day offsets are from original assignDate. Step 6 = archive at 2yr mark.
     "nurture:0": {
       mp: {
         subject: function(n){ return n + " — still here if the timing is right"; },
@@ -363,8 +371,6 @@ function getTemplate(track, step, cat) {
           "",
           "If you'd like a quick no-obligation review: " + c,
           "",
-          "Jeremy Metka",
-          AGENT_TITLE, AGENT_NPN, ph,
         ].join("\n"); },
       },
       li: {
@@ -378,14 +384,13 @@ function getTemplate(track, step, cat) {
           "",
           "15 minutes if you're ready: " + c,
           "",
-          "Jeremy Metka",
-          AGENT_TITLE, AGENT_NPN, ph,
         ].join("\n"); },
       },
     },
+
     "nurture:1": {
       mp: {
-        subject: function(n){ return "One thing most families never hear about Mortgage Protection"; },
+        subject: function(n){ return "The Living Benefit most families never hear about"; },
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
@@ -395,12 +400,10 @@ function getTemplate(track, step, cat) {
           "",
           "Worth 15 minutes: " + c,
           "",
-          "Jeremy Metka",
-          AGENT_TITLE, ph,
         ].join("\n"); },
       },
       li: {
-        subject: function(n){ return "One thing most families never hear about life insurance"; },
+        subject: function(n){ return "The Living Benefit most families never hear about"; },
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
@@ -410,11 +413,10 @@ function getTemplate(track, step, cat) {
           "",
           "15 minutes: " + c,
           "",
-          "Jeremy Metka",
-          AGENT_TITLE, ph,
         ].join("\n"); },
       },
     },
+
     "nurture:2": {
       mp: {
         subject: function(n){ return "6 months in — keeping your file open, " + n; },
@@ -425,8 +427,6 @@ function getTemplate(track, step, cat) {
           "",
           "If now is a better time, I have availability this week: " + c,
           "",
-          "Jeremy Metka",
-          AGENT_TITLE, ph,
         ].join("\n"); },
       },
       li: {
@@ -438,14 +438,13 @@ function getTemplate(track, step, cat) {
           "",
           "If now is the right window, I'm here: " + c,
           "",
-          "Jeremy Metka",
-          AGENT_TITLE, ph,
         ].join("\n"); },
       },
     },
+
     "nurture:3": {
       mp: {
-        subject: function(n){ return "Life changes. Coverage should too."; },
+        subject: function(n){ return "Health windows don't stay open forever"; },
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
@@ -453,22 +452,19 @@ function getTemplate(track, step, cat) {
           "",
           c,
           "",
-          "Jeremy Metka",
-          AGENT_TITLE, ph,
         ].join("\n"); },
       },
       li: {
-        subject: function(n){ return "Life changes. Coverage should too."; },
+        subject: function(n){ return "Health windows don't stay open forever"; },
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
           "Life insurance gets harder — not easier — to qualify for as time passes. If you're healthy right now, this is worth 15 minutes: " + c,
           "",
-          "Jeremy Metka",
-          AGENT_TITLE, ph,
         ].join("\n"); },
       },
     },
+
     "nurture:4": {
       mp: {
         subject: function(n){ return "One year later — your file is still open"; },
@@ -479,8 +475,6 @@ function getTemplate(track, step, cat) {
           "",
           "If your situation has changed — or you want to lock in coverage before health windows close — I'm here: " + c,
           "",
-          "Jeremy Metka",
-          AGENT_TITLE, AGENT_NPN, ph,
         ].join("\n"); },
       },
       li: {
@@ -492,11 +486,10 @@ function getTemplate(track, step, cat) {
           "",
           "If you're ready to revisit: " + c,
           "",
-          "Jeremy Metka",
-          AGENT_TITLE, AGENT_NPN, ph,
         ].join("\n"); },
       },
     },
+
     "nurture:5": {
       mp: {
         subject: function(n){ return "Final check-in before I close your file"; },
@@ -509,8 +502,6 @@ function getTemplate(track, step, cat) {
           "",
           "Wishing you and your family well.",
           "",
-          "Jeremy Metka",
-          AGENT_TITLE, AGENT_NPN,
         ].join("\n"); },
       },
       li: {
@@ -522,15 +513,13 @@ function getTemplate(track, step, cat) {
           "",
           "Reach me anytime at " + ph + " if things change.",
           "",
-          "Jeremy Metka",
-          AGENT_TITLE, AGENT_NPN,
         ].join("\n"); },
       },
     },
 
   }; // end templates
 
-  var key = track + ":" + step;
+  var key  = track + ":" + step;
   var tmpl = templates[key];
   if (!tmpl) return null;
   return tmpl[cat] || tmpl.li || null;

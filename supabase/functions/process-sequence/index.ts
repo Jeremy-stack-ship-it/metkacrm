@@ -64,6 +64,13 @@ const TRACK_SCHEDULES: Record<string, SchedEntry[]> = {
     { step: 5, day: 540, channels: ["email"]                 },
     { step: 6, day: 730, channels: ["archive"]               },
   ],
+  // Client (issued) track — relationship maintenance. No archive.
+  // Birthday emails handled separately via daily DOB check, not step-based.
+  client: [
+    { step: 0, day: 60,  channels: ["email"] },
+    { step: 1, day: 120, channels: ["email"] },
+    { step: 2, day: 180, channels: ["email"] },
+  ],
 };
 
 // ── SMS TEMPLATES ─────────────────────────────────────────────────────────────
@@ -428,6 +435,38 @@ function getEmailContent(
     }
   }
 
+  // ── CLIENT TRACK ─────────────────────────────────────────────────────────────
+  // Relationship maintenance for issued/active policyholders.
+  // No sales pressure. Stewardship tone throughout.
+  if (track === "client") {
+    if (step === 0) {
+      return {
+        subject: `Your Coverage Is Active — Here's What It Can Do For You, ${firstName}`,
+        bodyHtml: `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I wanted to take a moment to check in now that your coverage is active.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Most families know their plan protects them when they pass away — but fewer realize the full picture of what they have. The <strong>Living Benefits</strong> on your plan mean that if you're ever diagnosed with cancer, suffer a heart attack, or have a stroke, your coverage can pay a cash benefit directly to you while you're still alive. That money is yours to use however your family needs it most — medical bills, mortgage payments, time to recover.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I'm here for any questions as they come up. And if anything in your life changes — new home, growing family, income shift — reach out and we'll make sure your coverage still fits.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">It's an honor to serve your family, ${firstName}.</p>`,
+      };
+    }
+    if (step === 1) {
+      return {
+        subject: `Who Else In Your Circle Deserves This Conversation?`,
+        bodyHtml: `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">${firstName}, I wanted to check in and say thank you — again — for trusting me with your family's protection.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Most of the families I work with come to me through someone who cared enough to make an introduction. If you know a friend, sibling, coworker, or neighbor who doesn't have coverage in place — or who has old coverage that hasn't been reviewed in years — I'd be honored if you'd pass my name along.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">There's never any pressure on my end. I'm just here to make sure the right families get the right information.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">You can send them my digital card below, or just have them reach out directly. I'll take good care of them.</p>`,
+      };
+    }
+    if (step === 2) {
+      return {
+        subject: `Your Annual Protection Review — Let's Make Sure Nothing's Changed`,
+        bodyHtml: `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">${firstName}, it's been about six months since your coverage went active. I like to do an annual check-in with every family I serve — not to change anything, just to make sure your plan still fits your life.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">A lot can happen in a year — new mortgage, new addition to the family, income changes, health updates. Any of those can mean your coverage deserves a second look.</p>
+           <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If you'd like to schedule a quick 15-minute review, I'd love to connect. If everything's unchanged and you're good — that's great too. Just know I'm always a call away.</p>`,
+      };
+    }
+  }
+
   return null; // No email template for this track/step
 }
 
@@ -440,8 +479,16 @@ function buildEmailHtml(params: {
   calendlyUrl: string;
   email: string;
   unsubscribeBaseUrl: string;
+  includeLivingBenefits?: boolean;
+  includeCta?: boolean;
+  ctaText?: string;
 }): string {
-  const { bodyContent, agentPhone, calendlyUrl, email, unsubscribeBaseUrl } = params;
+  const {
+    bodyContent, agentPhone, calendlyUrl, email, unsubscribeBaseUrl,
+    includeLivingBenefits = true,
+    includeCta = true,
+    ctaText = "Schedule Your Protection Audit &rarr;",
+  } = params;
   const unsubLink = `${unsubscribeBaseUrl}${encodeURIComponent(email)}`;
 
   return `<!DOCTYPE html>
@@ -470,7 +517,7 @@ function buildEmailHtml(params: {
           </td>
         </tr>
 
-        <!-- LIVING BENEFITS CALLOUT -->
+        ${includeLivingBenefits ? `<!-- LIVING BENEFITS CALLOUT -->
         <tr>
           <td style="padding:0 32px 28px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -482,29 +529,21 @@ function buildEmailHtml(params: {
               </tr>
             </table>
           </td>
-        </tr>
+        </tr>` : ""}
 
-        <!-- CTA -->
+        ${includeCta ? `<!-- CTA -->
         <tr>
           <td style="padding:0 32px 32px;text-align:center;">
-            <a href="${calendlyUrl}" style="display:inline-block;background:#1a2a44;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;padding:15px 36px;text-decoration:none;letter-spacing:0.3px;">Schedule Your Protection Audit &rarr;</a>
+            <a href="${calendlyUrl}" style="display:inline-block;background:#1a2a44;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;padding:15px 36px;text-decoration:none;letter-spacing:0.3px;">${ctaText}</a>
           </td>
-        </tr>
+        </tr>` : ""}
 
         <!-- SIGNATURE -->
         <tr>
           <td style="padding:20px 32px 24px;border-top:1px solid #e5e5e5;">
-            <p style="margin:0 0 4px;font-size:14px;color:#222;line-height:1.7;">
-              <strong>Jeremy Metka</strong><br>
-              Senior Field Underwriter | Metka Solutions<br>
-              NPN #21425108<br>
-              <a href="tel:${agentPhone}" style="color:#1a2a44;text-decoration:none;">${agentPhone}</a>
-              &nbsp;|&nbsp;
-              <a href="mailto:Jeremy@metkasolutions.com" style="color:#1a2a44;text-decoration:none;">Jeremy@metkasolutions.com</a>
-            </p>
-            <p style="margin:10px 0 0;font-size:13px;">
-              <a href="https://hihello.com/p/6cc69b25-86ec-4c39-a45b-fd48bee85403" style="color:#1a2a44;text-decoration:none;">&#x1F4F1; View My Digital Business Card</a>
-            </p>
+            <a href="https://hihello.com/p/6cc69b25-86ec-4c39-a45b-fd48bee85403?referer=email_signature&source=manual" style="display:block;text-decoration:none;border:0;">
+              <img src="https://cdn.hihello.me/cards/6cc69b25-86ec-4c39-a45b-fd48bee85403/signature_imagelogo.png" width="360" alt="Jeremy Metka | Senior Field Underwriter | Metka Solutions | (580) 775-7564 | Jeremy@metkasolutions.com" style="display:block;border:0;max-width:100%;height:auto;" />
+            </a>
           </td>
         </tr>
 
@@ -746,4 +785,109 @@ serve(async (req) => {
       };
 
       await supabase.from("leads")
-        .update({ data: updatedLead, updated_at: new Date(
+        .update({ data: updatedLead, updated_at: new Date().toISOString() })
+        .eq("id", row.id);
+
+      results.processed++;
+    }
+
+    // ── BIRTHDAY CHECK ────────────────────────────────────────────────────────
+    // Runs daily across all client-track leads. Sends a warm personal birthday
+    // email when DOB month+day matches today. Does NOT advance seqStep.
+    if (emailEnabled) {
+      const todayUtc   = new Date();
+      const todayMonth = todayUtc.getUTCMonth() + 1; // 1–12
+      const todayDay   = todayUtc.getUTCDate();       // 1–31
+      const thisYear   = String(todayUtc.getUTCFullYear());
+
+      const { data: clientRows } = await supabase
+        .from("leads")
+        .select("id, data")
+        .filter("data->>seqTrack", "eq", "client");
+
+      for (const crow of clientRows || []) {
+        const cl = crow.data || {};
+        if (cl.seqExitReason) continue;
+
+        const dobRaw = ((cl.dob || cl.DOB || cl.dateOfBirth || "") as string).trim();
+        if (!dobRaw) continue;
+
+        // Parse DOB — supports MM/DD/YYYY, YYYY-MM-DD, MM-DD-YYYY
+        let dobMonth = 0, dobDay = 0;
+        if (dobRaw.includes("/")) {
+          const p = dobRaw.split("/");
+          dobMonth = parseInt(p[0], 10);
+          dobDay   = parseInt(p[1], 10);
+        } else if (dobRaw.includes("-")) {
+          const p = dobRaw.split("-");
+          if (p[0].length === 4) { dobMonth = parseInt(p[1], 10); dobDay = parseInt(p[2], 10); }
+          else                   { dobMonth = parseInt(p[0], 10); dobDay = parseInt(p[1], 10); }
+        }
+        if (!dobMonth || !dobDay) continue;
+        if (dobMonth !== todayMonth || dobDay !== todayDay) continue;
+
+        // Skip if already sent this calendar year
+        if ((cl.seqBirthdayYear as string) === thisYear) continue;
+
+        const bdayFirstName = (cl.firstName as string) || ((cl.name as string) || "").split(" ")[0] || "Friend";
+        const bdayEmail     = (cl.email as string) || "";
+        if (!bdayEmail) continue;
+
+        const bdayBody = `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Happy Birthday, ${bdayFirstName}!</p>
+          <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I just wanted to take a moment on your special day to say that it's been a privilege serving your family. Wishing you a wonderful year ahead filled with health, joy, and everything you deserve.</p>
+          <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Enjoy your day, ${bdayFirstName}. You've earned it.</p>`;
+
+        const bdayHtml = buildEmailHtml({
+          bodyContent:          bdayBody,
+          agentPhone,
+          calendlyUrl,
+          email:                bdayEmail,
+          unsubscribeBaseUrl:   unsubBaseUrl,
+          includeLivingBenefits: false,
+          includeCta:            false,
+        });
+
+        try {
+          if (!gmailAccessToken) {
+            gmailAccessToken = await getGmailAccessToken(gmailClientId, gmailSecret, gmailRefresh);
+          }
+          await sendGmailEmail({
+            accessToken: gmailAccessToken,
+            to:          bdayEmail,
+            subject:     `Happy Birthday, ${bdayFirstName}! 🎂`,
+            htmlBody:    bdayHtml,
+          });
+          results.emailsSent++;
+
+          // Mark birthday sent this year + log note
+          const bdayNote = makeNote(`[SEQ] Birthday email sent — ${todayUtc.toISOString().split("T")[0]}`);
+          const existingBdayNotes = (cl.notes as CRMNote[]) || [];
+          await supabase.from("leads")
+            .update({
+              data: { ...cl, seqBirthdayYear: thisYear, notes: [bdayNote, ...existingBdayNotes] },
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", crow.id);
+        } catch (e) {
+          results.errors.push(`Birthday[${crow.id}]: ${(e as Error).message}`);
+        }
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
+    console.log("[process-sequence] run complete:", JSON.stringify(results));
+
+    return new Response(
+      JSON.stringify({ success: true, ...results }),
+      { headers: { ...CORS, "Content-Type": "application/json" } }
+    );
+
+  } catch (err) {
+    console.error("[process-sequence] fatal:", err);
+    return new Response(
+      JSON.stringify({ success: false, error: (err as Error).message }),
+      { status: 500, headers: { ...CORS, "Content-Type": "application/json" } }
+    );
+  }
+});
+                                                                                                                                                                                                                                                                   
