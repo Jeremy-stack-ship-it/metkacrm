@@ -206,22 +206,6 @@ function MetkaCRM(){
   } = useSettingsConfig();
   const [backupExists, setBackupExists]       = useState(false);
   const [supaStatus, setSupaStatus]           = useState("idle"); // idle | syncing | ok | error
-  // ── Import handlers (extracted → lib/useImportHandlers.js v3.14) ────────────────────────
-  const {
-    importModal,    setImportModal,
-    importPreview,  setImportPreview,
-    replaceConfirm, setReplaceConfirm,
-    fieldMapModal,  setFieldMapModal,
-    csvRawText,     setCsvRawText,
-    csvHeaders,     setCsvHeaders,
-    fieldMapDraft,  setFieldMapDraft,
-    saveMappingCb,  setSaveMappingCb,
-    savedMapping,   setSavedMapping,
-    handleFile,
-    confirmFieldMapping,
-    confirmImport,
-    restoreBackup,
-  } = useImportHandlers({ leads, saveLeads, backfillLead, setBackupExists });
   // v4.0 — Twilio Voice state (extracted → lib/useTwilioDevice.js, wired after leadMgr)
   // v3.0 — Dialing session
   const [session, setSession]                 = useState(()=>{ try{ const s=localStorage.getItem(LS_SESSION); return s?JSON.parse(s):null; }catch{ return null; }});
@@ -478,6 +462,24 @@ const saveLeads = useCallback((next, opts = {}) => {
     hangUp,
     toggleMute,
   } = useTwilioDevice({ upd, logDial });
+
+  // ── Import handlers (extracted → lib/useImportHandlers.js v3.14) ────────────────────────
+  // Placed here so saveLeads, backfillLead, and setBackupExists are all resolved.
+  const {
+    importModal,    setImportModal,
+    importPreview,  setImportPreview,
+    replaceConfirm, setReplaceConfirm,
+    fieldMapModal,  setFieldMapModal,
+    csvRawText,     setCsvRawText,
+    csvHeaders,     setCsvHeaders,
+    fieldMapDraft,  setFieldMapDraft,
+    saveMappingCb,  setSaveMappingCb,
+    savedMapping,   setSavedMapping,
+    handleFile,
+    confirmFieldMapping,
+    confirmImport,
+    restoreBackup,
+  } = useImportHandlers({ leads, saveLeads, backfillLead, setBackupExists });
 
   const addTemplate=()=>{
     if(!newTemplateName.trim()||!newTemplateText.trim()) return;
