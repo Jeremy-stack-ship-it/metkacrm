@@ -377,4 +377,32 @@ export const buildSessionQueue = (leads, session) => {
   return [...cappedFresh, ...cappedCb];
 };
 
+// ── PHASE DATE NORMALIZATION (v3.15) ─────────────────────────────────────────
+// Repairs leads whose next_dial is past-due — typically leads imported months ago
+// whose phase schedule was built at import time and has since gone stale.
+//   • Future phase slots remain → repair next_dial to the earliest one.
+//   • All slots exhausted       → null next_dial (lead exits Today queue silently;
+//     re-enters only when dispositioned, which rebuilds the schedule fresh).
+// Idempotent — safe to run on every startup.
+export const normalizePhaseSchedule = (lead) => {
+  if (lead.phase === 'EXIT') return null;
+  if (!lead.p1_1)            return null; // no schedule to normalize
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  // Only act when next_dial is genuinely past-due (before today's midnight)
+  if (!lead.next_dial || new Date(lead.next_dial) >= startOfToday) return null;
+
+  const nextFuture = computeNextDial(lead);
+
+  if (nextFuture) {
+    // Future slot exists — repair the pointer only, leave everything else alone
+    return { next_dial: nextFuture };
+  }
+
+  // All phase slots exhausted — clear next_dial so isDueToday returns false
+  return { next_dial: null };
+};
+
 // Counts today's leads per slot — used for session header

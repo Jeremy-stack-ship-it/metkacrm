@@ -70,7 +70,7 @@ import { STATE_TZ, STAGES, DISPS, BC, BL, NC, FIELD_MAP_DEFS,
   fmt, fmtDate, currency, chip, inp } from './constants.js';
 // ── Library Modules (v3.6) ───────────────────────────────────────
 import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity } from './lib/supabaseSync.js';
-import { backfillLead, applyPhaseTransition, getPhasePriority, isDueToday, SCHED_COLS, assignSlot } from './lib/phaseEngine.js';
+import { backfillLead, applyPhaseTransition, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule } from './lib/phaseEngine.js';
 import { DEFAULT_GOALS, CONTACT_DISPS, ACTIVITY_TYPES, dayKey, TODAY_KEY, lastNDays, weekKeys, monthKeys, aggregateActivity, fmtTime, goalTone, makeActivityManager } from './lib/activityLog.js';
 import { makeLeadManager } from './lib/leads.js';
 import LoginGate, { useAuth } from './components/LoginGate.jsx';
@@ -296,6 +296,25 @@ function MetkaCRM(){
           localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
         } catch(e) { console.warn('[CRM v3.12] Could not persist slot backfill:', e); }
         console.log(`[CRM v3.12] Assigned session slots to ${slotCount} leads`);
+      }
+
+      // v3.15 — Phase date normalization: repair leads whose next_dial is past-due.
+      // Leads imported months ago have stale next_dial dates and flood Today queue every session.
+      // Repairs next_dial to the earliest future slot; nulls it when all slots are exhausted.
+      // Idempotent — safe to run on every startup.
+      let normCount = 0;
+      const normalizedLeads = initialLeads.map(l => {
+        const patch = normalizePhaseSchedule(l);
+        if (!patch) return l;
+        normCount++;
+        return { ...l, ...patch };
+      });
+      if (normCount > 0) {
+        initialLeads = normalizedLeads;
+        try {
+          localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
+        } catch(e) { console.warn('[CRM v3.15] Could not persist phase normalization:', e); }
+        console.log(`[CRM v3.15] Normalized past-due phase schedules on ${normCount} leads`);
       }
 
       setLeads(initialLeads);
