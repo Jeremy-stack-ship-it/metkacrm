@@ -418,6 +418,21 @@ export default function ContactDetail({
                       : "No upcoming touches scheduled."
                 ),
 
+                // Email open stats
+                (open.emailOpenCount || open.lastEmailOpenedAt) && React.createElement("div", {
+                  style:{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"12px", padding:"8px 12px", background:"#EFF6FF", borderRadius:"8px", border:"1px solid var(--blue-mid)" }
+                },
+                  React.createElement("span", { style:{ fontSize:"16px" } }, "📬"),
+                  React.createElement("div", null,
+                    React.createElement("div", { style:{ fontSize:"11px", fontWeight:"800", color:"var(--blue)", letterSpacing:"0.5px" } },
+                      `${open.emailOpenCount || 0} open${(open.emailOpenCount || 0) !== 1 ? "s" : ""} tracked`
+                    ),
+                    open.lastEmailOpenedAt && React.createElement("div", { style:{ fontSize:"11px", color:"var(--t3)", marginTop:"2px" } },
+                      "Last: " + new Date(open.lastEmailOpenedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})
+                    )
+                  )
+                ),
+
                 // Action buttons
                 !isExited && React.createElement("div", { style:{ display:"flex", gap:"8px", marginBottom:"12px" } },
                   isPaused

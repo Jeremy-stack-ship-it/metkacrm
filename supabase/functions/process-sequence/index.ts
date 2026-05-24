@@ -479,16 +479,24 @@ function buildEmailHtml(params: {
   calendlyUrl: string;
   email: string;
   unsubscribeBaseUrl: string;
+  leadId?: string;
+  trackingStep?: string | number;
+  trackingTrack?: string;
   includeLivingBenefits?: boolean;
   includeCta?: boolean;
   ctaText?: string;
 }): string {
   const {
     bodyContent, agentPhone, calendlyUrl, email, unsubscribeBaseUrl,
+    leadId, trackingStep, trackingTrack,
     includeLivingBenefits = true,
     includeCta = true,
     ctaText = "Schedule Your Protection Audit &rarr;",
   } = params;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+  const pixelUrl = leadId
+    ? `${supabaseUrl}/functions/v1/track-open?leadId=${encodeURIComponent(leadId)}&step=${encodeURIComponent(String(trackingStep ?? ""))}&track=${encodeURIComponent(trackingTrack ?? "")}`
+    : "";
   const unsubLink = `${unsubscribeBaseUrl}${encodeURIComponent(email)}`;
 
   return `<!DOCTYPE html>
@@ -557,6 +565,9 @@ function buildEmailHtml(params: {
             </p>
           </td>
         </tr>
+
+        <!-- TRACKING PIXEL -->
+        ${pixelUrl ? `<tr><td><img src="${pixelUrl}" width="1" height="1" border="0" alt="" style="display:block;width:1px;height:1px;border:0;" /></td></tr>` : ""}
 
       </table>
     </td></tr>
@@ -738,6 +749,9 @@ serve(async (req) => {
               calendlyUrl,
               email:             lead.email as string,
               unsubscribeBaseUrl: unsubBaseUrl,
+              leadId:            row.id as string,
+              trackingStep:      step,
+              trackingTrack:     track,
             });
             await sendGmailEmail({
               accessToken: gmailAccessToken,
