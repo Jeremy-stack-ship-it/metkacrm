@@ -18,7 +18,6 @@ const GROUPS = [
     icon:  '📊',
     label: 'INTEL',
     items: [
-      { id: 'dashboard', icon: '🏠', label: 'DASH' },
       { id: 'activity',  icon: '🎯', label: 'ACT'  },
       { id: 'sequence',  icon: '🔁', label: 'SEQ'  },
       { id: 'cc',        icon: '📧', label: 'CC'   },
@@ -95,6 +94,22 @@ export default function NavSidebar({ view, setView, navOpen }) {
         padding: '16px 0 14px', flexShrink: 0,
       }
     }, 'CRM'),
+
+    // DASHBOARD — PINNED TOP
+    React.createElement('div', {
+      style: {
+        flexShrink: 0, width: '100%', padding: '0 6px 6px',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        marginBottom: '4px',
+      }
+    },
+      React.createElement(NavBtn, {
+        icon:   '🏠',
+        label:  'DASH',
+        active: view === 'dashboard',
+        onClick: () => setView('dashboard'),
+      })
+    ),
 
     // SCROLLABLE GROUP AREA
     React.createElement('div', {
