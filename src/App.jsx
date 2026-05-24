@@ -594,7 +594,10 @@ const saveLeads = useCallback((next, opts = {}) => {
       }
     }
 
-    // v3.4 — auto-schedule next callback based on disposition
+    // v3.15 — Phase Engine scheduling authority.
+    // autoFollowUp() only returns a value for EXIT dispositions (null) and appointment_booked (undefined).
+    // No-contact dispositions (vm_left, no_answer, hung_up, etc.) return undefined → nextCallback untouched.
+    // 'callback' is always handled upstream via lockCB — skip autoFollowUp entirely.
     const followUpDate = dispId !== 'callback' ? autoFollowUp(dispId) : undefined;
     const cbPatch = followUpDate !== undefined ? { nextCallback: followUpDate } : {};
 

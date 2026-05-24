@@ -49,23 +49,36 @@ export function priority(lead) {
  * Returns undefined → don't touch existing nextCallback.
  * Always sets time to 9 AM local — never midnight UTC.
  */
+/**
+ * autoFollowUp — Scheduling Authority Rules (v3.15)
+ *
+ * The Phase Engine owns the call schedule. This function ONLY overrides
+ * nextCallback in three specific cases:
+ *
+ *   APPOINTMENT BOOKED  → nextCallback already set to appt time by Calendly flow.
+ *                         Return undefined here so we don't touch it.
+ *   CALLBACK REQUESTED  → Handled upstream via lockCB/handleCbPreset.
+ *                         'callback' dispId never reaches this function (App.jsx guard).
+ *   EXIT DISPOSITIONS   → null clears nextCallback — lead exits all flows.
+ *
+ * Everything else (vm_left, no_answer, hung_up, follow_up_needed, no_show) →
+ * returns undefined. nextCallback is NOT touched. Phase Engine keeps its schedule.
+ */
 export function autoFollowUp(dispId) {
-  const addDays = n => {
-    const d = new Date();
-    d.setDate(d.getDate() + n);
-    d.setHours(9, 0, 0, 0);
-    return d.toISOString();
-  };
   switch (dispId) {
-    case 'no_answer':        return addDays(2);
-    case 'vm_left':          return addDays(2);
-    case 'follow_up_needed': return addDays(3);
-    case 'chargeback':       return addDays(30);
+    // ── EXIT FLOWS: clear nextCallback ──────────────────────────────
     case 'dnc':
     case 'not_interested':
+    case 'withdrawn':
+    case 'chargeback':
     case 'invalid':
     case 'archive':          return null;
-    case 'appointment_booked': return undefined; // preserve the appointment date
+
+    // ── APPOINTMENT: nextCallback already set by Calendly flow ──────
+    case 'appointment_booked': return undefined;
+
+    // ── NO CONTACT & ALL OTHERS: Phase Engine owns the schedule ─────
+    // vm_left, no_answer, hung_up, follow_up_needed, no_show, callback, etc.
     default:                 return undefined;
   }
 }
