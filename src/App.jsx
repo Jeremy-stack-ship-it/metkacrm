@@ -665,16 +665,6 @@ const saveLeads = useCallback((next, opts = {}) => {
   }, [leads, upd]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // DashboardTab — start a locked dial session from the priority queue widget
-  const startDialSession = useCallback((orderedIds) => {
-    const ids = (orderedIds && orderedIds.length > 0) ? orderedIds : queue.map(l => l.id);
-    if (ids.length === 0) { alert('No priority leads in queue right now.'); return; }
-    const s = { ids, idx: 0, total: ids.length, startedAt: new Date().toISOString() };
-    setSession(s); setSessionPaused(false);
-    try { localStorage.setItem(LS_SESSION, JSON.stringify(s)); } catch {}
-    setOpenId(ids[0]); setDialSessionActive(true); setView('dial'); setNoteText(''); setDetailTab('live');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queue, setSession, setSessionPaused, setOpenId, setDialSessionActive, setView, setNoteText, setDetailTab]);
-
 const queue = useMemo(() => {
   // During an active session, keep all session leads visible regardless of calledToday.
   // Agent needs the full list in front of them — leads shouldn't vanish as they work through them.
@@ -795,6 +785,16 @@ const queue = useMemo(() => {
     });
     return [...months].sort().reverse();
   }, [leads]);
+
+  const startDialSession = useCallback((orderedIds) => {
+    const ids = (orderedIds && orderedIds.length > 0) ? orderedIds : queue.map(l => l.id);
+    if (ids.length === 0) { alert('No priority leads in queue right now.'); return; }
+    const s = { ids, idx: 0, total: ids.length, startedAt: new Date().toISOString() };
+    setSession(s); setSessionPaused(false);
+    try { localStorage.setItem(LS_SESSION, JSON.stringify(s)); } catch {}
+    setOpenId(ids[0]); setDialSessionActive(true); setView('dial'); setNoteText(''); setDetailTab('live');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queue, setSession, setSessionPaused, setOpenId, setDialSessionActive, setView, setNoteText, setDetailTab]);
 
 // Calculate total pages and slice the array for the current page
   const totalPages = Math.ceil(filteredContacts.length / ITEMS_PER_PAGE);
