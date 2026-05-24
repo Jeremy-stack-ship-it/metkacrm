@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { id: "callbacks",     icon: "📞", label: "CB" },
   { id: "appointments", icon: "📅", label: "APPTS" },
   { id: "cc",           icon: "📧", label: "CC" },
+  { id: "sequence",     icon: "🔁", label: "SEQ" },
   { id: "dial",          icon: "🎙", label: "DIAL" },
   { id: "activity",  icon: "🎯", label: "ACT" },
   { id: "contacts",  icon: "📇", label: "DATA" },

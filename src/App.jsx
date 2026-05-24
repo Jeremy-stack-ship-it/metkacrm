@@ -83,6 +83,7 @@ import FieldMapModal from './components/FieldMapModal.jsx';
 import { ccExchangeCode } from './lib/ccIntegration.js';
 import AppointmentsView from './components/AppointmentsView.jsx';
 import CCTab from './components/CCTab.jsx';
+import SequenceTab from './components/SequenceTab.jsx';
 import ImportModal from './components/ImportModal.jsx';
 import NavSidebar from './components/NavSidebar.jsx';
 import AppHeader from './components/AppHeader.jsx';
@@ -1018,6 +1019,12 @@ const queue = useMemo(() => {
 
         // ── CC TAB (v3.15) ──
         view==="cc" && React.createElement(CCTab, { leads }),
+
+        // ── SEQUENCE TAB (v3.16) ──
+        view==="sequence" && React.createElement(SequenceTab, {
+          leads, upd,
+          setOpenId, setView, setPrevView,
+        }),
 
         // ── ACTIVITY VIEW (v2.3) ──
         view==="activity" && React.createElement(ActivityDashboard, {
