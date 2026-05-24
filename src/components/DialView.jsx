@@ -270,17 +270,6 @@ export default function DialView({
                   )
                 ),
 
-                // Ghost Protocol
-                React.createElement("button", {
-                  onClick: () => {
-                    const first = (open.name || "").split(" ")[0];
-                    const msg = "Hi " + first + " — I'm wrapping up regional files for your area and wanted to check in before I close the household file. Would this week work for a quick 20-minute protection review, or should I go ahead and archive your file?";
-                    try { navigator.clipboard.writeText(msg); } catch (err) { const ta = document.createElement("textarea"); ta.value = msg; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); }
-                    alert("👻 Ghost Protocol copied!");
-                  },
-                  style: { display: "block", width: "100%", minHeight: "36px", padding: "7px 12px", marginBottom: "10px", background: "#FFFBEB", color: "#92400E", border: "1px solid #FCD34D", borderRadius: "7px", fontSize: "11px", fontWeight: "700", cursor: "pointer", textAlign: "left" }
-                }, "👻 GHOST PROTOCOL — Copy to clipboard"),
-
                 // Quick Capture
                 React.createElement("div", { style: { background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "8px", padding: "12px", marginBottom: "10px" } },
                   React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "10px" } }, "🩺 QUICK CAPTURE"),

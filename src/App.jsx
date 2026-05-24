@@ -9,7 +9,7 @@
  * v2.1  Session 2  Click-to-Dial auto-tracking integrated
  * v2.2  Session 2  Underwriting Tracker — carrier/policy/premium, pending reqs, >7d stuck flag
  * v2.3  Session 2  Activity Tracker — daily dials/contacts/appts vs goals, dashboard, append-only event log
- * v3.0  Session 3  Twilio Browser Calling, Messages tab (loader stubbed — see loadTwilioComms)
+ * v3.0  Session 3  Twilio Browser Calling (Voice SDK)
  * v3.1  Session 3  Phase Lifecycle Engine — P1/P2/P3/M2/EXIT + Today's Block dial engine
  * v3.4  Session 3  Auto Follow-Up Scheduler
  * v3.5  Session 3  Activity log migrated to individual Supabase rows (append-only)
@@ -100,18 +100,6 @@ import { useImportHandlers } from './lib/useImportHandlers.js';
 import { supabase } from './lib/supabaseSync.js';
 import AppointmentConfirmModal from './components/AppointmentConfirmModal';
 
-// ── TWILIO COMMS LOADER ──────────────────────────────────────────
-// TODO: implement real Twilio REST call when Messages tab is activated.
-// Endpoint: GET https://api.twilio.com/2010-04-01/Accounts/{SID}/Messages.json
-// Params: To or From = phone, PageSize = 50
-// Auth: Basic base64(`${accountSid}:${authToken}`)
-// Map r.messages → {id:m.sid, ts:m.date_sent, type:'sms',
-//   direction:m.direction.includes('inbound')?'inbound':'outbound',
-//   body:m.body, status:m.status, sid:m.sid}
-const loadTwilioComms = async (phone, config) => { // eslint-disable-line no-unused-vars
-  if (!config?.accountSid || !config?.authToken || !config?.fromNumber) return [];
-  return []; // not yet implemented — returns empty thread until Twilio Messages tab is wired up
-};
 // ============================================================
 // DASHBOARD TAB — Ministry of Protection HQ
 // Self-contained React component. No external deps.
