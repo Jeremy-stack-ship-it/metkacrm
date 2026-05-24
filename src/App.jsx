@@ -91,6 +91,7 @@ import ScriptPanel from './components/ScriptPanel.jsx';
 import { priority, autoFollowUp, openCalendlyPopup } from './lib/leadScoring.js';
 import { useContactFilters } from './lib/useContactFilters.js';
 import { useTwilioDevice } from './lib/useTwilioDevice.js';
+import { useSettingsConfig } from './lib/useSettingsConfig.js';
 
 // ── SUPABASE CLIENT ──────────────────────────────────────────────
 // (All Supabase functions imported from lib/supabaseSync.js v3.6)
@@ -120,25 +121,12 @@ const LS_LEADS     = "metka-crm-leads-v3";
 const LS_SCRIPTS   = "metka-crm-scripts-v3";
 const LS_ACTIVITY  = "metka-activity-v1";        // v2.3
 const LS_GOALS     = "metka-activity-goals-v1";  // v2.3
-const LS_CALENDLY  = "metka-calendly-v1";        // v2.6
 const LS_BACKUP      = "metka-crm-backup-v1";      // v2.6 pre-import snapshot
 const LS_LAST_EXPORT = "metka-last-export-v1";     // v3.1 weekly backup reminder
-const LS_FINANCIAL   = "metka-financial-config-v1"; // v3.6 financial constants
-const LS_GMAIL       = "metka-gmail-config-v1";     // v3.17 Gmail integration
-const LS_SEQ_CONFIG  = "metka-seq-config-v1";       // v3.18 Sequence Engine (Apps Script + Calendly)
 const LS_MAPPING   = "metka-field-mapping-v1";   // v2.6 saved CSV column mapping
-const LS_TWILIO    = "metka-twilio-config-v1";   // v3.0 Twilio credentials
 const LS_OPEN_ID   = "metka-open-id-v1";         // v3.0 persist queue position
 const LS_SESSION   = "metka-session-v1";          // v3.0 dialing session
-const LS_CB_PRESETS   = "metka-cb-presets-v1";       // v3.8 callback scheduler presets
 const LS_DELETED_IDS  = "metka-deleted-ids-v1";      // v3.14 tombstone map { [id]: deletedAtTs } for sync merge
-
-const DEFAULT_CB_PRESETS = [
-  { id: "2h",     label: "2 Hours",     minOffset: 120, daysAhead: 0, hour: null },
-  { id: "tom_am", label: "Tomorrow AM", minOffset: null, daysAhead: 1, hour: 9   },
-  { id: "tom_pm", label: "Tomorrow PM", minOffset: null, daysAhead: 1, hour: 14  },
-  { id: "week",   label: "Next Week",   minOffset: null, daysAhead: 7, hour: 9   },
-];
 
 
 // ── CONSTANTS + HELPERS ← imported from ./constants.js ─────────────
@@ -218,10 +206,17 @@ function MetkaCRM(){
   const [healthOpen, setHealthOpen] = useState(false);
   const [clockNow, setClockNow]     = useState(new Date());
   const [dupeLead, setDupeLead]     = useState(null);
-  const [calendlyUrl, setCalendlyUrl]         = useState("");
-  const [calendlyDraft, setCalendlyDraft]     = useState("");
-  const [showCalendlyCfg, setShowCalendlyCfg] = useState(false);
-  const [calendlyTargetId, setCalendlyTargetId] = useState(null); // which lead the popup is open for
+  // ── Settings config (extracted → lib/useSettingsConfig.js v3.14) ──────────
+  const {
+    financialConfig, setFinancialConfig, financialDraft, setFinancialDraft, financialSaved, setFinancialSaved, saveFinancial,
+    gmailConfig, setGmailConfig, gmailDraft, setGmailDraft, gmailSaved, setGmailSaved, saveGmail,
+    seqConfig, setSeqConfig, seqDraft, setSeqDraft, seqSaved, setSeqSaved, saveSeq,
+    twilioConfig, setTwilioConfig, twilioDraft, setTwilioDraft, twilioSaved, setTwilioSaved, saveTwilio,
+    callbackPresets, setCallbackPresets,
+    calendlyUrl, setCalendlyUrl, calendlyDraft, setCalendlyDraft,
+    showCalendlyCfg, setShowCalendlyCfg, calendlyTargetId, setCalendlyTargetId, saveCalendly,
+    DEFAULT_FINANCIAL,
+  } = useSettingsConfig();
   const [backupExists, setBackupExists]       = useState(false);
   const [supaStatus, setSupaStatus]           = useState("idle"); // idle | syncing | ok | error
   const [replaceConfirm, setReplaceConfirm]   = useState("");
@@ -231,41 +226,9 @@ function MetkaCRM(){
   const [fieldMapDraft, setFieldMapDraft]     = useState({});
   const [saveMappingCb, setSaveMappingCb]     = useState(true);
   const [savedMapping, setSavedMapping]       = useState({});
-  // v3.6 — Financial config (Settings-editable)
-  const DEFAULT_FINANCIAL = {monthlyOverhead:3921,monthlyNetNeeded:2121,avgPayoutPct:55,appsGoalWeek:5,contractLevel:'85%',contractTarget:'100%'};
-  const [financialConfig, setFinancialConfig] = useState(DEFAULT_FINANCIAL);
-  const [financialDraft,  setFinancialDraft]  = useState(DEFAULT_FINANCIAL);
-  const [financialSaved,  setFinancialSaved]  = useState(false);
-  // v3.17 — Gmail integration config (Settings-editable)
-  const DEFAULT_GMAIL = { address: '', signature: '' };
-  const [gmailConfig, setGmailConfig] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(LS_GMAIL) || 'null') || DEFAULT_GMAIL; } catch { return DEFAULT_GMAIL; }
-  });
-  const [gmailDraft, setGmailDraft]   = useState(() => {
-    try { return JSON.parse(localStorage.getItem(LS_GMAIL) || 'null') || DEFAULT_GMAIL; } catch { return DEFAULT_GMAIL; }
-  });
-  const [gmailSaved, setGmailSaved]   = useState(false);
-  // v3.18 — Sequence Engine config (Apps Script URL, Calendly, agent phone)
-  const DEFAULT_SEQ_CONFIG = { appsScriptUrl: '', calendlyUrl: '', agentPhone: '' };
-  const [seqConfig, setSeqConfig] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(LS_SEQ_CONFIG) || 'null') || DEFAULT_SEQ_CONFIG; } catch { return DEFAULT_SEQ_CONFIG; }
-  });
-  const [seqDraft, setSeqDraft]   = useState(() => {
-    try { return JSON.parse(localStorage.getItem(LS_SEQ_CONFIG) || 'null') || DEFAULT_SEQ_CONFIG; } catch { return DEFAULT_SEQ_CONFIG; }
-  });
-  const [seqSaved, setSeqSaved]   = useState(false);
-  // v3.0 — Twilio config
-  const [twilioConfig, setTwilioConfig]       = useState({accountSid:"",authToken:"",fromNumber:""});
-  const [twilioDraft, setTwilioDraft]         = useState({accountSid:"",authToken:"",fromNumber:""});
-  const [twilioSaved, setTwilioSaved]         = useState(false);
   const [commsCache, setCommsCache]           = useState({}); // {leadId: [{id,ts,type,direction,body,status}]}
   const [commsLoading, setCommsLoading]       = useState(false);
   // v4.0 — Twilio Voice state (extracted → lib/useTwilioDevice.js, wired after leadMgr)
-  // v3.8 — Callback scheduler presets
-  const [callbackPresets, setCallbackPresets] = useState(() => {
-    try { const s = localStorage.getItem(LS_CB_PRESETS); return s ? JSON.parse(s) : DEFAULT_CB_PRESETS; } catch { return DEFAULT_CB_PRESETS; }
-  });
-
   // v3.0 — Dialing session
   const [session, setSession]                 = useState(()=>{ try{ const s=localStorage.getItem(LS_SESSION); return s?JSON.parse(s):null; }catch{ return null; }});
   const [sessionPaused, setSessionPaused]     = useState(false);
@@ -382,20 +345,11 @@ function MetkaCRM(){
       // v2.3 — Load Activity log + goals
       const a = localStorage.getItem(LS_ACTIVITY);
       if(a){ try{ const arr=JSON.parse(a); if(Array.isArray(arr)) setActivity(arr); }catch{} }
-      // v2.6 — Calendly URL
-      const cal = localStorage.getItem(LS_CALENDLY);
-      if(cal){ setCalendlyUrl(cal); setCalendlyDraft(cal); }
       // v2.6 — Check if backup exists
       if(localStorage.getItem(LS_BACKUP)) setBackupExists(true);
       // v2.6 — Load saved field mapping
       const fm = localStorage.getItem(LS_MAPPING);
       if(fm){ try{ setSavedMapping(JSON.parse(fm)); }catch{} }
-      // v3.0 — Load Twilio config
-      // v3.6 — Financial config
-      const fc = localStorage.getItem(LS_FINANCIAL);
-      if(fc){ try{ const parsed=JSON.parse(fc); const merged={...DEFAULT_FINANCIAL,...parsed}; setFinancialConfig(merged); setFinancialDraft(merged); }catch{} }
-      const tc = localStorage.getItem(LS_TWILIO);
-      if(tc){ try{ const parsed=JSON.parse(tc); setTwilioConfig(parsed); setTwilioDraft(parsed); }catch{} }
       // v4.0 — Restore Twilio Voice calling toggle
       const savedTokenUrl = localStorage.getItem('metka-twilio-token-url') || '';
       if(savedTokenUrl){ setTokenServiceUrl(savedTokenUrl); setTokenUrlDraft(savedTokenUrl); }
