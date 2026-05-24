@@ -27,6 +27,52 @@ export default function DialQueuePanel({
   dialSortMode, setDialSortMode,
   openId, setOpenId, setNoteText, setDialRightTab,
 }) {
+  // ── SMART BLOCK REBALANCE (v3.14) ────────────────────────────────────────
+  // Mid-session gap detection: injects fresh high-priority leads not yet dialed
+  // into the active session's remaining slots. Uses existing composite sort —
+  // phase priority first, then most-recently-due within phase. No AI needed.
+  const rebalanceSession = () => {
+    if (!session) return;
+    const sessionIdSet = new Set(session.ids);
+    const today = new Date().toLocaleDateString('en-CA');
+    const SKIP_DISPS = new Set(['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked']);
+
+    // Candidates: due today, not already in session, not worked today, not terminal
+    const candidates = queue
+      .filter(l => {
+        if (sessionIdSet.has(l.id)) return false;
+        if (l.lastContact === today) return false;
+        if (l.phase === 'EXIT') return false;
+        if (l.stage === 'removed') return false;
+        if (SKIP_DISPS.has(l.disposition)) return false;
+        if (!isDueToday(l)) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        const pDiff = getPhasePriority(b) - getPhasePriority(a);
+        if (pDiff !== 0) return pDiff;
+        const aTs = a.next_dial ? new Date(a.next_dial).getTime() : 0;
+        const bTs = b.next_dial ? new Date(b.next_dial).getTime() : 0;
+        return bTs - aTs;
+      });
+
+    if (!candidates.length) {
+      alert('No fresh leads available to inject. Queue is fully loaded.');
+      return;
+    }
+
+    // Inject up to 20 fresh leads (or fill to session.capacity if defined)
+    const maxInject = session.capacity
+      ? Math.max(0, session.capacity - session.ids.length)
+      : 20;
+    const toInject = candidates.slice(0, Math.min(candidates.length, maxInject || 20));
+
+    const newIds  = [...session.ids, ...toInject.map(l => l.id)];
+    const updated = { ...session, ids: newIds, total: newIds.length };
+    setSession(updated);
+    try { localStorage.setItem(LS_SESSION, JSON.stringify(updated)); } catch {}
+  };
+
   return React.createElement('div', {
     style: { width: '240px', flexShrink: 0, background: '#1E2433', display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRight: '1px solid rgba(0,0,0,0.3)' }
   },
@@ -269,6 +315,13 @@ export default function DialQueuePanel({
           'aria-label': 'End session',
           style: { minHeight: '30px', padding: '0 7px', fontSize: '11px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.55)', borderRadius: '4px', cursor: 'pointer' }
         }, '⏹'),
+        // v3.14 — Smart Block Rebalance: inject fresh P1 leads into remaining slots
+        session && React.createElement('button', {
+          onClick: rebalanceSession,
+          'aria-label': 'Rebalance session — inject fresh leads into remaining slots',
+          title: 'Inject fresh high-priority leads not yet dialed into remaining session slots',
+          style: { minHeight: '30px', padding: '0 7px', fontSize: '10px', fontWeight: '800', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.35)', color: '#93C5FD', borderRadius: '4px', cursor: 'pointer', letterSpacing: '0.3px', whiteSpace: 'nowrap' }
+        }, '⚡ +'),
         React.createElement('button', {
           onClick: refreshQueueOrder, 'aria-label': 'Refresh queue order', title: 'Re-sort by live priority',
           style: { minHeight: '30px', padding: '0 7px', fontSize: '11px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.55)', borderRadius: '4px', cursor: 'pointer' }
