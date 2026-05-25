@@ -1,5 +1,5 @@
 // ============================================================
-// usePowerDialer.js — v1.2
+// usePowerDialer.js — v1.3
 // Power Dialer engine extracted from DialView.jsx
 //
 // Timing:
@@ -147,13 +147,6 @@ export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenI
   // pdCountdown intentionally excluded — updating it every second must not re-run this effect
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callStatus, pdMode, pdStatus, pdAttempt, twilioDevice, fireDisp, pdClearTimers]);
-
-  // ── Effect: call answered — stop countdown ──
-  useEffect(() => {
-    if (pdMode && pdStatus === 'dialing' && callStatus === 'connected') {
-      pdClearTimers(); setPdStatus('answered');
-    }
-  }, [callStatus, pdMode, pdStatus, pdClearTimers]);
 
   // ── Effect: fire attempt 2 after attempt 1 disconnects ──
   useEffect(() => {
