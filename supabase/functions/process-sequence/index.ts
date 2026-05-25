@@ -895,6 +895,23 @@ serve(async (req) => {
 
     console.log("[process-sequence] run complete:", JSON.stringify(results));
 
+    // ── Persist run summary to sequence_runs ────────────────────────
+    try {
+      await supabase.from("sequence_runs").insert({
+        ran_at:      new Date().toISOString(),
+        total:       results.total,
+        active:      results.active,
+        processed:   results.processed,
+        archived:    results.archived,
+        emails_sent: results.emailsSent,
+        sms_sent:    results.smsSent,
+        skipped:     results.skipped,
+        errors:      results.errors,
+      });
+    } catch (e) {
+      console.warn("[process-sequence] failed to save run summary:", (e as Error).message);
+    }
+
     return new Response(
       JSON.stringify({ success: true, ...results }),
       { headers: { ...CORS, "Content-Type": "application/json" } }

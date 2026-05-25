@@ -1,9 +1,9 @@
 import React from 'react';
 import { isDueToday } from '../lib/phaseEngine';
 import { priority } from '../lib/leadScoring';
-import { getTodayCallList, getSequenceStatus, getSequenceBadgeColor } from '../lib/sequenceEngine.js';
+import { getSequenceStatus, getSequenceBadgeColor } from '../lib/sequenceEngine.js';
 
-function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig = {}, setView, setOpenId, setPrevView = () => {}, startDialSession = () => {}, refreshQueueOrder = () => {} }) {
+function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig = {}, setView, setOpenId, setPrevView = () => {}, startDialSession = () => {}, refreshQueueOrder = () => {}, seqStats = null }) {
 
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
@@ -154,7 +154,6 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
   }
 
   const dialQueue    = buildDialQueue();
-  const seqCallList  = getTodayCallList(leads, 20);
 
   function progressColor(p) {
     if (p >= 100) return 'var(--green)';
@@ -474,64 +473,6 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
           </div>
         </div>
 
-        {/* ── TODAY'S SEQUENCE DIALS ───────────────────────────────────── */}
-        {seqCallList.length > 0 && (
-          <div style={{background:'var(--navy-2)',borderRadius:10,padding:'1.25rem',border:'1px solid rgba(239,68,68,0.35)',marginBottom:'1rem'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.85rem'}}>
-              <span style={{fontWeight:800,fontSize:'0.95rem',color:'#e2e8f0',fontFamily:"'Syne',sans-serif",letterSpacing:'0.03em'}}>
-                🔥 TODAY'S SEQUENCE DIALS
-              </span>
-              <span style={{background:'var(--red)',color:'#fff',borderRadius:12,fontSize:'0.72rem',fontWeight:700,padding:'0.2rem 0.65rem'}}>
-                {seqCallList.length} DUE NOW
-              </span>
-            </div>
-            <div style={{fontSize:'0.72rem',color:'#64748b',marginBottom:'0.75rem'}}>
-              These leads are due for a human dial today per their sequence track. Call them before the automated SMS fires.
-            </div>
-            <div style={{display:'flex',flexDirection:'column',gap:'0.45rem'}}>
-              {seqCallList.map((l, idx) => {
-                const seqStatus = getSequenceStatus(l);
-                const seqColor  = getSequenceBadgeColor(l);
-                const trackLabel = l.seqTrack === 'ghost' ? '👻 Ghost' : l.seqTrack === 're-engage' ? '🔁 Re-Engage' : '🆕 New';
-                const dialCount = (l.notes || []).filter(n => n.type === 'call').length;
-                return (
-                  <div key={l.id} style={{
-                    display:'flex',alignItems:'center',gap:'0.65rem',
-                    background:'var(--navy)',borderRadius:7,padding:'0.6rem 0.8rem',
-                    borderLeft:`3px solid ${l.seqTrack==='ghost'?'var(--red)':l.seqTrack==='re-engage'?'var(--amber)':'var(--blue)'}`,
-                    cursor:'pointer'
-                  }}
-                    onMouseEnter={e=>e.currentTarget.style.background='rgba(51,65,94,0.9)'}
-                    onMouseLeave={e=>e.currentTarget.style.background='var(--navy)'}
-                  >
-                    <span style={{
-                      width:22,height:22,borderRadius:'50%',flexShrink:0,
-                      background: idx<3?'rgba(239,68,68,0.2)':'var(--navy-3)',
-                      color: idx<3?'var(--red)':'#64748b',
-                      fontSize:'0.62rem',fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center'
-                    }}>{idx+1}</span>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{display:'flex',alignItems:'center',gap:'0.5rem',marginBottom:'0.2rem'}}>
-                        <span style={{fontSize:'0.8rem',fontWeight:700,color:'#e2e8f0',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{l.name}</span>
-                        <span style={{fontSize:'0.65rem',fontWeight:700,padding:'1px 6px',borderRadius:3,background:'rgba(239,68,68,0.15)',color:'var(--red)',flexShrink:0}}>{trackLabel} · Step {l.seqStep}</span>
-                      </div>
-                      <div style={{fontSize:'0.65rem',color:'#94a3b8',display:'flex',gap:'0.4rem',alignItems:'center',flexWrap:'wrap'}}>
-                        <span style={{color:l.seqTrack==='ghost'?'var(--red)':l.seqTrack==='re-engage'?'var(--amber)':'#60a5fa',fontWeight:700}}>{seqStatus}</span>
-                        {l.leadType && <span>· {l.leadType}</span>}
-                        {l.state   && <span>· {l.state}</span>}
-                        {dialCount > 0 && <span style={{color:'#60a5fa',fontWeight:800,fontFamily:"'JetBrains Mono',monospace",background:'rgba(59,130,246,0.15)',padding:'0 4px',borderRadius:3}}>📞{dialCount}</span>}
-                      </div>
-                    </div>
-                    <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:'0.3rem',flexShrink:0}}>
-                      <a href={`tel:${l.phone}`} onClick={e=>e.stopPropagation()} style={{fontSize:'0.7rem',fontWeight:700,color:'var(--green)',textDecoration:'none'}}>{l.phone}</a>
-                      <button onClick={()=>{setPrevView('dashboard');setOpenId(l.id);setView('contact');}} style={{background:'var(--navy-3)',color:'#94a3b8',border:'none',borderRadius:4,padding:'0.18rem 0.5rem',fontSize:'0.62rem',fontWeight:700,cursor:'pointer'}}>Open →</button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         {/* ── UNDERWRITING PIPELINE ─────────────────────────── */}
         <div style={{background:'var(--navy-2)',borderRadius:10,padding:'1.25rem',border:'1px solid var(--navy-3)',marginBottom:'1rem'}}>

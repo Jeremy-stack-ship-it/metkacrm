@@ -2,11 +2,13 @@
 // Email sequence activity hub: open tracking, active leads, dormant/exhausted
 // analysis, per-step analytics, and manual enrollment controls.
 //
-// Props: leads, upd, setOpenId, setView, setPrevView
+// Props: leads, upd, setOpenId, setView, setPrevView, seqStats
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo } from 'react';
+import SequenceRunsTab from './SequenceRunsTab.jsx';
 import { TRACK_SCHEDULES, getTrackLength } from '../lib/sequenceTemplates.js';
+import { getTodayCallList, getSequenceStatus, getSequenceBadgeColor } from '../lib/sequenceEngine.js';
 
 // ── TRACK BADGE STYLES ────────────────────────────────────────────────────────
 const TC = {
@@ -41,11 +43,13 @@ const hasEmail    = (l) => (l.seqStep ?? 0) >= 1 && !!l.seqTrack;
 
 // ── INNER TAB DEFINITIONS ─────────────────────────────────────────────────────
 const INNER_TABS = [
+  { id:'duetoday',  label:'📞 Due Today'     },
   { id:'opens',     label:'📬 Opens'        },
   { id:'active',    label:'⚡ Active'        },
   { id:'dormant',   label:'👻 Never Opened'  },
   { id:'exhausted', label:'📭 Exhausted'     },
   { id:'analytics', label:'📊 By Step'       },
+  { id:'engine',    label:'🤖 Engine'        },
 ];
 
 // ── TABLE HEADER STYLE ────────────────────────────────────────────────────────
@@ -57,10 +61,104 @@ const TD_STYLE = { padding:'10px 12px', fontSize:'12px' };
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function SequenceTab({ leads, upd, setOpenId, setView, setPrevView }) {
-  const [innerTab,    setInnerTab]    = useState('opens');
+export default function SequenceTab({ leads, upd, setOpenId, setView, setPrevView, seqStats = null }) {
+  const [innerTab,    setInnerTab]    = useState('duetoday');
   const [enrollId,    setEnrollId]    = useState(null);
   const [enrollTrack, setEnrollTrack] = useState('re-engage');
+
+  // ── DUE TODAY call list ──────────────────────────────────────────────────
+  const dueToday = getTodayCallList(leads, 50);
+
+  const renderDueToday = () => {
+    if (dueToday.length === 0) {
+      return React.createElement('div', {
+        style:{ padding:'2rem', color:'var(--t4)', fontSize:'13px', textAlign:'center' }
+      }, '✅ No sequence dials due today.');
+    }
+    return React.createElement('div', { style:{ padding:'8px' } },
+      React.createElement('div', {
+        style:{
+          display:'flex', alignItems:'center', gap:'10px',
+          padding:'10px 14px', marginBottom:'8px',
+          background:'rgba(239,68,68,0.08)', borderRadius:'8px',
+          border:'1px solid rgba(239,68,68,0.25)',
+        }
+      },
+        React.createElement('span', { style:{ fontSize:'11px', color:'var(--t3)', lineHeight:1.5 } },
+          `${dueToday.length} lead${dueToday.length !== 1 ? 's' : ''} due for a human dial today per sequence track. Call before the automated email fires.`
+        )
+      ),
+      ...dueToday.map((l, idx) => {
+        const seqStatus = getSequenceStatus(l);
+        const trackLabel = l.seqTrack === 'ghost' ? '👻 Ghost'
+          : l.seqTrack === 're-engage' ? '🔁 Re-Engage'
+          : l.seqTrack === 'lbl'       ? '🔥 LBL'
+          : l.seqTrack === 'nurture'   ? '🌱 Nurture'
+          : '🆕 New';
+        const trackColor = l.seqTrack === 'ghost'     ? 'var(--red)'
+          : l.seqTrack === 're-engage' ? 'var(--amber)'
+          : l.seqTrack === 'lbl'       ? '#a78bfa'
+          : l.seqTrack === 'nurture'   ? 'var(--green)'
+          : 'var(--blue)';
+        const dialCount = (l.notes || []).filter(n => n.type === 'call').length;
+        return React.createElement('div', {
+          key: l.id,
+          style:{
+            display:'flex', alignItems:'center', gap:'10px',
+            background:'var(--surface-2)', borderRadius:'8px',
+            padding:'10px 12px', marginBottom:'6px',
+            borderLeft:`3px solid ${trackColor}`,
+            cursor:'pointer',
+          },
+          onClick:() => { setPrevView('sequence'); setOpenId(l.id); setView('contact'); },
+        },
+          React.createElement('span', {
+            style:{
+              width:22, height:22, borderRadius:'50%', flexShrink:0,
+              background: idx < 3 ? `${trackColor}22` : 'var(--panel)',
+              color: idx < 3 ? trackColor : 'var(--t4)',
+              fontSize:'10px', fontWeight:'800',
+              display:'flex', alignItems:'center', justifyContent:'center',
+            }
+          }, idx + 1),
+          React.createElement('div', { style:{ flex:1, minWidth:0 } },
+            React.createElement('div', {
+              style:{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'3px' }
+            },
+              React.createElement('span', {
+                style:{ fontSize:'13px', fontWeight:'700', color:'var(--t1)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }
+              }, l.name),
+              React.createElement('span', {
+                style:{ fontSize:'10px', fontWeight:'700', padding:'1px 6px', borderRadius:'3px', background:`${trackColor}22`, color:trackColor, flexShrink:0 }
+              }, `${trackLabel} · Step ${l.seqStep}`),
+              dialCount > 0 && React.createElement('span', {
+                style:{ fontSize:'10px', fontWeight:'800', color:'#60a5fa', background:'rgba(59,130,246,0.15)', padding:'0 5px', borderRadius:'3px', flexShrink:0, fontFamily:"'JetBrains Mono',monospace" }
+              }, `📞${dialCount}`),
+            ),
+            React.createElement('div', {
+              style:{ fontSize:'11px', color:'var(--t3)', display:'flex', gap:'8px', flexWrap:'wrap' }
+            },
+              React.createElement('span', { style:{ color:trackColor, fontWeight:'700' } }, seqStatus),
+              l.leadType && React.createElement('span', null, '· ' + l.leadType),
+              l.state    && React.createElement('span', null, '· ' + l.state),
+            ),
+          ),
+          React.createElement('div', {
+            style:{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'4px', flexShrink:0 }
+          },
+            React.createElement('a', {
+              href:`tel:${l.phone}`,
+              onClick: e => e.stopPropagation(),
+              style:{ fontSize:'11px', fontWeight:'700', color:'var(--green)', textDecoration:'none' }
+            }, l.phone),
+            l.emailBounced && React.createElement('span', {
+              style:{ fontSize:'9px', fontWeight:'700', color:'var(--red)', background:'rgba(239,68,68,0.1)', padding:'1px 5px', borderRadius:'3px' }
+            }, '⚠ Bounced'),
+          ),
+        );
+      })
+    );
+  };
 
   // ── COMPUTED ──────────────────────────────────────────────────────────────
   const stats = useMemo(() => ({
@@ -525,11 +623,13 @@ export default function SequenceTab({ leads, upd, setOpenId, setView, setPrevVie
         borderRadius:'10px', overflow:'auto',
       }
     },
+      innerTab === 'duetoday'  && renderDueToday(),
       innerTab === 'opens'     && renderOpens(),
       innerTab === 'active'    && renderActive(),
       innerTab === 'dormant'   && renderDormant(),
       innerTab === 'exhausted' && renderExhausted(),
       innerTab === 'analytics' && renderAnalytics(),
+      innerTab === 'engine'    && React.createElement(SequenceRunsTab, { leads, seqStats }),
     ),
   );
 }

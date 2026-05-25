@@ -7,7 +7,6 @@ const GROUPS = [
     icon:  '⚡',
     label: 'WORK',
     items: [
-      { id: 'today',        icon: '⚡',  label: 'TODAY' },
       { id: 'dial',         icon: '🎙️', label: 'DIAL'  },
       { id: 'callbacks',    icon: '📞', label: 'CB'    },
       { id: 'appointments', icon: '📅', label: 'APPTS' },
@@ -18,7 +17,7 @@ const GROUPS = [
     icon:  '📊',
     label: 'INTEL',
     items: [
-      { id: 'activity',  icon: '🎯', label: 'ACT'  },
+      { id: 'activity',  icon: '🎯', label: 'ACC'  },
       { id: 'sequence',  icon: '🔁', label: 'SEQ'  },
       { id: 'cc',        icon: '📧', label: 'CC'   },
     ],
@@ -28,7 +27,7 @@ const GROUPS = [
     icon:  '📇',
     label: 'DATA',
     items: [
-      { id: 'contacts', icon: '📇', label: 'DATA' },
+      { id: 'contacts', icon: '📇', label: 'LEADS' },
       { id: 'pipeline', icon: '📊', label: 'PIPE' },
     ],
   },

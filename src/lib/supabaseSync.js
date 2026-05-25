@@ -109,4 +109,15 @@ export const sbLoadActivity = async () => {
   return blob?.data || null;
 };
 
+// Load last N sequence run summaries (from sequence_runs table)
+export const sbLoadSeqStats = async (limit = 14) => {
+  const { data, error } = await supabase
+    .from('sequence_runs')
+    .select('*')
+    .order('ran_at', { ascending: false })
+    .limit(limit);
+  if (error) { console.warn('[Supabase] seq stats load error:', error.message); return null; }
+  return data || [];
+};
+
 export { supabase };

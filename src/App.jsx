@@ -69,7 +69,7 @@ import { STATE_TZ, STAGES, DISPS, BC, BL, NC, FIELD_MAP_DEFS,
   daysInUW, isUWStuck, reqStats,
   fmt, fmtDate, currency, chip, inp } from './constants.js';
 // ── Library Modules (v3.6) ───────────────────────────────────────
-import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity } from './lib/supabaseSync.js';
+import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity, sbLoadSeqStats } from './lib/supabaseSync.js';
 import { backfillLead, applyPhaseTransition, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule } from './lib/phaseEngine.js';
 import { DEFAULT_GOALS, CONTACT_DISPS, ACTIVITY_TYPES, dayKey, TODAY_KEY, lastNDays, weekKeys, monthKeys, aggregateActivity, fmtTime, goalTone, makeActivityManager } from './lib/activityLog.js';
 import { makeLeadManager } from './lib/leads.js';
@@ -94,6 +94,7 @@ import { useContactFilters } from './lib/useContactFilters.js';
 import { useTwilioDevice } from './lib/useTwilioDevice.js';
 import { useSettingsConfig } from './lib/useSettingsConfig.js';
 import { useSupabaseHydration } from './lib/useSupabaseHydration.js';
+import SequenceRunsTab from './components/SequenceRunsTab.jsx';
 import { useImportHandlers } from './lib/useImportHandlers.js';
 
 // ── SUPABASE CLIENT ──────────────────────────────────────────────
@@ -172,6 +173,7 @@ function MetkaCRM(){
   const [navOpen, setNavOpen] = useState(true); // v3.9 — collapses on dial view, hamburger to restore
   // v2.3 — Activity Tracker state
   const [activity,setActivity]=useState([]);
+  const [seqStats,setSeqStats]=useState(null); // sequence_runs summaries (v3.21)
   const [goals,setGoals]=useState(DEFAULT_GOALS);
   const [activityRange,setActivityRange]=useState("today"); // today|week|month
   const [editingGoals,setEditingGoals]=useState(false);
@@ -369,6 +371,11 @@ function MetkaCRM(){
 
   // ── Supabase cloud hydration (extracted → lib/useSupabaseHydration.js v3.14) ──
   useSupabaseHydration(setLeads, setActivity, setSupaStatus);
+
+  // ── Load sequence run history from Supabase (v3.21) ─────────────
+  useEffect(() => {
+    sbLoadSeqStats(14).then(rows => { if (rows) setSeqStats(rows); }).catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── SAVE: local-first, Supabase cloud sync (non-blocking) ──
 const saveLeads = useCallback((next, opts = {}) => {
@@ -1005,6 +1012,7 @@ const queue = useMemo(() => {
           leads, activity, goals, financialConfig,
           setView, setOpenId, setPrevView,
           refreshQueueOrder, startDialSession,
+          seqStats,
         }),
 
         // ── CALLBACK QUEUE VIEW (v3.1) ──
@@ -1024,7 +1032,7 @@ const queue = useMemo(() => {
         // ── SEQUENCE TAB (v3.16) ──
         view==="sequence" && React.createElement(SequenceTab, {
           leads, upd,
-          setOpenId, setView, setPrevView,
+          setOpenId, setView, setPrevView, seqStats,
         }),
 
         // ── ACTIVITY VIEW (v2.3) ──
