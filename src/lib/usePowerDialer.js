@@ -1,13 +1,13 @@
 // ============================================================
-// usePowerDialer.js — v1.1
+// usePowerDialer.js — v1.2
 // Power Dialer engine extracted from DialView.jsx
 //
 // Timing:
 //   Attempt 1 → waits for 'ringing' event → 18s → auto-hang → Attempt 2
 //   Attempt 2 → waits for 'ringing' event → 30s → auto-hang → log no_answer → advance
 //
-// Ring timer now starts on callStatus === 'ringing' (not on dialLead call)
-// so we don't burn countdown seconds during Twilio carrier connect time.
+// Ring timer uses a ref guard (ringTimerStartedRef) instead of pdCountdown state
+// to prevent the effect from spawning multiple timeouts when pdCountdown updates.
 // ============================================================
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -30,16 +30,19 @@ export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenI
   const [pdIdx,              setPdIdx]              = useState(0);
   const [pdAttempt,          setPdAttempt]          = useState(1);
   const [pdCountdown,        setPdCountdown]        = useState(null);
-  const [pdStatus,           setPdStatus]           = useState('idle'); // idle | dialing | answered | pausing
+  const [pdStatus,           setPdStatus]           = useState('idle');
   const [pdLockedQueue,      setPdLockedQueue]      = useState([]);
   const [pdPendingAttempt2,  setPdPendingAttempt2]  = useState(false);
   const [pdSessionStart,     setPdSessionStart]     = useState(null);
   const [pdSessionLog,       setPdSessionLog]       = useState(null);
 
   // ── Refs ──
-  const pdTimerRef   = useRef(null);
-  const pdTimeoutRef = useRef(null);
-  const pdAdvanceRef = useRef(null);
+  const pdTimerRef          = useRef(null);
+  const pdTimeoutRef        = useRef(null);
+  const pdAdvanceRef        = useRef(null);
+  // Guard: prevents the ring-timer effect from spawning multiple timeouts.
+  // Stored in a ref so it doesn't trigger re-renders or effect re-runs.
+  const ringTimerStartedRef = useRef(false);
 
   // ── Clear all timers ──
   const pdClearTimers = useCallback(() => {
@@ -47,6 +50,7 @@ export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenI
     if (pdTimeoutRef.current) { clearTimeout(pdTimeoutRef.current); pdTimeoutRef.current = null; }
     if (pdAdvanceRef.current) { clearTimeout(pdAdvanceRef.current); pdAdvanceRef.current = null; }
     setPdCountdown(null);
+    ringTimerStartedRef.current = false;
   }, []);
 
   // ── Advance to next lead ──
@@ -64,7 +68,7 @@ export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenI
       setPdStatus('dialing');
       setOpenId(nextLead.id);
       dialLead(nextLead);
-      // Timer starts when 'ringing' fires — see useEffect below
+      // Ring timer starts when 'ringing' fires — see useEffect below
     }, 1500);
   }, [dialLead, setOpenId, pdClearTimers]);
 
@@ -84,7 +88,7 @@ export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenI
     const lead = locked[startIdx];
     setOpenId(lead.id);
     dialLead(lead);
-    // Timer starts when 'ringing' fires — see useEffect below
+    // Ring timer starts when 'ringing' fires — see useEffect below
   }, [pdQueue, openId, dialLead, setOpenId]);
 
   // ── Stop PD session ──
@@ -100,7 +104,7 @@ export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenI
     setPdStatus('idle'); setPdIdx(0); setPdAttempt(1); setPdPendingAttempt2(false); setPdLockedQueue([]); setPdMode(false);
   }, [twilioDevice, pdClearTimers, pdSessionStart, pdIdx, pdLockedQueue]);
 
-  // ── Disposition + auto-advance when PD is active ──
+  // ── Disposition + auto-advance ──
   const fireDisp = useCallback((dispId) => {
     if (!KEEP_CALL_DISPS.has(dispId) && twilioDevice) {
       twilioDevice.disconnectAll();
@@ -112,10 +116,15 @@ export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenI
     }
   }, [handleDisposition, twilioDevice, pdMode, pdStatus, pdClearTimers, pdAdvanceToNext, pdLockedQueue, pdIdx]);
 
-  // ── Effect: start ring countdown when carrier confirms ringing ──
-  // This is the key fix: timer only burns real ring time, not Twilio connect latency
+  // ── Effect: start ring countdown ONCE when carrier confirms ringing ──
+  // Uses ringTimerStartedRef as the guard — NOT pdCountdown state — so that
+  // the countdown updating every second does not re-trigger this effect and
+  // spawn additional timeouts.
   useEffect(() => {
-    if (!pdMode || pdStatus !== 'dialing' || callStatus !== 'ringing' || pdCountdown !== null) return;
+    if (!pdMode || pdStatus !== 'dialing' || callStatus !== 'ringing') return;
+    if (ringTimerStartedRef.current) return; // already running — do not spawn another
+
+    ringTimerStartedRef.current = true;
 
     const totalSecs = pdAttempt === 1 ? ATTEMPT1_SEC : ATTEMPT2_SEC;
     let secs = totalSecs;
@@ -128,14 +137,16 @@ export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenI
 
     pdTimeoutRef.current = setTimeout(() => {
       if (twilioDevice) twilioDevice.disconnectAll();
-      pdClearTimers();
+      pdClearTimers(); // also resets ringTimerStartedRef
       if (pdAttempt === 1) {
         setPdAttempt(2); setPdStatus('pausing'); setPdPendingAttempt2(true);
       } else {
         fireDisp('no_answer');
       }
     }, totalSecs * 1000);
-  }, [callStatus, pdMode, pdStatus, pdAttempt, pdCountdown, twilioDevice, fireDisp, pdClearTimers]);
+  // pdCountdown intentionally excluded — updating it every second must not re-run this effect
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [callStatus, pdMode, pdStatus, pdAttempt, twilioDevice, fireDisp, pdClearTimers]);
 
   // ── Effect: call answered — stop countdown ──
   useEffect(() => {
