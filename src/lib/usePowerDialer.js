@@ -1,5 +1,5 @@
 // ============================================================
-// usePowerDialer.js — v1.3
+// usePowerDialer.js — v1.4
 // Power Dialer engine extracted from DialView.jsx
 //
 // Timing:
@@ -126,24 +126,25 @@ export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenI
 
     ringTimerStartedRef.current = true;
 
-    const totalSecs = pdAttempt === 1 ? ATTEMPT1_SEC : ATTEMPT2_SEC;
-    let secs = totalSecs;
-    setPdCountdown(secs);
-
-    pdTimerRef.current = setInterval(() => {
-      secs -= 1;
+    if (pdAttempt === 1) {
+      // Attempt 1: 18-second countdown, then auto-hang and queue attempt 2
+      let secs = ATTEMPT1_SEC;
       setPdCountdown(secs);
-    }, 1000);
 
-    pdTimeoutRef.current = setTimeout(() => {
-      if (twilioDevice) twilioDevice.disconnectAll();
-      pdClearTimers(); // also resets ringTimerStartedRef
-      if (pdAttempt === 1) {
+      pdTimerRef.current = setInterval(() => {
+        secs -= 1;
+        setPdCountdown(secs);
+      }, 1000);
+
+      pdTimeoutRef.current = setTimeout(() => {
+        if (twilioDevice) twilioDevice.disconnectAll();
+        pdClearTimers(); // also resets ringTimerStartedRef
         setPdAttempt(2); setPdStatus('pausing'); setPdPendingAttempt2(true);
-      } else {
-        fireDisp('no_answer');
-      }
-    }, totalSecs * 1000);
+      }, ATTEMPT1_SEC * 1000);
+    } else {
+      // Attempt 2: no timer — agent manually dispositions (answered or no_answer)
+      setPdCountdown(null);
+    }
   // pdCountdown intentionally excluded — updating it every second must not re-run this effect
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callStatus, pdMode, pdStatus, pdAttempt, twilioDevice, fireDisp, pdClearTimers]);
