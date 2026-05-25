@@ -47,6 +47,14 @@ export default function AddLeadForm({
       Object.keys(scripts).map(t => React.createElement("option", { key: t, value: t }, t))
     ),
 
+    newL.leadType === "Living Benefits Lead" && React.createElement("input", {
+      placeholder: "Hobby / Interest",
+      value: newL.hobby || "",
+      onChange: e => setNewL(p => ({ ...p, hobby: e.target.value })),
+      style: { ...inp(), width: "160px" },
+      title: "Hobby or interest for Day 1 opener",
+    }),
+
     React.createElement("button", {
       onClick: addLead,
       style: { padding: "8px 20px", background: "var(--blue)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: "700", cursor: "pointer" }

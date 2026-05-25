@@ -222,7 +222,7 @@ export const makeLeadManager = (
     };
     const l = { ...backfillLead(rawL), slot: assignSlot(rawL), ...initSequence(rawL) }; // v3.18 + phase + seq fields
     saveLeads([l, ...leads]);
-    setNewL({ name: "", phone: "", state: "OK", bucket: "A", leadType: "Mortgage Protection" });
+    setNewL({ name: "", phone: "", state: "OK", bucket: "A", leadType: "Mortgage Protection", hobby: "" });
     setAddForm(false);
     setOpenId(l.id);
   };

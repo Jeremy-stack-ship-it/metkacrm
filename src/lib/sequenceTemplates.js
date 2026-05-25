@@ -362,14 +362,16 @@ ${ph||''}`,
 
 // ── TEMPLATE LOOKUP HELPERS ───────────────────────────────────────────────────
 
-// Returns leadType category: "mp" | "li"
+// Returns leadType category: "mp" | "li" | "lbl"
 export const leadTypeCat = (leadType) => {
   const l = (leadType || "").toLowerCase();
   if (l.includes("mortgage")) return "mp";
+  if (l.includes("living benefits") || l === "lbl") return "lbl";
   return "li";
 };
 
 // Returns SMS string for a given track + step + leadType
+// lbl falls through to li templates (same messaging cadence, Day 1 opener handled separately)
 export const getSMS = (track, step, leadType, firstName, calendlyUrl) => {
   const cat = leadTypeCat(leadType);
   const trackSms = SMS[track];
@@ -493,4 +495,19 @@ Jeremy Metka
 Senior Field Underwriter | Metka Solutions
 NPN #21425108`,
   },
+};
+
+// ── LBL DAY 1 OPENER ─────────────────────────────────────────────────────────
+// Returns the two manual copy-paste texts for Living Benefits Leads.
+// Text 1: channel-preference opener (send first)
+// Text 2: hobby hook (send ~2 min later, then call)
+// Texts are manually sent by agent — no A2P required.
+// Post-A2P: wire into Twilio auto-send on lead creation.
+export const getLBLDay1Opener = (firstName, hobby) => {
+  const n = firstName || "there";
+  const h = (hobby || "").trim() || "your interests";
+  return {
+    text1: `Hey ${n}! Jeremy Metka here — I got your request for a life insurance review. Quick question before I pull your file: do you prefer text or a quick call? 📱`,
+    text2: `And ${n} — I noticed you're into ${h}. I've helped a lot of families who love that make sure their people are taken care of. When's a good window for 15 minutes?`,
+  };
 };

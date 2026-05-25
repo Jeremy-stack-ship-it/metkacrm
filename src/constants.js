@@ -117,4 +117,5 @@ export const FIELD_MAP_DEFS = [
   { key:"pdfUrl",      label:"PDF URL",              required:false },
   { key:"bucket",      label:"Bucket (A/B/C)",       required:false },
   { key:"emailOpener", label:"Email Opener",         required:false },
+  { key:"hobby",       label:"Hobby / Interest",        required:false },
 ];

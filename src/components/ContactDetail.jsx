@@ -17,6 +17,7 @@ import {
   getSequenceStatus, getSequenceBadgeColor, getNextTouchDate,
   pauseSequence, resumeSequence, advanceSequence,
 } from '../lib/sequenceEngine.js';
+import { getLBLDay1Opener } from '../lib/sequenceTemplates.js';
 
 // ── STAGE STEPPER (local — only used in ContactDetail) ───────────
 const StageStepper = ({ stage, onSelect }) => {
@@ -220,9 +221,54 @@ export default function ContactDetail({
                 React.createElement("label", { style:{ fontSize: "11px", fontWeight:"700", color:"var(--t3)", letterSpacing:"0.6px", display:"block", marginBottom:"4px" } }, label.toUpperCase()),
                 React.createElement("input", { key:field+"-id-"+open.id, placeholder:ph, defaultValue:open[field]||"", onBlur:e=>{ const v=e.target.value.trim(); if(v!==(open[field]||"")) upd(open.id,{[field]:v}); }, style:{...inp(),width:"100%",fontSize:"12px",boxSizing:"border-box"} })
               )
+            ),
+            open.leadType === "Living Benefits Lead" && React.createElement("div", { key:"hobby", style:{ gridColumn:"1 / -1" } },
+              React.createElement("label", { style:{ fontSize: "11px", fontWeight:"700", color:"#7C3AED", letterSpacing:"0.6px", display:"block", marginBottom:"4px" } }, "HOBBY / INTEREST"),
+              React.createElement("input", { key:"hobby-id-"+open.id, placeholder:"e.g. hunting, fishing, camping...", defaultValue:open.hobby||"", onBlur:e=>{ const v=e.target.value.trim(); if(v!==(open.hobby||"")) upd(open.id,{hobby:v}); }, style:{...inp(),width:"100%",fontSize:"12px",boxSizing:"border-box",borderColor:"#7C3AED44"} })
             )
           ),
           open.pdfUrl && React.createElement("a", { href:open.pdfUrl, target:"_blank", rel:"noreferrer", style:{ fontSize:"11px", color:"var(--sky)", textDecoration:"none", fontWeight:"700" } }, "📋 Lead Sheet →")
+        ),
+
+        // ── Day 1 Opener card — LBL leads only ─────────────────────────────────────
+        open.leadType === "Living Benefits Lead" && React.createElement("div", { style:{ background:"var(--surface)", borderRadius:"12px", border:"1px solid #7C3AED55", padding:"20px 24px" } },
+          React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"16px" } },
+            React.createElement("div", { style:{ fontSize:"11px", fontWeight:"800", color:"#7C3AED", letterSpacing:"1.5px", flex:1 } }, "⚡ DAY 1 OPENER — COPY & SEND IN ORDER"),
+            React.createElement("div", { style:{ fontSize:"10px", color:"var(--t4)", fontWeight:"600" } }, "Manual send · TCPA compliant")
+          ),
+          (() => {
+            const firstName = (open.firstName || open.name || "").split(" ")[0] || open.name || "there";
+            const opener = getLBLDay1Opener(firstName, open.hobby);
+            return React.createElement(React.Fragment, null,
+              // Text 1
+              React.createElement("div", { style:{ marginBottom:"12px" } },
+                React.createElement("div", { style:{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"6px" } },
+                  React.createElement("div", { style:{ fontSize:"11px", fontWeight:"700", color:"var(--t3)", letterSpacing:"0.6px" } }, "TEXT 1 — SEND FIRST"),
+                  React.createElement("button", {
+                    onClick: () => { navigator.clipboard.writeText(opener.text1).catch(()=>{}); },
+                    style:{ fontSize:"11px", fontWeight:"700", color:"#7C3AED", background:"#7C3AED18", border:"1px solid #7C3AED44", borderRadius:"6px", padding:"3px 10px", cursor:"pointer" }
+                  }, "Copy")
+                ),
+                React.createElement("div", { style:{ background:"var(--surface-2)", borderRadius:"8px", border:"1px solid var(--border)", padding:"10px 14px", fontSize:"12px", color:"var(--t1)", lineHeight:"1.6", fontFamily:"'Inter',sans-serif", whiteSpace:"pre-wrap" } }, opener.text1)
+              ),
+              // Text 2
+              React.createElement("div", { style:{ marginBottom:"12px" } },
+                React.createElement("div", { style:{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"6px" } },
+                  React.createElement("div", { style:{ fontSize:"11px", fontWeight:"700", color:"var(--t3)", letterSpacing:"0.6px" } }, "TEXT 2 — SEND ~2 MIN LATER"),
+                  React.createElement("button", {
+                    onClick: () => { navigator.clipboard.writeText(opener.text2).catch(()=>{}); },
+                    style:{ fontSize:"11px", fontWeight:"700", color:"#7C3AED", background:"#7C3AED18", border:"1px solid #7C3AED44", borderRadius:"6px", padding:"3px 10px", cursor:"pointer" }
+                  }, "Copy")
+                ),
+                React.createElement("div", { style:{ background:"var(--surface-2)", borderRadius:"8px", border:"1px solid var(--border)", padding:"10px 14px", fontSize:"12px", color:"var(--t1)", lineHeight:"1.6", fontFamily:"'Inter',sans-serif", whiteSpace:"pre-wrap" } }, opener.text2)
+              ),
+              // Call reminder
+              React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:"8px", padding:"8px 14px", background:"var(--blue-dim)", borderRadius:"8px", border:"1px solid var(--blue-mid)" } },
+                React.createElement("span", { style:{ fontSize:"13px" } }, "📞"),
+                React.createElement("span", { style:{ fontSize:"11px", fontWeight:"700", color:"var(--blue)" } }, "THEN CALL immediately after Text 2 — use the Dial button above")
+              )
+            );
+          })()
         ),
 
         // Health profile card
