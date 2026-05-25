@@ -735,7 +735,11 @@ serve(async (req) => {
       }
 
       // ── SEND EMAIL (Gmail API) ─────────────────────────────────────
-      if (entry.channels.includes("email") && lead.email && emailEnabled) {
+      if (entry.channels.includes("email") && lead.email && (lead.emailBounced as boolean)) {
+        activityNotes.push(makeNote(
+          `[SEQ] Email SKIPPED — emailBounced flag set | Track: ${trackLabel} | Step ${step}`
+        ));
+      } else if (entry.channels.includes("email") && lead.email && emailEnabled) {
         const emailContent = getEmailContent(track, step, cat, firstName);
         if (emailContent) {
           try {

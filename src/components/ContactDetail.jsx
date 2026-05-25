@@ -195,6 +195,8 @@ export default function ContactDetail({
       React.createElement("div", { style:{ display:"flex", gap:"8px", alignItems:"center" } },
         React.createElement("span", { style:{ fontSize:"11px", padding:"4px 12px", borderRadius:"var(--radius-pill)", background:BC[open.bucket]+"18", color:BC[open.bucket], fontWeight:"800" } }, BL[open.bucket]),
         open.stage && React.createElement("span", { style:{ fontSize:"11px", padding:"4px 12px", borderRadius:"var(--radius-pill)", background:"var(--surface-2)", color:"var(--t2)", fontWeight:"700", border:"1px solid var(--border)" } }, (STAGES.find(s=>s.id===open.stage)||STAGES[0]).label),
+        open.assignDate && React.createElement("span", { style:{ fontSize:"11px", color:"var(--t4)", fontWeight:"600", padding:"0 4px" } }, "📅 " + fmtDate(open.assignDate)),
+        open.emailBounced && React.createElement("span", { style:{ fontSize:"11px", padding:"4px 12px", borderRadius:"var(--radius-pill)", background:"var(--red-dim)", color:"var(--red)", fontWeight:"800", border:"1px solid #FCA5A5" } }, "⚠ Email Bounced"),
         React.createElement("button", { onClick:()=>{ dialLead(open); }, style:{ padding:"8px 18px", borderRadius:"8px", fontWeight:"700", fontSize:"12px", cursor:"pointer", border:"none", background:"var(--blue)", color:"#fff" } }, "📞 Dial"),
         React.createElement("button", { onClick:()=>deleteLead(open.id), style:{ padding:"8px 14px", borderRadius:"8px", fontWeight:"700", fontSize:"12px", cursor:"pointer", border:"1px solid #FCA5A5", background:"var(--red-dim)", color:"var(--red)" } }, "🗑 Delete")
       )
@@ -227,7 +229,11 @@ export default function ContactDetail({
               React.createElement("input", { key:"hobby-id-"+open.id, placeholder:"e.g. hunting, fishing, camping...", defaultValue:open.hobby||"", onBlur:e=>{ const v=e.target.value.trim(); if(v!==(open.hobby||"")) upd(open.id,{hobby:v}); }, style:{...inp(),width:"100%",fontSize:"12px",boxSizing:"border-box",borderColor:"#7C3AED44"} })
             )
           ),
-          open.pdfUrl && React.createElement("a", { href:open.pdfUrl, target:"_blank", rel:"noreferrer", style:{ fontSize:"11px", color:"var(--sky)", textDecoration:"none", fontWeight:"700" } }, "📋 Lead Sheet →")
+          open.pdfUrl && React.createElement("a", { href:open.pdfUrl, target:"_blank", rel:"noreferrer", style:{ fontSize:"11px", color:"var(--sky)", textDecoration:"none", fontWeight:"700" } }, "📋 Lead Sheet →"),
+          React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:"10px", marginTop:"10px", padding:"8px 12px", background:open.emailBounced?"var(--red-dim)":"var(--surface-2)", borderRadius:"8px", border:"1px solid "+(open.emailBounced?"#FCA5A5":"var(--border)") } },
+            React.createElement("input", { type:"checkbox", id:"bounce-"+open.id, checked:!!open.emailBounced, onChange:e=>upd(open.id,{emailBounced:e.target.checked}), style:{ width:"15px", height:"15px", cursor:"pointer", accentColor:"var(--red)" } }),
+            React.createElement("label", { htmlFor:"bounce-"+open.id, style:{ fontSize:"12px", fontWeight:"700", color:open.emailBounced?"var(--red)":"var(--t3)", cursor:"pointer" } }, "⚠ Email Bounced — skip email sequence")
+          )
         ),
 
         // ── Day 1 Opener card — LBL leads only ─────────────────────────────────────
