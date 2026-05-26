@@ -450,7 +450,14 @@ export default function DialQueuePanel({
           return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
         };
 
-        return sorted.map((lead, idx) => {
+        // v3.31 — cap rendered list at 150 items (sorted by priority, so top leads always visible).
+        // Rendering 2,400 DOM nodes re-renders on every state tick (countdown, call status).
+        // This was the primary cause of dialer sluggishness.
+        const RENDER_CAP = 150;
+        const renderList = sorted.slice(0, RENDER_CAP);
+        const hiddenCount = sorted.length - renderList.length;
+
+        return [...renderList.map((lead, idx) => {
           const isActive    = openId === lead.id;
           const isOD        = lead.nextCallback && new Date(lead.nextCallback) < now3;
           const isCbToday   = lead.nextCallback && new Date(lead.nextCallback).toDateString() === now3.toDateString();
@@ -490,7 +497,12 @@ export default function DialQueuePanel({
               stuck && React.createElement('span', { style: { fontSize: '11px', color: '#FBBF24', fontWeight: '800', flexShrink: 0 } }, 'UW')
             )
           );
-        });
+        }),
+        hiddenCount > 0 && React.createElement('li', {
+          key: '__more__',
+          style: { padding: '10px 12px', fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.3)', textAlign: 'center', letterSpacing: '0.5px', borderTop: '1px solid rgba(255,255,255,0.06)', listStyle: 'none' }
+        }, '+ ' + hiddenCount + ' more — use filters to narrow')
+        ];
       })(),
 
       (dialQueueFilter === 'today' ? queue.filter(isDueToday).length : queue.length) === 0 &&
