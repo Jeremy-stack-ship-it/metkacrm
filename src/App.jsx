@@ -445,9 +445,15 @@ const saveLeads = useCallback((next, opts = {}) => {
     } catch (e) {
       alert("Storage Full! Even with compression, the browser cannot save more leads.");
     }
-    if (stamped) sbUpsertLead(stamped);
+    // v3.27 — wire Supabase failure to supaStatus so ERR badge fires on per-lead saves too
+    if (stamped) {
+      setSupaStatus('syncing');
+      sbUpsertLead(stamped)
+        .then(() => setSupaStatus('ok'))
+        .catch(() => setSupaStatus('error'));
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setSupaStatus]);
 
   const saveScripts=next=>{setScripts(next);try{localStorage.setItem(LS_SCRIPTS,JSON.stringify(next));}catch{}};
   const saveTemplates=next=>{setTemplates(next);try{localStorage.setItem("metka-templates-v1",JSON.stringify(next));}catch{}};

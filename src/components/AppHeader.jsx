@@ -155,23 +155,40 @@ export default function AppHeader({
 
     // Actions (right side)
     React.createElement("div", { style: { display: "flex", gap: "6px", alignItems: "center" } },
-      React.createElement("div", {
-        title: "Supabase — " + supaStatus,
-        style: {
-          display: "flex", alignItems: "center", gap: "4px", padding: "5px 9px",
-          borderRadius: "7px",
-          background: supaStatus === "ok" ? "var(--green-dim)" : supaStatus === "syncing" ? "var(--blue-dim)" : supaStatus === "error" ? "var(--red-dim)" : "var(--surface-2)",
-          border: `1px solid ${supaStatus === "ok" ? "#6EE7B7" : supaStatus === "syncing" ? "var(--blue-mid)" : supaStatus === "error" ? "#FCA5A5" : "var(--border)"}`,
-        }
-      },
-        React.createElement("span", { style: { fontSize: "10px" } }, "☁"),
-        React.createElement("span", {
-          style: {
-            fontSize: "10px", fontWeight: "700", letterSpacing: "0.3px",
-            color: supaStatus === "ok" ? "var(--green)" : supaStatus === "syncing" ? "var(--blue)" : supaStatus === "error" ? "var(--red)" : "var(--t3)",
-          }
-        }, supaStatus === "ok" ? "OK" : supaStatus === "syncing" ? "SYNC…" : supaStatus === "error" ? "ERR" : "CLOUD")
-      ),
+      // v3.27 — cloud sync badge: error state expands to a visible warning strip
+      supaStatus === "error"
+        ? React.createElement("div", {
+            title: "Cloud sync failed — changes are saved locally. Check your connection.",
+            style: {
+              display: "flex", alignItems: "center", gap: "5px", padding: "5px 10px",
+              borderRadius: "7px", cursor: "default",
+              background: "rgba(239,68,68,0.15)",
+              border: "1.5px solid #EF4444",
+              animation: "none",
+            }
+          },
+            React.createElement("span", { style: { fontSize: "11px" } }, "⚠️"),
+            React.createElement("span", {
+              style: { fontSize: "10px", fontWeight: "800", color: "#EF4444", letterSpacing: "0.3px" }
+            }, "SYNC FAILED — LOCAL ONLY")
+          )
+        : React.createElement("div", {
+            title: "Supabase — " + supaStatus,
+            style: {
+              display: "flex", alignItems: "center", gap: "4px", padding: "5px 9px",
+              borderRadius: "7px",
+              background: supaStatus === "ok" ? "var(--green-dim)" : supaStatus === "syncing" ? "var(--blue-dim)" : "var(--surface-2)",
+              border: `1px solid ${supaStatus === "ok" ? "#6EE7B7" : supaStatus === "syncing" ? "var(--blue-mid)" : "var(--border)"}`,
+            }
+          },
+            React.createElement("span", { style: { fontSize: "10px" } }, "☁"),
+            React.createElement("span", {
+              style: {
+                fontSize: "10px", fontWeight: "700", letterSpacing: "0.3px",
+                color: supaStatus === "ok" ? "var(--green)" : supaStatus === "syncing" ? "var(--blue)" : "var(--t3)",
+              }
+            }, supaStatus === "ok" ? "OK" : supaStatus === "syncing" ? "SYNC…" : "CLOUD")
+          ),
       React.createElement("button", {
         onClick: () => setAddForm(v => !v),
         title: "Add lead manually",
