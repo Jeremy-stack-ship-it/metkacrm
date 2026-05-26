@@ -61,7 +61,7 @@ const NavBtn = ({ icon, label, active, onClick }) =>
     onMouseLeave: e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; } },
   },
     React.createElement('span', { style: { fontSize: '14px', lineHeight: 1 } }, icon),
-    React.createElement('span', { style: { fontSize: '8px', fontWeight: '700', letterSpacing: '0.06em' } }, label),
+    React.createElement('span', { style: { fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em' } }, label),
   );
 
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
@@ -149,8 +149,8 @@ export default function NavSidebar({ view, setView, navOpen }) {
             },
           },
             React.createElement('span', { style: { fontSize: '13px', lineHeight: 1 } }, g.icon),
-            React.createElement('span', { style: { fontSize: '8px', fontWeight: '700', letterSpacing: '0.06em' } }, g.label),
-            React.createElement('span', { style: { fontSize: '7px', opacity: 0.5, lineHeight: 1 } }, isOpen ? '▲' : '▼'),
+            React.createElement('span', { style: { fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em' } }, g.label),
+            React.createElement('span', { style: { fontSize: '9px', opacity: 0.5, lineHeight: 1 } }, isOpen ? '▲' : '▼'),
           ),
 
           // Collapsed items

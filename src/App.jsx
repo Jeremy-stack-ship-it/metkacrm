@@ -912,17 +912,7 @@ const queue = useMemo(() => {
     document.head.appendChild(script);
   }, []);
 
-  // v3.8 — Global a11y styles: focus-visible ring + sr-only utility
-  useEffect(() => {
-    if (document.getElementById('crm-a11y-styles')) return;
-    const style = document.createElement('style');
-    style.id = 'crm-a11y-styles';
-    style.textContent = [
-      '*:focus-visible { outline: 2px solid #5DCAA5 !important; outline-offset: 2px !important; }',
-      '.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }'
-    ].join('\n');
-    document.head.appendChild(style);
-  }, []);
+  // v3.28 — focus-visible + .sr-only rules moved to index.css
 
   // Calendly — listen for booking confirmation, auto-write appointment time to lead.
   // v3.5 — 'leads' removed from deps. Listener only rebuilds when the target lead changes

@@ -100,16 +100,14 @@ export default function DialQueuePanel({
           React.createElement('button', {
             onClick: () => setCallPanelExpanded(e => !e),
             title: callPanelExpanded ? 'Collapse call controls' : 'Expand call controls',
-            style: { background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '14px', cursor: 'pointer', padding: '1px 4px', lineHeight: 1, transition: 'color 0.15s' },
-            onMouseEnter: e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)',
-            onMouseLeave: e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'
+            className: 'dqp-icon-btn',
+            style: { background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '14px', cursor: 'pointer', padding: '4px 8px', lineHeight: 1, transition: 'color 0.15s' },
           }, callPanelExpanded ? '−' : '+'),
           React.createElement('button', {
             onClick: () => setView('dashboard'),
             title: 'Exit dial view',
-            style: { background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.55)', fontSize: '14px', cursor: 'pointer', padding: '1px 4px', lineHeight: 1, transition: 'color 0.15s' },
-            onMouseEnter: e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)',
-            onMouseLeave: e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'
+            className: 'dqp-icon-btn',
+            style: { background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.55)', fontSize: '14px', cursor: 'pointer', padding: '4px 8px', lineHeight: 1, transition: 'color 0.15s' },
           }, '✕')
         )
       )
@@ -183,7 +181,7 @@ export default function DialQueuePanel({
               }, (isActive ? '⚡ ' : isUserSelected ? '✦ ' : '') + sess.slot),
               // Time range
               React.createElement('div', {
-                style: { fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginBottom: '6px', whiteSpace: 'nowrap' }
+                style: { fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginBottom: '6px', whiteSpace: 'nowrap' }
               }, fmtT(sess.startH, sess.startM) + '–' + fmtT(sess.endH, sess.endM)),
               // Big lead count
               React.createElement('div', {
@@ -191,7 +189,7 @@ export default function DialQueuePanel({
               }, leadCount),
               // Subtext: leads · N cb
               React.createElement('div', {
-                style: { fontSize: '9px', color: 'rgba(255,255,255,0.28)', fontWeight: '600', marginBottom: '6px' }
+                style: { fontSize: '10px', color: '#94a3b8', fontWeight: '600', marginBottom: '6px' }
               }, 'leads' + (cbCount > 0 ? ' · ' + cbCount + ' cb' : '')),
               // Action: START/STOP on every tile (v3.23 — no longer time-gated)
               React.createElement('button', {
