@@ -326,6 +326,22 @@ function MetkaCRM(){
         console.log(`[CRM v3.23] Rebalanced ${initialLeads.length} leads to 50/50 AM/PM`);
       }
 
+      // v3.32 — Re-rebalance: Supabase hydration was silently wiping slot assignments
+      // (remote lead objects don't carry slot field; newest-_ts merge took full remote object).
+      // Fixed in useSupabaseHydration v3.32. This migration repairs all leads that lost their slot.
+      // Uses ID-hash assignSlot (deterministic — same lead always gets same slot).
+      const LS_SLOT_REBALANCE_V3 = 'metka-slot-rebalance-v3';
+      if (!localStorage.getItem(LS_SLOT_REBALANCE_V3)) {
+        console.log('[CRM v3.32] Repairing slot assignments wiped by Supabase hydration...');
+        const before = initialLeads.filter(l => !l.slot).length;
+        initialLeads = initialLeads.map(l => l.slot ? l : { ...l, slot: assignSlot(l) });
+        localStorage.setItem(LS_SLOT_REBALANCE_V3, '1');
+        try {
+          localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
+        } catch(e) { console.warn('[CRM v3.32] Could not persist slot repair:', e); }
+        console.log(`[CRM v3.32] Repaired ${before} leads missing slot assignment`);
+      }
+
       // v3.15 — Phase date normalization: repair leads whose next_dial is past-due.
       // Leads imported months ago have stale next_dial dates and flood Today queue every session.
       // Repairs next_dial to the earliest future slot; nulls it when all slots are exhausted.
