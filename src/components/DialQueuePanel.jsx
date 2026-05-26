@@ -160,7 +160,7 @@ export default function DialQueuePanel({
             // START button: builds the slot queue synchronously to avoid React timing issues
             const handleTileStart = () => {
               if (setSelectedSlot) setSelectedSlot(sess.slot);
-              const slotLeads = queue.filter(l => isDueToday(l) && (l.slot || 'AM') === sess.slot);
+              const slotLeads = queue.filter(l => isDueToday(l) && (l.slot || 'AM') === sess.slot).sort(masterQueueSort).slice(0, sess.capacity);
               pdStart(slotLeads);
             };
 

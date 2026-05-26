@@ -152,7 +152,16 @@ export const isDueToday = (lead) => {
     const due = new Date(lead.next_dial);
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
-    return due <= endOfDay;
+    // v3.30 — staleness guard: don't surface leads whose next_dial is > 14 days
+    // in the past. Leads with a valid phase schedule (p1_1 set) are already
+    // repaired by normalizePhaseSchedule on startup — they have a current or
+    // future next_dial, so this guard is a no-op for them. This only catches
+    // orphaned leads (no p1_1) that normalize can't fix, preventing them from
+    // flooding Today queue with the entire 2,440-lead database.
+    const staleThreshold = new Date();
+    staleThreshold.setDate(staleThreshold.getDate() - 14);
+    staleThreshold.setHours(0, 0, 0, 0);
+    return due >= staleThreshold && due <= endOfDay;
   }
 
   // Bucket B: surface when a callback is due/overdue today
