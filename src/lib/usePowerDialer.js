@@ -11,19 +11,26 @@
 // ============================================================
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { isDueToday, getActiveSession } from './phaseEngine.js';
+import { isDueToday, getActiveSession, masterQueueSort, SESSIONS } from './phaseEngine.js';
 
 const ATTEMPT1_SEC = 18;
 const ATTEMPT2_SEC = 30;
 const KEEP_CALL_DISPS = new Set(['callback']);
 
-export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenId, handleDisposition, callStatus }) {
-  // ── PD queue: due-today leads filtered to active session slot ──
+export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenId, handleDisposition, callStatus, selectedSlot }) {
+  // ── PD queue: due-today leads filtered to selected (or time-active) session slot ──
   const pdQueue = useMemo(() => {
+    // v3.30 — cap at session capacity so POWER DIAL badge matches the 40-lead session limit.
+    // Uses getActiveSession for time-based slot; falls back to selectedSlot override.
+    const sess = getActiveSession(new Date());
+    const capacity = sess ? sess.capacity : 40;
+    const activeSlot = selectedSlot || (sess ? sess.slot : null);
     const base = (queue || []).filter(isDueToday);
-    const sess  = getActiveSession(new Date());
-    return sess ? base.filter(l => (l.slot || 'AM') === sess.slot) : base;
-  }, [queue]);
+    const slotFiltered = activeSlot
+      ? base.filter(l => (l.slot || 'AM') === activeSlot)
+      : base;
+    return slotFiltered.sort(masterQueueSort).slice(0, capacity);
+  }, [queue, selectedSlot]);
 
   // ── State ──
   const [pdMode,             setPdMode]             = useState(false);
@@ -73,12 +80,15 @@ export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenI
   }, [dialLead, setOpenId, pdClearTimers]);
 
   // ── Start PD session ──
-  const pdStart = useCallback(() => {
-    if (!pdQueue || !pdQueue.length) {
-      alert('No leads due today in your current queue. Switch to ALL or adjust your filters.');
+  // overrideLeads: optional pre-filtered array (used when starting from a slot tile
+  // to avoid React state timing issues — tile computes the list synchronously).
+  const pdStart = useCallback((overrideLeads) => {
+    const workQueue = (overrideLeads && overrideLeads.length > 0) ? overrideLeads : pdQueue;
+    if (!workQueue || !workQueue.length) {
+      alert('No leads due today in this session slot.');
       return;
     }
-    const locked = [...pdQueue];
+    const locked = [...workQueue];
     const openIdx = openId ? locked.findIndex(l => l.id === openId) : -1;
     const startIdx = openIdx >= 0 ? openIdx : 0;
     setPdLockedQueue(locked);
@@ -116,12 +126,15 @@ export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenI
     }
   }, [handleDisposition, twilioDevice, pdMode, pdStatus, pdClearTimers, pdAdvanceToNext, pdLockedQueue, pdIdx]);
 
-  // ── Effect: start ring countdown ONCE when carrier confirms ringing ──
-  // Uses ringTimerStartedRef as the guard — NOT pdCountdown state — so that
-  // the countdown updating every second does not re-trigger this effect and
-  // spawn additional timeouts.
+  // ── Effect: start ring countdown when call goes live ────────────────────────
+  // Starts on 'connecting' OR 'ringing' — whichever fires first.
+  // Some carriers never fire the 'ringing' event (goes connecting→connected directly),
+  // so relying on 'ringing' alone leaves no-answer calls ringing forever.
+  // The ringTimerStartedRef guard prevents a second timer if both events fire.
+  // fireDisp intentionally removed from deps — not used inside this effect.
   useEffect(() => {
-    if (!pdMode || pdStatus !== 'dialing' || callStatus !== 'ringing') return;
+    if (!pdMode || pdStatus !== 'dialing') return;
+    if (callStatus !== 'connecting' && callStatus !== 'ringing') return;
     if (ringTimerStartedRef.current) return; // already running — do not spawn another
 
     ringTimerStartedRef.current = true;
@@ -147,7 +160,19 @@ export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenI
     }
   // pdCountdown intentionally excluded — updating it every second must not re-run this effect
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [callStatus, pdMode, pdStatus, pdAttempt, twilioDevice, fireDisp, pdClearTimers]);
+  }, [callStatus, pdMode, pdStatus, pdAttempt, twilioDevice, pdClearTimers]);
+
+
+  // ── Effect: someone picked up — cancel ring timer immediately ──────────────
+  // If Twilio fires 'connected' while the 18-second ring timer is still running,
+  // clear it so we don't auto-hang up on a live conversation.
+  useEffect(() => {
+    if (!pdMode) return;
+    if (callStatus === 'connected') {
+      pdClearTimers();           // kills the 18s timeout + interval
+      setPdStatus('answered');   // UI shows answered state
+    }
+  }, [callStatus, pdMode, pdClearTimers]);
 
   // ── Effect: fire attempt 2 after attempt 1 disconnects ──
   useEffect(() => {
