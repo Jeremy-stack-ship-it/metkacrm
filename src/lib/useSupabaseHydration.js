@@ -84,8 +84,10 @@ export const useSupabaseHydration = (setLeads, setActivity, setSupaStatus) => {
             merged.set(r.id, r.slot ? r : { ...r, slot: assignSlot(r) });
             remoteAdded++;
           } else if ((r._ts || 0) > (local._ts || 0)) {
-            // Remote is newer — take it but preserve client-only fields Supabase doesn't store
-            merged.set(r.id, { slot: local.slot, ...r });
+            // Remote is newer — take it. v3.33: slot is now a real column so r.slot is populated.
+            // Merge promoted columns back into data blob to keep them in sync.
+            const promoted = { slot: r.slot || local.slot };
+            merged.set(r.id, { ...r, ...promoted });
           }
           // else: local is newer or equal — keep (already in map)
         });

@@ -9,7 +9,18 @@ const supabase  = createClient(SUPA_URL, SUPA_KEY);
 // Returns a promise that rejects on error so callers can update sync status.
 export const sbUpsertLead = (lead) =>
   supabase.from('leads')
-    .upsert({ id: lead.id, data: lead, updated_at: new Date().toISOString() })
+    .upsert({
+      id:           lead.id,
+      data:         lead,
+      updated_at:   new Date().toISOString(),
+      // v3.33 — promoted columns (Supabase now stores these explicitly)
+      slot:         lead.slot         || null,
+      bucket:       lead.bucket       || null,
+      disposition:  lead.disposition  || null,
+      next_dial:    lead.next_dial    || null,
+      last_contact: lead.last_contact || null,
+      _ts:          lead._ts          || null,
+    })
     .then(({ error }) => {
       if (error) throw new Error(error.message);
     });
@@ -17,7 +28,18 @@ export const sbUpsertLead = (lead) =>
 // Upsert all leads to Supabase (bulk).
 // Throws on first batch error so saveLeads .catch() can set supaStatus -> "error".
 export const sbUpsertAll = async (leads) => {
-  const rows = leads.map(l => ({ id: l.id, data: l, updated_at: new Date().toISOString() }));
+  const rows = leads.map(l => ({
+    id:           l.id,
+    data:         l,
+    updated_at:   new Date().toISOString(),
+    // v3.33 — promoted columns
+    slot:         l.slot         || null,
+    bucket:       l.bucket       || null,
+    disposition:  l.disposition  || null,
+    next_dial:    l.next_dial    || null,
+    last_contact: l.last_contact || null,
+    _ts:          l._ts          || null,
+  }));
   for (let i = 0; i < rows.length; i += 500) {
     const { error } = await supabase.from('leads').upsert(rows.slice(i, i + 500));
     if (error) throw new Error(`[Supabase] bulk upsert batch ${i}–${i+500}: ${error.message}`);
@@ -62,7 +84,7 @@ export const sbLoadAll = async () => {
   let all = [], from = 0, done = false;
   while (!done) {
     const { data, error } = await supabase
-      .from('leads').select('id, data')
+      .from('leads').select('id, data, slot, bucket, disposition, next_dial, last_contact, _ts')
       .order('updated_at', { ascending: false })
       .range(from, from + PAGE - 1);
     if (error) { console.warn('[Supabase] load error:', error.message); return null; }
