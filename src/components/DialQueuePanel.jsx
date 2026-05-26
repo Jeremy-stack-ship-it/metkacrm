@@ -138,8 +138,10 @@ export default function DialQueuePanel({
             const isActive  = !!(activeSess && activeSess.id === sess.id);
             const isPast    = !isActive && nowMins > sess.endH * 60 + sess.endM;
             const isNext    = !!(nextSess && nextSess.id === sess.id && !isActive);
-            const leadCount = queue.filter(l => (l.slot || 'AM') === sess.slot).length;
-            const cbCount   = queue.filter(l => (l.slot || 'AM') === sess.slot && l.disposition === 'callback').length;
+            // v3.30 — show due-today count capped at capacity (matches what START actually dials)
+            const slotDueToday = queue.filter(l => isDueToday(l) && (l.slot || 'AM') === sess.slot);
+            const leadCount = Math.min(slotDueToday.length, sess.capacity);
+            const cbCount   = slotDueToday.filter(l => l.disposition === 'callback').length;
 
             const bg     = isActive ? 'rgba(59,130,246,0.13)' : 'rgba(255,255,255,0.04)';
             const border = isActive ? '1px solid rgba(59,130,246,0.4)' : '1px solid rgba(255,255,255,0.08)';
