@@ -23,6 +23,7 @@
 
 import { useEffect } from 'react';
 import LZString from 'lz-string';
+import { assignSlot } from './phaseEngine.js';
 import {
   sbLoadAll,
   sbUpsertAll,
@@ -79,10 +80,12 @@ export const useSupabaseHydration = (setLeads, setActivity, setSupaStatus) => {
           if (deletedIds[r.id]) return; // locally deleted — skip ghost
           const local = merged.get(r.id);
           if (!local) {
-            merged.set(r.id, r); // new lead from another device
+            // New lead from another device — assign slot client-side if Supabase doesn't have it
+            merged.set(r.id, r.slot ? r : { ...r, slot: assignSlot(r) });
             remoteAdded++;
           } else if ((r._ts || 0) > (local._ts || 0)) {
-            merged.set(r.id, r); // remote is newer — take it
+            // Remote is newer — take it but preserve client-only fields Supabase doesn't store
+            merged.set(r.id, { slot: local.slot, ...r });
           }
           // else: local is newer or equal — keep (already in map)
         });
