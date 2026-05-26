@@ -90,6 +90,7 @@ import AppHeader from './components/AppHeader.jsx';
 import AddLeadForm from './components/AddLeadForm.jsx';
 import ScriptPanel from './components/ScriptPanel.jsx';
 import { priority, autoFollowUp, openCalendlyPopup } from './lib/leadScoring.js';
+import { masterQueueSort } from './lib/phaseEngine';
 import { useContactFilters } from './lib/useContactFilters.js';
 import { useTwilioDevice } from './lib/useTwilioDevice.js';
 import { useSettingsConfig } from './lib/useSettingsConfig.js';
@@ -145,7 +146,16 @@ function MetkaCRM(){
   const [leads,setLeads]=useState([]);
   const ITEMS_PER_PAGE = 50;
   const [loading,setLoading]=useState(true);
-  const [view,setView]=useState("dashboard");
+  // v3.24 — init view from URL hash so browser back/forward works
+  // v3.24 — slot-launch signal: dashboard AM/PM tiles set this, DialView consumes + clears it
+  const [pendingDialSlot, setPendingDialSlot] = useState(null);
+
+  // v3.24 — init view from URL hash so browser back/forward works
+  const [view,setView]=useState(() => {
+    const hash = window.location.hash.replace('#','');
+    const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','today']);
+    return VALID.has(hash) ? hash : 'dashboard';
+  });
   const [openId,setOpenId]=useState(null);
   const [detailTab,setDetailTab]=useState("activity");
   const [noteText,setNoteText]=useState("");
@@ -301,6 +311,21 @@ function MetkaCRM(){
         console.log(`[CRM v3.12] Assigned session slots to ${slotCount} leads`);
       }
 
+      // v3.23 — One-time AM/PM slot rebalance: fix upload-day clustering from odd/even day algo.
+      // Old assignSlot used day-of-month parity — all leads uploaded on odd days got AM.
+      // This migration forces a 50/50 index-based split across ALL existing leads.
+      // Runs once (flag stored in localStorage). New leads use the fixed ID-hash assignSlot.
+      const LS_SLOT_REBALANCE = 'metka-slot-rebalance-v2';
+      if (!localStorage.getItem(LS_SLOT_REBALANCE)) {
+        console.log('[CRM v3.23] Running one-time AM/PM slot rebalance...');
+        initialLeads = initialLeads.map((l, idx) => ({ ...l, slot: idx % 2 === 0 ? 'AM' : 'PM' }));
+        localStorage.setItem(LS_SLOT_REBALANCE, '1');
+        try {
+          localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
+        } catch(e) { console.warn('[CRM v3.23] Could not persist slot rebalance:', e); }
+        console.log(`[CRM v3.23] Rebalanced ${initialLeads.length} leads to 50/50 AM/PM`);
+      }
+
       // v3.15 — Phase date normalization: repair leads whose next_dial is past-due.
       // Leads imported months ago have stale next_dial dates and flood Today queue every session.
       // Repairs next_dial to the earliest future slot; nulls it when all slots are exhausted.
@@ -432,7 +457,7 @@ const saveLeads = useCallback((next, opts = {}) => {
   //         Bulk sbSaveActivity is reserved for startup repair when remote is behind local.
   const saveActivity=useCallback(next=>{
     setActivity(next);
-    try{localStorage.setItem(LS_ACTIVITY,JSON.stringify(next));}catch{}
+    try{localStorage.setItem(LS_ACTIVITY,JSON.stringify(next.slice(0,2000)));}catch{}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
   // v3.13 — Functional-updater append for activity events fired inside leads.js upd().
@@ -441,7 +466,9 @@ const saveLeads = useCallback((next, opts = {}) => {
   const appendActivity = useCallback(evs => {
     setActivity(prev => {
       const next = [...evs, ...prev];
-      try { localStorage.setItem(LS_ACTIVITY, JSON.stringify(next)); } catch {}
+      // Cap localStorage at 2000 events to stay under the 5MB limit.
+      // Full history lives in Supabase; local only needs recent data for aggregation.
+      try { localStorage.setItem(LS_ACTIVITY, JSON.stringify(next.slice(0, 2000))); } catch {}
       return next;
     });
   }, []);
@@ -731,14 +758,15 @@ const queue = useMemo(() => {
       const posA = posMap.has(a.id) ? posMap.get(a.id) : 99999;
       const posB = posMap.has(b.id) ? posMap.get(b.id) : 99999;
       if (posA !== posB) return posA - posB;
-      return priority(b) - priority(a);
-    }).slice(0, ITEMS_PER_PAGE);
+      return masterQueueSort(a, b); // v3.26 — composite tiebreaker
+    }); // v3.26 — no slice: DialQueuePanel and rebalanceSession need the full pool
   }
 
-  // No active session — sort by live priority
+  // No active session — sort by composite phase priority
+  // v3.26 — no slice: passing full filtered pool so DialQueuePanel/rebalanceSession
+  // can search all eligible leads, not just the first 50
   return filtered
-    .sort((a,b) => priority(b) - priority(a))
-    .slice(0, ITEMS_PER_PAGE);
+    .sort(masterQueueSort);
 }, [leads, session]);
   const open=useMemo(()=>leads.find(l=>l.id===openId),[leads,openId]);
 
@@ -834,6 +862,25 @@ const queue = useMemo(() => {
   // Live clock — ticks every minute for TCPA indicator
   // v3.9 — Auto-collapse nav when entering dial view, restore when leaving
   useEffect(() => { setNavOpen(view !== "dial"); }, [view]);
+
+  // v3.24 — browser back/forward: sync view <-> URL hash
+  // Push a new history entry whenever view changes (except on initial load)
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    const current = window.location.hash.replace('#','');
+    if (current !== view) window.history.pushState({ view }, '', '#' + view);
+  }, [view]);
+  // Listen for popstate (back/forward button)
+  useEffect(() => {
+    function onPop(e) {
+      const prev = (e.state && e.state.view) || window.location.hash.replace('#','') || 'dashboard';
+      const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','today']);
+      setView(VALID.has(prev) ? prev : 'dashboard');
+    }
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   useEffect(() => {
     const t = setInterval(() => setClockNow(new Date()), 60000);
@@ -1013,11 +1060,12 @@ const queue = useMemo(() => {
           setView, setOpenId, setPrevView,
           refreshQueueOrder, startDialSession,
           seqStats,
+          onStartDialSlot: (slot) => { setPendingDialSlot(slot); setView('dial'); },
         }),
 
         // ── CALLBACK QUEUE VIEW (v3.1) ──
         view==="callbacks" && React.createElement(CallbackQueue, {
-          leads, setOpenId, setView, setSession, setSessionPaused, setNoteText, setDetailTab,
+          leads, upd, setOpenId, setView, setSession, setSessionPaused, setNoteText, setDetailTab,
         }),
 
         // ── APPOINTMENTS VIEW (v3.14) ──
@@ -1045,7 +1093,7 @@ const queue = useMemo(() => {
 
         // ── UNIFIED DIAL VIEW (v3.8) — replaces queue + powerdial ──
         view==="dial" && React.createElement(DialView, {
-          queue, session, setSession, sessionPaused, setSessionPaused, setDialSessionActive,
+          leads, queue, session, setSession, sessionPaused, setSessionPaused, setDialSessionActive,
           dialSortMode, setDialSortMode, dialRightTab, setDialRightTab,
           openId, setOpenId, open, upd,
           dialLead, useTwilioCalling, twilioDevice,
@@ -1063,6 +1111,7 @@ const queue = useMemo(() => {
           todayCount,
           setView, setPrevView,
           callbackPresets, setCallbackPresets,
+          pendingDialSlot, clearPendingDialSlot: () => setPendingDialSlot(null),
         }),
 
 

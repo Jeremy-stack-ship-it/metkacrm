@@ -157,12 +157,13 @@ export default function TodaysBlock({
 
   // ── Build today's priority list ──
   const todayListComputed = useMemo(() => {
-    // v3.26 — slot filter (when a session is active) + masterQueueSort composite ordering
+    // v3.26 — slot filter + composite sort + session-aware caps
     const activeSess  = getActiveSession();
     const activeSlot  = activeSess ? activeSess.slot : null; // null = between sessions, show all
+    const maxLeads    = activeSess ? activeSess.capacity : 80; // respect session.capacity; 80 fallback between sessions
+    const maxRecovery = activeSess ? Math.min(15, Math.round(activeSess.capacity * 0.375)) : 15;
     const GHOST_DISP  = ['dnc','not_interested','invalid','archive','appointment_booked'];
     const GHOST_STAGE = ['dnc','issued','app_submitted','underwriting'];
-    const MAX_RECOVERY = 15;
     const eligible = leads.filter(l => {
       if (GHOST_DISP.includes(l.disposition))  return false;
       if (GHOST_STAGE.includes(l.stage))        return false;
@@ -172,9 +173,9 @@ export default function TodaysBlock({
     let recovCt = 0;
     return eligible.filter(l => {
       const isRec = ['no_sale','no_show'].includes(l.disposition);
-      if (isRec) { if (recovCt >= MAX_RECOVERY) return false; recovCt++; }
+      if (isRec) { if (recovCt >= maxRecovery) return false; recovCt++; }
       return true;
-    }).slice(0, 80);
+    }).slice(0, maxLeads);
   }, [leads]);
 
   const dialedToday = useMemo(() => {

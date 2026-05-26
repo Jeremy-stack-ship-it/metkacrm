@@ -16,6 +16,8 @@ export default function DialQueuePanel({
   pdQueue,
   pdSessionLog,
   currentPdLead, pdBg, pdAccent,
+  // full lead pool (for rebalanceSession — NOT capped like queue)
+  leads,
   // queue filter state
   dialQueueFilter, setDialQueueFilter,
   // slot selection (v3.23)
@@ -39,8 +41,9 @@ export default function DialQueuePanel({
     const today = new Date().toLocaleDateString('en-CA');
     const SKIP_DISPS = new Set(['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked']);
 
-    // Candidates: due today, not already in session, not worked today, not terminal
-    const candidates = queue
+    // Candidates: search full lead pool (not capped queue) so injection never starves
+    const leadPool = leads && leads.length > 0 ? leads : queue; // v3.26 fallback
+    const candidates = leadPool
       .filter(l => {
         if (sessionIdSet.has(l.id)) return false;
         if (l.lastContact === today) return false;

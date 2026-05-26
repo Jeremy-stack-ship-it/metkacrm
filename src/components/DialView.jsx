@@ -8,7 +8,7 @@ import DialQueuePanel from './DialQueuePanel';
 import DialRightPanel from './DialRightPanel';
 
 export default function DialView({
-  queue, session, setSession, sessionPaused, setSessionPaused, setDialSessionActive,
+  leads, queue, session, setSession, sessionPaused, setSessionPaused, setDialSessionActive,
   dialSortMode, setDialSortMode,
   dialRightTab, setDialRightTab,
   openId, setOpenId,
@@ -35,20 +35,43 @@ export default function DialView({
   setView,
   setPrevView,
   callbackPresets,
+  pendingDialSlot,
+  clearPendingDialSlot,
 }) {
   // ── POWER DIALER ENGINE — extracted to lib/usePowerDialer.js ──────────
+  // ── Local view state ────────────────────────────────────────────────────
+  // selectedSlot MUST be declared before usePowerDialer which consumes it
+  const [callPanelExpanded, setCallPanelExpanded] = useState(true);
+  const [onHold,            setOnHold]            = useState(false);
+  const [dialQueueFilter,   setDialQueueFilter]   = useState('today');
+  // v3.23 — manual slot selection: null = follow time-based active session
+  const [selectedSlot,      setSelectedSlot]      = useState(null);
+
   const {
     pdQueue,
     pdMode, pdStatus, pdIdx, pdLockedQueue, pdAttempt, pdCountdown,
     pdSessionLog,
     currentPdLead, pdBg, pdAccent,
     pdStart, pdStop, fireDisp,
-  } = usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenId, handleDisposition, callStatus });
+  } = usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenId, handleDisposition, callStatus, selectedSlot });
+  // v3.24 — auto-start PD when launched from dashboard slot tile
+  const pdStartRef = useRef(pdStart);
+  pdStartRef.current = pdStart;
+  useEffect(() => {
+    if (!pendingDialSlot) return;
+    setSelectedSlot(pendingDialSlot);
+    // Small delay so React re-renders selectedSlot into pdQueue before pdStart runs
+    const t = setTimeout(() => {
+        const slotLeads = (queue || []).filter(l => {
+        try { return isDueToday(l) && (l.slot || 'AM') === pendingDialSlot; } catch { return false; }
+      });
+      pdStartRef.current(slotLeads.length > 0 ? slotLeads : undefined);
+      if (clearPendingDialSlot) clearPendingDialSlot();
+    }, 120);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingDialSlot]);
 
-  // ── Local view state ────────────────────────────────────────────────────
-  const [callPanelExpanded, setCallPanelExpanded] = useState(true);
-  const [onHold,            setOnHold]            = useState(false);
-  const [dialQueueFilter,   setDialQueueFilter]   = useState('today');
   const [cbPopoverOpen,     setCbPopoverOpen]     = useState(false);
   const [cbCustomTs,        setCbCustomTs]        = useState('');
   const [manualApptOpen,    setManualApptOpen]    = useState(false);
@@ -68,13 +91,15 @@ export default function DialView({
       currentPdLead, pdBg, pdAccent,
       // queue filter
       dialQueueFilter, setDialQueueFilter,
+      // slot selection
+      selectedSlot, setSelectedSlot,
       // call props
       callStatus, callElapsed, activeCallLead, open,
       callMuted, toggleMute, hangUp,
       // session props
       session, setSession, sessionPaused, setSessionPaused, setDialSessionActive,
       // queue + nav
-      queue,
+      leads, queue,
       refreshQueueOrder, setView,
       dialSortMode, setDialSortMode,
       openId, setOpenId, setNoteText, setDialRightTab,
