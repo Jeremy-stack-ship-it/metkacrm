@@ -20,7 +20,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { SCHED_COLS, buildSchedule, computeNextDial, phaseFromBucket, applyPhaseTransition, getPhasePriority, isDueToday, backfillLead } from '../lib/phaseEngine';
+import { SCHED_COLS, buildSchedule, computeNextDial, phaseFromBucket, applyPhaseTransition, getPhasePriority, isDueToday, backfillLead, masterQueueSort, getActiveSession } from '../lib/phaseEngine';
 
 // ── PHASE CONSTANTS ──────────────────────────────────────────────
 export const PHASE_DEFS = {
@@ -157,14 +157,18 @@ export default function TodaysBlock({
 
   // ── Build today's priority list ──
   const todayListComputed = useMemo(() => {
+    // v3.26 — slot filter (when a session is active) + masterQueueSort composite ordering
+    const activeSess  = getActiveSession();
+    const activeSlot  = activeSess ? activeSess.slot : null; // null = between sessions, show all
     const GHOST_DISP  = ['dnc','not_interested','invalid','archive','appointment_booked'];
     const GHOST_STAGE = ['dnc','issued','app_submitted','underwriting'];
     const MAX_RECOVERY = 15;
     const eligible = leads.filter(l => {
       if (GHOST_DISP.includes(l.disposition))  return false;
       if (GHOST_STAGE.includes(l.stage))        return false;
+      if (activeSlot && (l.slot || 'AM') !== activeSlot) return false; // slot filter
       return isDueToday(l);
-    }).sort((a,b) => getPhasePriority(b) - getPhasePriority(a));
+    }).sort(masterQueueSort); // composite: phase priority + next_dial tiebreaker
     let recovCt = 0;
     return eligible.filter(l => {
       const isRec = ['no_sale','no_show'].includes(l.disposition);

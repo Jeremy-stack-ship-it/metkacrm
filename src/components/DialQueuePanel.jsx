@@ -1,6 +1,6 @@
 import React from 'react';
 import { BC, isUWStuck } from '../constants.js';
-import { getPhasePriority, isDueToday, getActiveSession, getNextSession, SESSIONS } from '../lib/phaseEngine';
+import { getPhasePriority, isDueToday, getActiveSession, getNextSession, SESSIONS, masterQueueSort } from '../lib/phaseEngine';
 
 const LS_SESSION = 'metka-session-v1';
 
@@ -18,6 +18,8 @@ export default function DialQueuePanel({
   currentPdLead, pdBg, pdAccent,
   // queue filter state
   dialQueueFilter, setDialQueueFilter,
+  // slot selection (v3.23)
+  selectedSlot, setSelectedSlot,
   // ── props from DialView (passed down from App) ──
   callStatus, callElapsed, activeCallLead, open,
   callMuted, toggleMute, hangUp,
@@ -141,35 +143,60 @@ export default function DialQueuePanel({
             const bg     = isActive ? 'rgba(59,130,246,0.13)' : 'rgba(255,255,255,0.04)';
             const border = isActive ? '1px solid rgba(59,130,246,0.4)' : '1px solid rgba(255,255,255,0.08)';
 
+            // v3.23: slot selection state
+            const isUserSelected = selectedSlot === sess.slot;
+            const isPdThisSlot   = pdMode && isUserSelected;
+            // Highlight: active-time = blue, user-selected (manual override) = gold, default = dim
+            const tileColor  = isActive ? '#93C5FD' : isUserSelected ? '#FCD34D' : 'rgba(255,255,255,0.55)';
+            const tileBg     = isActive ? 'rgba(59,130,246,0.13)' : isUserSelected ? 'rgba(234,179,8,0.10)' : 'rgba(255,255,255,0.04)';
+            const tileBorder = isActive ? '1px solid rgba(59,130,246,0.4)' : isUserSelected ? '1px solid rgba(234,179,8,0.35)' : '1px solid rgba(255,255,255,0.08)';
+
+            // Clicking the tile selects it (without starting PD)
+            const handleTileClick = () => {
+              if (setSelectedSlot) setSelectedSlot(prev => prev === sess.slot ? null : sess.slot);
+            };
+
+            // START button: builds the slot queue synchronously to avoid React timing issues
+            const handleTileStart = () => {
+              if (setSelectedSlot) setSelectedSlot(sess.slot);
+              const slotLeads = queue.filter(l => isDueToday(l) && (l.slot || 'AM') === sess.slot);
+              pdStart(slotLeads);
+            };
+
+            const btnBg     = isPdThisSlot ? 'rgba(239,68,68,0.22)' : '#3B82F6';
+            const btnColor  = isPdThisSlot ? '#EF4444' : '#fff';
+            const btnBorder = isPdThisSlot ? '1px solid rgba(239,68,68,0.5)' : 'none';
+            // Dim START if PD is running for the OTHER slot
+            const btnDisabled = pdMode && !isPdThisSlot;
+
             return React.createElement('div', {
               key: sess.id,
-              style: { flex: 1, background: bg, border, borderRadius: '8px', padding: '8px 8px 7px', minWidth: 0, opacity: isPast ? 0.45 : 1 }
+              onClick: handleTileClick,
+              style: { flex: 1, background: tileBg, border: tileBorder, borderRadius: '8px', padding: '8px 8px 7px', minWidth: 0, opacity: isPast && !isUserSelected ? 0.45 : 1, cursor: 'pointer', transition: 'background 0.15s, border 0.15s' }
             },
-              // Slot label + active indicator
+              // Slot label + state indicator
               React.createElement('div', {
-                style: { fontSize: '10px', fontWeight: '800', color: isActive ? '#93C5FD' : 'rgba(255,255,255,0.55)', letterSpacing: '0.07em', marginBottom: '1px' }
-              }, (isActive ? '⚡ ' : '') + sess.slot),
+                style: { fontSize: '10px', fontWeight: '800', color: tileColor, letterSpacing: '0.07em', marginBottom: '1px' }
+              }, (isActive ? '⚡ ' : isUserSelected ? '✦ ' : '') + sess.slot),
               // Time range
               React.createElement('div', {
                 style: { fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginBottom: '6px', whiteSpace: 'nowrap' }
               }, fmtT(sess.startH, sess.startM) + '–' + fmtT(sess.endH, sess.endM)),
               // Big lead count
               React.createElement('div', {
-                style: { fontSize: '22px', fontWeight: '900', color: isActive ? '#f1f5f9' : 'rgba(255,255,255,0.5)', lineHeight: 1, marginBottom: '1px' }
+                style: { fontSize: '22px', fontWeight: '900', color: isActive || isUserSelected ? '#f1f5f9' : 'rgba(255,255,255,0.5)', lineHeight: 1, marginBottom: '1px' }
               }, leadCount),
               // Subtext: leads · N cb
               React.createElement('div', {
                 style: { fontSize: '9px', color: 'rgba(255,255,255,0.28)', fontWeight: '600', marginBottom: '6px' }
               }, 'leads' + (cbCount > 0 ? ' · ' + cbCount + ' cb' : '')),
-              // Action button / status
-              isActive
-                ? React.createElement('button', {
-                    onClick: pdMode ? pdStop : pdStart,
-                    style: { width: '100%', minHeight: '28px', background: pdMode ? 'rgba(239,68,68,0.22)' : '#3B82F6', color: pdMode ? '#EF4444' : '#fff', border: pdMode ? '1px solid rgba(239,68,68,0.5)' : 'none', borderRadius: '5px', fontSize: '10px', fontWeight: '800', cursor: 'pointer', letterSpacing: '0.03em' }
-                  }, pdMode ? '⏹ STOP' : '▶ START')
-                : React.createElement('div', {
-                    style: { fontSize: '9px', fontWeight: '700', color: isNext ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.18)', textAlign: 'center', paddingTop: '4px' }
-                  }, isPast ? '— DONE —' : '— NEXT —')
+              // Action: START/STOP on every tile (v3.23 — no longer time-gated)
+              React.createElement('button', {
+                onClick: e => { e.stopPropagation(); isPdThisSlot ? pdStop() : handleTileStart(); },
+                disabled: btnDisabled,
+                title: btnDisabled ? 'Stop the current session first' : isPdThisSlot ? 'Stop Power Dial' : 'Start Power Dial for this session slot',
+                style: { width: '100%', minHeight: '28px', background: btnDisabled ? 'rgba(255,255,255,0.05)' : btnBg, color: btnDisabled ? 'rgba(255,255,255,0.2)' : btnColor, border: btnDisabled ? '1px solid rgba(255,255,255,0.07)' : btnBorder, borderRadius: '5px', fontSize: '10px', fontWeight: '800', cursor: btnDisabled ? 'not-allowed' : 'pointer', letterSpacing: '0.03em' }
+              }, isPdThisSlot ? '⏹ STOP' : '▶ START')
             );
           })
         )
@@ -391,10 +418,7 @@ export default function DialQueuePanel({
         const activeList = dialQueueFilter === 'today' ? queue.filter(isDueToday) : queue;
         let sorted = [...activeList];
 
-        if (dialSortMode === 'priority') sorted.sort((a, b) => {
-          const overdueBonus = l => (l.nextCallback && new Date(l.nextCallback) < now3) ? 5000 : 0;
-          return (getPhasePriority(b) + overdueBonus(b)) - (getPhasePriority(a) + overdueBonus(a));
-        });
+        if (dialSortMode === 'priority') sorted.sort(masterQueueSort); // v3.26 — composite: phase + next_dial tiebreaker; overdue sort mode handles callback urgency
         else if (dialSortMode === 'phase') sorted.sort((a, b) => getPhasePriority(b) - getPhasePriority(a));
         else if (dialSortMode === 'overdue') sorted.sort((a, b) => {
           const aOD = (a.nextCallback && new Date(a.nextCallback) < now3) ? 1 : 0;

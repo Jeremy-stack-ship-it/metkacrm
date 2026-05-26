@@ -324,20 +324,37 @@ export const getNextSession = (now = new Date()) => {
   }
   return null;
 };
-// Assigns AM/PM slot based on day of month the lead was received.
-// Odd day → AM, Even day → PM. Naturally alternates as leads arrive on different days.
-// v3.14b — date-based, deterministic, no hash bias.
+// Assigns AM/PM slot. Uses a hash of lead.id for even 50/50 distribution
+// regardless of what day or batch leads were uploaded.
+// v3.23 — ID-hash based; avoids day-of-month clustering.
 export const assignSlot = (lead) => {
   if (lead.slot) return lead.slot;
-  // Odd day of month received → AM, even day → PM
+  // Hash lead ID: deterministic, evenly distributed, upload-date agnostic.
+  if (lead.id) {
+    const s = String(lead.id);
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+    return Math.abs(h) % 2 === 0 ? 'AM' : 'PM';
+  }
+  // Fallback: date-based (legacy path for leads with no id)
   const dateStr = lead.created_at || lead.phase_start;
   if (dateStr) {
-    const day = new Date(dateStr).getDate(); // 1–31
-    return day % 2 !== 0 ? 'AM' : 'PM';    // odd → AM, even → PM
+    const day = new Date(dateStr).getDate();
+    return day % 2 !== 0 ? 'AM' : 'PM';
   }
-  // Fallback: first char charCode parity
-  if (lead.id) return lead.id.charCodeAt(0) % 2 !== 0 ? 'AM' : 'PM';
   return 'AM';
+};
+
+// ── CANONICAL COMPOSITE SORT (v3.26) ────────────────────────────────────────
+// Phase priority first, then most-recently-due within the same phase.
+// Extracted from buildSessionQueue so all views use identical ordering.
+// Import this anywhere a sorted queue is needed instead of duplicating logic.
+export const masterQueueSort = (a, b) => {
+  const pDiff = getPhasePriority(b) - getPhasePriority(a);
+  if (pDiff !== 0) return pDiff;
+  const aTs = a.next_dial ? new Date(a.next_dial).getTime() : 0;
+  const bTs = b.next_dial ? new Date(b.next_dial).getTime() : 0;
+  return bTs - aTs; // more recent due date first within same phase
 };
 
 // Builds the session queue for a given session.
@@ -357,15 +374,8 @@ export const buildSessionQueue = (leads, session) => {
     return (l.slot || 'AM') === session.slot;
   });
 
-  // v3.14 — composite sort: phase priority first, then most-recently-due within phase
-  // Prevents ancient overdue leads from burying fresh contacts at top of queue
-  const sorted    = [...candidates].sort((a, b) => {
-    const pDiff = getPhasePriority(b) - getPhasePriority(a);
-    if (pDiff !== 0) return pDiff;
-    const aTs = a.next_dial ? new Date(a.next_dial).getTime() : 0;
-    const bTs = b.next_dial ? new Date(b.next_dial).getTime() : 0;
-    return bTs - aTs; // more recent due date first within same phase
-  });
+  // v3.26 — uses masterQueueSort (single source of truth for composite ordering)
+  const sorted    = [...candidates].sort(masterQueueSort);
   const callbacks = sorted.filter(l => CALLBACK_DISPS.has(l.disposition));
   const fresh     = sorted.filter(l => !CALLBACK_DISPS.has(l.disposition));
 
