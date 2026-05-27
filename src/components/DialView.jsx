@@ -352,6 +352,7 @@ export default function DialView({
           const primaryDisps = [
             { id: "no_answer",  icon: "📵", label: "No Answer" },
             { id: "vm_left",    icon: "📬", label: "VM Left"   },
+            { id: "direct_vm",  icon: "📵", label: "Direct VM", activeColor: "#ea580c" },
             { id: "callback",   icon: "📅", label: "Callback"  },
             { id: "follow_up",  icon: "🔄", label: "Follow Up" },
           ];
@@ -460,22 +461,31 @@ export default function DialView({
                     primaryDisps.map(d => {
                       const isCb = d.id === 'callback';
                       const isActive = isCb ? (cbPopoverOpen || open.disposition === d.id) : open.disposition === d.id;
+                      const activeBg = d.activeColor || 'var(--blue)';
+                      const activeBorder = d.activeColor || 'var(--blue)';
+                      // v3.35: show directVmCount badge on Direct VM button
+                      const vmCount = d.id === 'direct_vm' ? (open.directVmCount || 0) : 0;
                       return React.createElement("button", {
                         key: d.id,
                         onClick: () => isCb ? setCbPopoverOpen(v => !v) : fireDisp(d.id),
                         "aria-label": "Log: " + d.label,
                         "aria-pressed": isActive,
                         style: {
-                          minHeight: "52px", flex: "1 1 0", padding: "6px 4px",
-                          background: isActive ? "var(--blue)" : "var(--surface-2)",
+                          minHeight: "52px", flex: "1 1 0", padding: "6px 4px", position: "relative",
+                          background: isActive ? activeBg : "var(--surface-2)",
                           color: isActive ? "#fff" : "var(--t1)",
-                          border: "1.5px solid " + (isActive ? "var(--blue)" : "var(--border)"),
+                          border: "1.5px solid " + (isActive ? activeBorder : "var(--border)"),
                           borderRadius: "8px", fontSize: "11px", fontWeight: isActive ? "700" : "500",
                           cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center",
                           justifyContent: "center", gap: "4px", transition: "all 0.1s ease",
-                          boxShadow: isActive ? "0 0 0 2px rgba(37,99,235,0.2)" : "none",
+                          boxShadow: isActive ? "0 0 0 2px " + activeBg + "44" : "none",
                         }
                       },
+                        vmCount > 0 && React.createElement("span", {
+                          style: { position: "absolute", top: "4px", right: "5px", fontSize: "9px", fontWeight: "800",
+                            background: isActive ? "rgba(255,255,255,0.25)" : "#ea580c", color: "#fff",
+                            borderRadius: "8px", padding: "1px 5px", lineHeight: 1.4 }
+                        }, vmCount + "/5"),
                         React.createElement("span", { "aria-hidden": "true", style: { fontSize: "16px", lineHeight: 1 } }, d.icon),
                         React.createElement("span", { style: { fontSize: "11px", fontWeight: "600", lineHeight: 1.2, textAlign: "center" } }, d.label)
                       );

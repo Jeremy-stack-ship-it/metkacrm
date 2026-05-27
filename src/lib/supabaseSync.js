@@ -142,4 +142,39 @@ export const sbLoadSeqStats = async (limit = 14) => {
   return data || [];
 };
 
+// v3.34 — Keepalive flush for beforeunload handler.
+// The Supabase JS client does NOT support fetch keepalive, so we call the
+// REST API directly. keepalive:true guarantees delivery even after tab close.
+// Only call this from a beforeunload/visibilitychange handler with a small
+// payload (browser keepalive limit is ~64KB — fine for a few dozen dirty leads).
+export const sbBeaconFlush = (leads) => {
+  if (!leads || leads.length === 0) return;
+  const rows = leads.map(l => ({
+    id:           l.id,
+    data:         l,
+    updated_at:   new Date().toISOString(),
+    slot:         l.slot         || null,
+    bucket:       l.bucket       || null,
+    disposition:  l.disposition  || null,
+    next_dial:    l.next_dial    || null,
+    last_contact: l.last_contact || null,
+    _ts:          l._ts          || null,
+  }));
+  try {
+    fetch(`${SUPA_URL}/rest/v1/leads`, {
+      method:    'POST',
+      keepalive: true,
+      headers: {
+        'apikey':       SUPA_KEY,
+        'Authorization': `Bearer ${SUPA_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer':       'resolution=merge-duplicates',
+      },
+      body: JSON.stringify(rows),
+    });
+  } catch(e) {
+    console.warn('[Supabase] beacon flush error:', e.message);
+  }
+};
+
 export { supabase };

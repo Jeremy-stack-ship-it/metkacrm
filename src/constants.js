@@ -29,6 +29,7 @@ export const DISPS = [
   {id:"not_called",         label:"Not Called",       color:"#94A3B8"},
   {id:"no_answer",          label:"No Answer",         color:"#64748B"},
   {id:"vm_left",            label:"VM Left",           color:"#3B82F6"},
+  {id:"direct_vm",          label:"Direct VM",         color:"#F97316"},
   {id:"callback",           label:"Callback Set",      color:"#0EA5E9"},
   {id:"hung_up",            label:"Hung Up 📴",        color:"#EF4444"},
   {id:"not_interested",     label:"Not Interested",    color:"#94A3B8"},

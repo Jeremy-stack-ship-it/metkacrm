@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 const LS_SESSION = "metka-session-v1";
 
 export default function CallbackQueue({
-  leads,
+  leads, upd,
   setOpenId, setView,
   setSession, setSessionPaused,
   setNoteText, setDetailTab,
@@ -17,6 +17,23 @@ export default function CallbackQueue({
     const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
     if (isToday) return time;
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + " " + time;
+  };
+
+  const dismissCallback = (lead, e) => {
+    e.stopPropagation();
+    const dismissNote = {
+      ts: new Date().toISOString(),
+      type: 'note',
+      text: '📅 Callback dismissed — returned to normal dial track.',
+    };
+    // Clear callback + reset disposition so lead returns to their normal track.
+    // Appends a note so the audit trail shows the dismiss rather than leaving
+    // the lead looking like it still has an active callback.
+    upd(lead.id, {
+      nextCallback: null,
+      disposition: null,
+      notes: [dismissNote, ...(lead.notes || [])],
+    });
   };
 
   const allCBLeads = useMemo(() =>
@@ -60,7 +77,19 @@ export default function CallbackQueue({
       ),
       React.createElement("div", { style: { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px", flexShrink: 0 } },
         React.createElement("span", { style: { fontSize: "11px", fontWeight: "800", color: bucketColor(lead.bucket), background: bucketColor(lead.bucket) + "22", borderRadius: "4px", padding: "2px 7px" } }, lead.bucket || "?"),
-        lead.disposition && React.createElement("span", { style: { fontSize: "11px", color: "var(--t4)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" } }, lead.disposition.replace(/_/g, " "))
+        lead.disposition && React.createElement("span", { style: { fontSize: "11px", color: "var(--t4)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" } }, lead.disposition.replace(/_/g, " ")),
+        React.createElement("button", {
+          onClick: (e) => dismissCallback(lead, e),
+          title: "Dismiss callback — returns lead to their track",
+          style: {
+            marginTop: "4px", padding: "3px 9px", fontSize: "10px", fontWeight: "800",
+            border: "1px solid var(--border)", borderRadius: "5px", cursor: "pointer",
+            background: "var(--surface-2)", color: "var(--t3)",
+            letterSpacing: "0.04em", transition: "all 0.12s",
+          },
+          onMouseEnter: e => { e.currentTarget.style.background = "#EF4444"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.border = "1px solid #EF4444"; },
+          onMouseLeave: e => { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.color = "var(--t3)"; e.currentTarget.style.border = "1px solid var(--border)"; },
+        }, "✕ Dismiss")
       )
     );
 

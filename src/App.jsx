@@ -69,7 +69,7 @@ import { STATE_TZ, STAGES, DISPS, BC, BL, NC, FIELD_MAP_DEFS,
   daysInUW, isUWStuck, reqStats,
   fmt, fmtDate, currency, chip, inp } from './constants.js';
 // ── Library Modules (v3.6) ───────────────────────────────────────
-import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity, sbLoadSeqStats } from './lib/supabaseSync.js';
+import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity, sbLoadSeqStats, sbBeaconFlush } from './lib/supabaseSync.js';
 import { backfillLead, applyPhaseTransition, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule } from './lib/phaseEngine.js';
 import { DEFAULT_GOALS, CONTACT_DISPS, ACTIVITY_TYPES, dayKey, TODAY_KEY, lastNDays, weekKeys, monthKeys, aggregateActivity, fmtTime, goalTone, makeActivityManager } from './lib/activityLog.js';
 import { makeLeadManager } from './lib/leads.js';
@@ -464,12 +464,43 @@ const saveLeads = useCallback((next, opts = {}) => {
     // v3.27 — wire Supabase failure to supaStatus so ERR badge fires on per-lead saves too
     if (stamped) {
       setSupaStatus('syncing');
+      dirtyLeadIds.current.add(stamped.id);          // v3.34 — mark dirty
       sbUpsertLead(stamped)
-        .then(() => setSupaStatus('ok'))
-        .catch(() => setSupaStatus('error'));
+        .then(() => { dirtyLeadIds.current.delete(stamped.id); setSupaStatus('ok'); })
+        .catch(() => setSupaStatus('error'));          // stays dirty — beacon will flush
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setSupaStatus]);
+
+
+  // v3.34 — Dirty-lead tracker: keeps IDs of leads written locally but not yet
+  // confirmed by Supabase. On tab close / visibility-hidden, beacon-flush them
+  // so cross-browser/cross-device hydration always has the freshest data.
+  const dirtyLeadIds = React.useRef(new Set());
+  const dirtyLeadsRef = React.useRef([]);  // mirror of leads for beforeunload (avoids stale closure)
+
+  // Keep dirtyLeadsRef current so beforeunload can read latest state
+  React.useEffect(() => { dirtyLeadsRef.current = leads; }, [leads]);
+
+  // beforeunload + visibilitychange: flush dirty leads with keepalive fetch
+  React.useEffect(() => {
+    const flush = () => {
+      const ids = dirtyLeadIds.current;
+      if (ids.size === 0) return;
+      const toFlush = dirtyLeadsRef.current.filter(l => ids.has(l.id));
+      if (toFlush.length > 0) {
+        sbBeaconFlush(toFlush);
+        console.log(`[v3.34] Beacon flush: ${toFlush.length} dirty leads pushed on close`);
+      }
+    };
+    const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
+    window.addEventListener('beforeunload', flush);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('beforeunload', flush);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
 
   const saveScripts=next=>{setScripts(next);try{localStorage.setItem(LS_SCRIPTS,JSON.stringify(next));}catch{}};
   const saveTemplates=next=>{setTemplates(next);try{localStorage.setItem("metka-templates-v1",JSON.stringify(next));}catch{}};
@@ -681,6 +712,7 @@ const saveLeads = useCallback((next, opts = {}) => {
     // Save the disposition — full stage map wired to every disposition
     const DISP_STAGE_MAP = {
       vm_left:            "contacted",
+      direct_vm:          "contacted",
       callback:           "contacted",
       hung_up:            "contacted",
       no_show:            "contacted",
@@ -710,7 +742,22 @@ const saveLeads = useCallback((next, opts = {}) => {
       ? { notes: [{ ts: new Date().toISOString(), type: "call", text: noteText }, ...(open.notes || [])] }
       : {};
 
-    upd(open.id, {disposition: dispId, lastContact: new Date().toLocaleDateString('en-CA'), ...stagePatch, ...phasePatch, ...cbPatch, ...notePatch});
+    // v3.35 — Direct VM counter: auto-retire lead after 5 direct-to-VM hits
+    let directVmPatch = {};
+    if (dispId === 'direct_vm') {
+      const prevCount = open.directVmCount || 0;
+      const newCount = prevCount + 1;
+      if (newCount >= 5) {
+        // Auto-advance bucket: A→B, B→C, C stays C
+        const bucketMap = { A: 'B', B: 'C', C: 'C' };
+        const newBucket = bucketMap[open.bucket] || open.bucket;
+        directVmPatch = { directVmCount: newCount, bucket: newBucket };
+      } else {
+        directVmPatch = { directVmCount: newCount };
+      }
+    }
+
+    upd(open.id, {disposition: dispId, lastContact: new Date().toLocaleDateString('en-CA'), ...stagePatch, ...phasePatch, ...cbPatch, ...notePatch, ...directVmPatch});
 
     // v3.4 — advance to next lead (nextId captured pre-upd, no index-jump risk)
     if (inDialer) {
@@ -750,7 +797,7 @@ const queue = useMemo(() => {
 
   // Dispositions that mean "done for now — schedule out, leave queue"
   // Only these trigger hiding/sinking. Dialing alone (lastContact stamp) does NOT.
-  const SINK_DISPS = ['no_answer','vm_left','follow_up_needed','chargeback','hung_up'];
+  const SINK_DISPS = ['no_answer','vm_left','direct_vm','follow_up_needed','chargeback','hung_up'];
   const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
   const dispositionedToday = (l) =>
     SINK_DISPS.includes(l.disposition) &&

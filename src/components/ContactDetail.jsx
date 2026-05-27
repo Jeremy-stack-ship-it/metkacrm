@@ -187,6 +187,27 @@ export default function ContactDetail({
 }) {
   if (!open) return null;
 
+  // v3.35 — local state for structured meeting log
+  const [meetingOutcome, setMeetingOutcome] = React.useState('Held');
+  const [meetingTs, setMeetingTs]           = React.useState('');
+
+  // Save a structured appointment record
+  const saveMeeting = () => {
+    if (!noteText.trim() && meetingOutcome === 'Held') return;
+    const ts = meetingTs ? new Date(meetingTs).toISOString() : new Date().toISOString();
+    const outcomeEmoji = meetingOutcome === 'Held' ? '✅' : meetingOutcome === 'No Show' ? '❌' : '🔄';
+    const richNote = {
+      ts,
+      type: 'appointment',
+      outcome: meetingOutcome,
+      text: outcomeEmoji + ' ' + meetingOutcome + (noteText.trim() ? ' — ' + noteText.trim() : ''),
+    };
+    upd(open.id, { notes: [richNote, ...(open.notes || [])] });
+    setNoteText('');
+    setMeetingTs('');
+    setMeetingOutcome('Held');
+  };
+
   return React.createElement("div", { style:{ flex:1, display:"flex", flexDirection:"column", background:"var(--surface-2)", overflow:"hidden" } },
     // ── Header bar
     React.createElement("div", { style:{ padding:"14px 24px", background:"var(--surface)", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", gap:"12px", flexShrink:0 } },
@@ -317,9 +338,29 @@ export default function ContactDetail({
               React.createElement("button", { key:t, onClick:()=>setNoteType(t), style:{...chip(noteType===t, NC[t]),fontSize:"12px",padding:"6px 16px",margin:0} }, l)
             )
           ),
+          // v3.35 — structured meeting fields when appointment type selected
+          noteType === "appointment" && React.createElement("div", { style:{ marginBottom:"10px", display:"flex", flexDirection:"column", gap:"8px" } },
+            React.createElement("div", { style:{ display:"flex", gap:"6px", alignItems:"center" } },
+              React.createElement("span", { style:{ fontSize:"11px", fontWeight:"800", color:"var(--t3)", letterSpacing:"0.6px", minWidth:"60px" } }, "OUTCOME"),
+              ["Held","No Show","Rescheduled"].map(o =>
+                React.createElement("button", {
+                  key:o, onClick:()=>setMeetingOutcome(o),
+                  style:{ padding:"5px 12px", borderRadius:"20px", fontSize:"11px", fontWeight:"700", cursor:"pointer", border:"1.5px solid " + (meetingOutcome===o ? "var(--blue)" : "var(--border)"), background: meetingOutcome===o ? "var(--blue)" : "transparent", color: meetingOutcome===o ? "#fff" : "var(--t2)", transition:"all 0.1s" }
+                }, o)
+              )
+            ),
+            React.createElement("div", { style:{ display:"flex", gap:"6px", alignItems:"center" } },
+              React.createElement("span", { style:{ fontSize:"11px", fontWeight:"800", color:"var(--t3)", letterSpacing:"0.6px", minWidth:"60px" } }, "DATE/TIME"),
+              React.createElement("input", {
+                type:"datetime-local", value:meetingTs, onChange:e=>setMeetingTs(e.target.value),
+                style:{ fontSize:"11px", padding:"6px 10px", borderRadius:"8px", border:"1px solid var(--border)", background:"var(--surface-2)", color:"var(--t2)", fontFamily:"inherit", flex:1 }
+              }),
+              React.createElement("span", { style:{ fontSize:"10px", color:"var(--t4)", fontWeight:"500", whiteSpace:"nowrap" } }, "← blank = now")
+            )
+          ),
           React.createElement("div", { style:{ display:"flex", gap:"10px", marginBottom:"16px" } },
-            React.createElement("textarea", { value:noteText, onChange:e=>setNoteText(e.target.value), placeholder: noteType==="call"?"Result, what they said, next step...":noteType==="appointment"?"Audit details, products discussed, Five R's...":"General note...", style:{ flex:1, background:"var(--surface-2)", border:"1px solid var(--border)", borderRadius:"10px", color:"var(--t1)", padding:"12px 14px", fontSize:"13px", fontFamily:"'Inter',sans-serif", resize:"vertical", minHeight:"80px", lineHeight:"1.6" } }),
-            React.createElement("button", { onClick:()=>addNote(open.id), style:{ padding:"0 20px", background:"var(--blue)", color:"#fff", border:"none", borderRadius:"10px", fontSize:"24px", cursor:"pointer", alignSelf:"stretch" } }, "→")
+            React.createElement("textarea", { value:noteText, onChange:e=>setNoteText(e.target.value), placeholder: noteType==="call"?"Result, what they said, next step...":noteType==="appointment"?"Products discussed, next step, Five R's...":"General note...", style:{ flex:1, background:"var(--surface-2)", border:"1px solid var(--border)", borderRadius:"10px", color:"var(--t1)", padding:"12px 14px", fontSize:"13px", fontFamily:"'Inter',sans-serif", resize:"vertical", minHeight:"80px", lineHeight:"1.6" } }),
+            React.createElement("button", { onClick:()=>{ noteType==="appointment" ? saveMeeting() : addNote(open.id); }, style:{ padding:"0 20px", background:"var(--blue)", color:"#fff", border:"none", borderRadius:"10px", fontSize:"24px", cursor:"pointer", alignSelf:"stretch" } }, "→")
           ),
           (open.notes||[]).length === 0 && React.createElement("div", { style:{ fontSize:"13px", color:"var(--t4)", padding:"24px", textAlign:"center", background:"var(--surface-2)", borderRadius:"10px", fontWeight:"500" } }, "No activity yet"),
           (open.notes||[]).map((n, i) =>
@@ -331,6 +372,7 @@ export default function ContactDetail({
               React.createElement("div", { style:{ flex:1, paddingBottom:"8px" } },
                 React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"6px" } },
                   React.createElement("span", { style:{ fontSize: "11px", fontWeight:"800", color:NC[n.type]||"var(--t3)", textTransform:"uppercase", letterSpacing:"0.8px" } }, n.type||"note"),
+                  n.outcome && React.createElement("span", { style:{ fontSize:"10px", fontWeight:"700", padding:"2px 7px", borderRadius:"10px", background: n.outcome==="Held" ? "rgba(16,185,129,0.12)" : n.outcome==="No Show" ? "rgba(239,68,68,0.12)" : "rgba(99,102,241,0.12)", color: n.outcome==="Held" ? "var(--green)" : n.outcome==="No Show" ? "var(--red)" : "var(--indigo, #6366f1)" } }, n.outcome),
                   React.createElement("span", { style:{ fontSize:"11px", color:"var(--t4)", fontWeight:"500" } }, n.ts?new Date(n.ts).toLocaleString():""),
                   React.createElement("button", { onClick:()=>{ const next=(open.notes||[]).filter((_,ni)=>ni!==i); upd(open.id,{notes:next}); }, title:"Remove", style:{ marginLeft:"auto", background:"none", border:"none", color:"var(--t4)", cursor:"pointer", fontSize:"14px", padding:"0 2px", lineHeight:1 } }, "−")
                 ),
@@ -380,7 +422,7 @@ export default function ContactDetail({
           React.createElement("div", { style:{ fontSize: "11px", fontWeight:"800", color:"var(--t3)", letterSpacing:"1.5px", marginBottom:"12px" } }, "SET CALLBACK"),
           open.nextCallback && React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"12px", padding:"10px 16px", background:"var(--sky-dim)", borderRadius:"10px", border:"1px solid #BAE6FD" } },
             React.createElement("span", { style:{ fontSize:"13px", color:"var(--sky)", fontWeight:"700" } }, "\ud83d\udcc5 "+fmt(open.nextCallback)),
-            React.createElement("button", { onClick:()=>upd(open.id,{nextCallback:null}), style:{ marginLeft:"auto", background:"none", border:"none", color:"var(--t3)", cursor:"pointer", fontSize:"20px", lineHeight:1 } }, "\u00d7")
+            React.createElement("button", { onClick:()=>upd(open.id,{ nextCallback:null, disposition: open.disposition==="callback" ? null : open.disposition, notes:[{ts:new Date().toISOString(),type:"note",text:"📅 Callback dismissed — returned to normal dial track."}, ...(open.notes||[])] }), style:{ marginLeft:"auto", background:"none", border:"none", color:"var(--t3)", cursor:"pointer", fontSize:"20px", lineHeight:1 } }, "\u00d7")
           ),
           React.createElement("div", { style:{ display:"flex", gap:"10px", flexWrap:"wrap" } },
             React.createElement("input", { type:"date", value:cbDate, onChange:e=>setCbDate(e.target.value), style:{...inp(),flex:1,minWidth:"140px"} }),
