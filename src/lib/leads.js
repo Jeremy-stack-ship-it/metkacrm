@@ -3,9 +3,16 @@
 // All state-mutating operations handled through component callbacks for isolation.
 
 import { sbUpsertLead, sbAppendActivity, sbDeleteLead } from './supabaseSync.js';
-import { dayKey, CONTACT_DISPS, computeActivityQueue, makeActivityEvent } from './activityLog.js';
+import { dayKey, CONTACT_DISPS } from './activityLog.js';
 import { backfillLead, assignSlot } from './phaseEngine.js';
 import { seqPatchForDisposition, initSequence } from './sequenceEngine.js';
+
+// ── CONTACT EVENT DEDUP (v3.36) ─────────────────────────────────────────────────────
+// Prevents duplicate contact events (and future duplicate SMS triggers) from double-clicks
+// or React batching. 10-second window is longer than any accidental double-fire but shorter
+// than any legitimate second answered call (dial → ring → answer → disposition ≈ 2+ min).
+const CONTACT_DEDUP_MS = 10_000;
+const _contactDedup = new Map(); // leadId → last contact event timestamp (ms)
 
 // ── LEAD MANAGEMENT FACTORY ───────────────────────────────────────────────────────
 // Creates bound lead mutation functions. State mutation is delegated to parent component.
@@ -74,11 +81,17 @@ export const makeLeadManager = (
 
       if (cur && patch.disposition) {
         const nowIsContact = CONTACT_DISPS.includes(patch.disposition);
-        // v3.16 — removed !== cur.disposition guard entirely. A contact fires every time a live-answer
-        // disposition is explicitly set (hung_up, callback, not_interested, etc.) regardless of whether
-        // the lead was already at that disposition from a prior call. Each answered dial = 1 contact.
+        // v3.16 — fires on every live-answer disposition (each answered dial = 1 contact).
+        // v3.36 — time-window dedup: suppress events fired within CONTACT_DEDUP_MS of the last
+        //         contact event for this lead. Prevents double-click / React-batch duplicates
+        //         and ensures future SMS triggers fire at most once per answered call.
         if (nowIsContact) {
-          queued.push({ type: "contact", leadId: id });
+          const _now = Date.now();
+          const _last = _contactDedup.get(id) || 0;
+          if (_now - _last > CONTACT_DEDUP_MS) {
+            _contactDedup.set(id, _now);
+            queued.push({ type: "contact", leadId: id });
+          }
         }
         // v3.18 — auto-pause sequence on terminal/booked dispositions
         const seqPatch = seqPatchForDisposition(patch.disposition);
@@ -117,14 +130,15 @@ export const makeLeadManager = (
   const addNote = (id) => {
     if (!noteText.trim()) return;
     const lead = leads.find(l => l.id === id);
-    upd(id, {
+    // v3.36 — functional update: reads freshest notes from React state, not stale leads closure.
+    upd(id, (freshestLead) => ({
       notes: [{
         ts: new Date().toISOString(),
         type: noteType,
         text: noteText.trim()
-      }, ...(lead.notes || [])],
+      }, ...(freshestLead.notes || [])],
       lastContact: new Date().toISOString().split("T")[0]
-    });
+    }));
     // v2.3 — appointment notes also count as appointment activity
     if (noteType === "appointment") {
       const ts = new Date().toISOString();

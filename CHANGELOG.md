@@ -2,7 +2,23 @@
 
 All notable changes to this project are documented here. Format: [Date] v[Version] — [Theme]
 
+v3.21 — Sequence Engine Reporting: sequence_runs Supabase table, process-sequence edge function writes cron run summary on each execution, sbLoadSeqStats added to supabaseSync.js, seqStats state wired through App.jsx.
+v3.22 — Nav cleanup + SEQ consolidation: TODAY removed from nav, ACT→ACC, DATA→LEADS, RUNS removed from nav. SequenceRunsTab embedded as 🤖 Engine sub-tab inside SequenceTab. 📞 Due Today default sub-tab. TODAY'S SEQUENCE DIALS panel removed from Dashboard.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+— App.jsx Refactor Sprint (Session — May 23, 2026)
+Goal: Reduce App.jsx from 1,345 lines toward a maintainable ceiling by extracting stateful logic into custom hooks. Zero functional changes — all behavior identical.
+Commits shipped:
+5dd65cf — Extract useSettingsConfig (src/lib/useSettingsConfig.js)
+Centralizes all Settings panel state: Financial, Gmail, SeqEngine, Twilio, Callback Presets, Calendly. Uses lazy useState initializers so localStorage is read exactly once on mount — eliminates a separate load useEffect. Removes ~46 lines from App.jsx.
+3a4bcb7 — Extract useSupabaseHydration (src/lib/useSupabaseHydration.js)
+Pulls the entire Supabase cloud-sync block out of the startup useEffect: tombstone prune (60-day TTL), per-lead _ts merge, remote-empty seed, activity repair. Removes ~80 lines from App.jsx.
+3bb4a34 — Hoist inline lambdas as named useCallbacks
+handleTodayDispose and startDialSession were anonymous arrow functions passed as JSX props — React recreated them every render. Hoisted both as stable useCallback refs. DashboardTab and TodaysBlock now receive named callbacks. Deferred AppRouter extraction until React Context is available (60+ props make a plain lift pointless).
+626ab18 — Extract useImportHandlers + remove dead state (src/lib/useImportHandlers.js)
+Owns all CSV import/field-mapping/backup state and handlers (handleFile, confirmFieldMapping, confirmImport, restoreBackup). savedMapping lazy-loaded inside the hook via useState(loadSavedMapping). Dead state removed: healthOpen, commsCache, commsLoading (declared, never used). Removes ~77 lines from App.jsx.
+Net result: App.jsx 1,345 → 1,143 lines (−202 lines, −15%). Build clean at 158 modules.
+Pending: Tailwind install (dedicated session), mobile layout pass, React Context (prerequisite for AppRouter extraction).
 
 VERSION: v3.18 | DATE: May 22, 2026 | SESSION: Sequence Engine UI + Infrastructure
 

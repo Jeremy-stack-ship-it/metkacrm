@@ -754,7 +754,19 @@ const saveLeads = useCallback((next, opts = {}) => {
       }
     }
 
-    upd(open.id, {disposition: dispId, lastContact: new Date().toLocaleDateString('en-CA'), ...stagePatch, ...phasePatch, ...cbPatch, ...notePatch, ...directVmPatch});
+    // v3.36 — functional update: reads freshest notes from React state, not stale open.notes snapshot.
+    // Prevents disposition from wiping notes saved since last render (the stale-closure data-loss bug).
+    upd(open.id, (freshestLead) => ({
+      disposition: dispId,
+      lastContact: new Date().toLocaleDateString('en-CA'),
+      ...stagePatch,
+      ...phasePatch,
+      ...cbPatch,
+      ...directVmPatch,
+      ...(noteText
+        ? { notes: [{ ts: new Date().toISOString(), type: "call", text: noteText }, ...(freshestLead.notes || [])] }
+        : {})
+    }));
 
     // v3.4 — advance to next lead (nextId captured pre-upd, no index-jump risk)
     if (inDialer) {
