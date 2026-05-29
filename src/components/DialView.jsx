@@ -224,6 +224,7 @@ export default function DialView({
                     React.createElement("input", {
                       type: "datetime-local",
                       value: manualApptTs,
+                      step: 900,
                       onChange: e => setManualApptTs(e.target.value),
                       style: { width: "100%", fontSize: "12px", padding: "8px 10px", borderRadius: "7px", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--t1)", fontFamily: "inherit", boxSizing: "border-box", marginBottom: "8px" }
                     }),
@@ -351,10 +352,10 @@ export default function DialView({
           // Primary (most-used daily) — large, prominent
           const primaryDisps = [
             { id: "no_answer",  icon: "📵", label: "No Answer" },
-            { id: "vm_left",    icon: "📬", label: "VM Left"   },
             { id: "direct_vm",  icon: "📵", label: "Direct VM", activeColor: "#ea580c" },
             { id: "callback",   icon: "📅", label: "Callback"  },
             { id: "follow_up",  icon: "🔄", label: "Follow Up" },
+            { id: "vm_left",    icon: "📬", label: "VM Left"   },
           ];
           // Secondary (less frequent) — smaller, muted
           const secondaryDisps = [
@@ -436,6 +437,7 @@ export default function DialView({
                 React.createElement("input", {
                   type: "datetime-local",
                   value: cbCustomTs,
+                  step: 900,
                   onChange: e => setCbCustomTs(e.target.value),
                   style: { flex: 1, fontSize: "11px", padding: "7px 8px", borderRadius: "7px", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--t2)", fontFamily: "inherit" }
                 }),

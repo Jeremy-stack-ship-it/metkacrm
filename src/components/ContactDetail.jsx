@@ -202,7 +202,8 @@ export default function ContactDetail({
       outcome: meetingOutcome,
       text: outcomeEmoji + ' ' + meetingOutcome + (noteText.trim() ? ' — ' + noteText.trim() : ''),
     };
-    upd(open.id, { notes: [richNote, ...(open.notes || [])] });
+    // v3.37 — functional updater: reads fresh notes from React state, not stale open prop
+    upd(open.id, (fresh) => ({ notes: [richNote, ...(fresh.notes || [])] }));
     setNoteText('');
     setMeetingTs('');
     setMeetingOutcome('Held');

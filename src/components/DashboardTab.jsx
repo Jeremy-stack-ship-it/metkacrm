@@ -312,7 +312,7 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
               display:'flex', alignItems:'center', gap:'1rem'
             }}>
               <span style={{fontSize:'2rem',fontWeight:900,color:missionColor,fontFamily:"'Syne',sans-serif",lineHeight:1,flexShrink:0}}>
-                {weekSubmitted}<span style={{fontSize:'1rem',color:'rgba(255,255,255,0.25)',fontWeight:400}}>/{APPS_GOAL_WEEK}</span>
+                {weekSubmitted}<span style={{fontSize:'1rem',color:'#64748b',fontWeight:400}}>/{APPS_GOAL_WEEK}</span>
               </span>
               <span style={{fontSize:'0.78rem',fontWeight:800,color:missionColor,flexShrink:0,letterSpacing:'0.04em'}}>
                 {weekSubmitted >= APPS_GOAL_WEEK ? '🎯 MISSION COMPLETE' : `APPS THIS WEEK — ${APPS_GOAL_WEEK - weekSubmitted} TO GO`}
@@ -531,11 +531,11 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
               <div style={{display:'flex',gap:'0.6rem',marginTop:'0.6rem'}}>
                 <div style={{
                   flex:1, background:'rgba(255,255,255,0.02)', borderRadius:8, padding:'0.55rem 0.75rem',
-                  border:`1px solid ${weekSubmitted>=APPS_GOAL_WEEK?'rgba(16,185,129,0.25)':'rgba(255,255,255,0.05)'}`
+                  border:`1px solid ${weekSubmitted>=APPS_GOAL_WEEK?'rgba(16,185,129,0.25)':'rgba(255,255,255,0.18)'}`
                 }}>
                   <div style={{fontSize:'0.62rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.06em',fontWeight:700,marginBottom:'3px'}}>Apps Goal</div>
                   <div style={{fontSize:'1.1rem',fontWeight:800,color:weekSubmitted>=APPS_GOAL_WEEK?'var(--green)':'var(--amber)'}}>
-                    {weekSubmitted} <span style={{color:'rgba(255,255,255,0.2)',fontWeight:400,fontSize:'0.85rem'}}>/ {APPS_GOAL_WEEK}</span>
+                    {weekSubmitted} <span style={{color:'#64748b',fontWeight:400,fontSize:'0.85rem'}}>/ {APPS_GOAL_WEEK}</span>
                   </div>
                 </div>
                 <div style={{

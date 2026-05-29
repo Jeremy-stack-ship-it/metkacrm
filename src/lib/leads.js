@@ -161,14 +161,15 @@ export const makeLeadManager = (
   const logDial = (id) => {
     const lead = leads.find(l => l.id === id);
     if (!lead) return;
-    upd(id, {
+    // v3.37 — functional updater: reads fresh notes from React state, not stale closure
+    upd(id, (fresh) => ({
       notes: [{
         ts: new Date().toISOString(),
         type: "call",
         text: "Outbound Dial (Click-to-Call)"
-      }, ...(lead.notes || [])],
+      }, ...(fresh.notes || [])],
       lastContact: new Date().toISOString().split("T")[0]
-    });
+    }));
     // v2.3 — log dial activity
     const ts = new Date().toISOString();
     const ev = {
