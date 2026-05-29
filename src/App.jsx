@@ -620,22 +620,19 @@ const saveLeads = useCallback((next, opts = {}) => {
     const list=DEFAULT_REQS.map((label,i)=>({id:`r${Date.now()}_${i}`,label,done:false}));
     upd(id,{pendingReqs:list});
   };
+  // v3.36 — functional updaters eliminate stale-closure data loss on pendingReqs.
   const toggleUWReq=(id,reqId)=>{
-    const lead=leads.find(l=>l.id===id);
-    if(!lead) return;
-    const list=(lead.pendingReqs||[]).map(r=>r.id===reqId?{...r,done:!r.done,completedAt:!r.done?new Date().toISOString():null}:r);
-    upd(id,{pendingReqs:list});
+    upd(id, cur => {
+      const list=(cur.pendingReqs||[]).map(r=>r.id===reqId?{...r,done:!r.done,completedAt:!r.done?new Date().toISOString():null}:r);
+      return {pendingReqs:list};
+    });
   };
   const removeUWReq=(id,reqId)=>{
-    const lead=leads.find(l=>l.id===id);
-    if(!lead) return;
-    upd(id,{pendingReqs:(lead.pendingReqs||[]).filter(r=>r.id!==reqId)});
+    upd(id, cur => ({pendingReqs:(cur.pendingReqs||[]).filter(r=>r.id!==reqId)}));
   };
   const addUWReq=(id,label)=>{
     if(!label || !label.trim()) return;
-    const lead=leads.find(l=>l.id===id);
-    if(!lead) return;
-    upd(id,{pendingReqs:[...(lead.pendingReqs||[]),{id:`r${Date.now()}`,label:label.trim(),done:false}]});
+    upd(id, cur => ({pendingReqs:[...(cur.pendingReqs||[]),{id:`r${Date.now()}`,label:label.trim(),done:false}]}));
     setNewReqText("");
   };
 // Rebuild queue order from live priority scores.

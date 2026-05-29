@@ -47,12 +47,13 @@ export const makeLeadManager = (
     let sfEvents = null;
 
     setLeads(prev => {
-      // patch reset inside updater — prevents StrictMode double-run mutation carryover.
-      const patch = { ...p };
       // queued is fresh per invocation — no external array that accumulates across StrictMode runs.
       const queued = [];
 
       const cur = prev.find(l => l.id === id);
+      // patch reset inside updater — prevents StrictMode double-run mutation carryover.
+      // v3.36 — functional updater support: callers may pass (curLead) => patch to avoid stale closures.
+      const patch = typeof p === 'function' ? { ...(p(cur) || {}) } : { ...p };
 
       if (cur && patch.stage && patch.stage !== cur.stage) {
         const nowIso = new Date().toISOString();
