@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { BC, BL, NC, fmt, inp, isUWStuck, daysInUW } from '../constants.js';
 import { usePowerDialer } from '../lib/usePowerDialer.js';
+import { getNextTouchDate } from '../lib/sequenceEngine.js';
+import { getTrackLength } from '../lib/sequenceTemplates.js';
+import { PHASE_DEFS } from '../lib/phaseEngine.js';
 
 
 // ── Script token renderer — module scope (no per-render redefinition) ──────
@@ -46,6 +49,15 @@ export default function DialView({
   const [dialQueueFilter,   setDialQueueFilter]   = useState('today');
   // v3.23 — manual slot selection: null = follow time-based active session
   const [selectedSlot,      setSelectedSlot]      = useState(null);
+  // v3.38 — expandable right panel: collapses queue to give scripts/lead card full width
+  const [panelExpanded, setPanelExpanded] = useState(() => {
+    try { return localStorage.getItem('metka-panel-expanded') === 'true'; } catch { return false; }
+  });
+  const togglePanel = () => {
+    const next = !panelExpanded;
+    setPanelExpanded(next);
+    try { localStorage.setItem('metka-panel-expanded', String(next)); } catch {}
+  };
 
   const {
     pdQueue,
@@ -78,8 +90,9 @@ export default function DialView({
   const [manualApptTs,      setManualApptTs]      = useState('');
 
     return React.createElement("div", { style: { display: "flex", flex: 1, height: "100%", minWidth: 0, overflow: "hidden" } },
-    // ── LEFT: Queue panel (extracted) ──
-    React.createElement(DialQueuePanel, {
+    // ── LEFT: Queue panel (collapsible via panelExpanded) ──
+    React.createElement("div", { style: { flexShrink:0, overflow:"hidden", width: panelExpanded ? 0 : "auto", transition:"width 0.25s ease" } },
+      React.createElement(DialQueuePanel, {
       // call control
       callPanelExpanded, setCallPanelExpanded,
       onHold, setOnHold,
@@ -103,7 +116,8 @@ export default function DialView({
       refreshQueueOrder, setView,
       dialSortMode, setDialSortMode,
       openId, setOpenId, setNoteText, setDialRightTab,
-    }),
+      }),
+    ),
     // ── CENTER: Lead detail + pinned disp bar ──
     React.createElement("div", { style: { flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--surface)" } },
       open ? React.createElement(React.Fragment, null,
@@ -147,6 +161,100 @@ export default function DialView({
             open.assignDate && React.createElement("span", { title: "Assign date — lead received", style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--surface-2)", color: "var(--t3)", fontWeight: "600", border: "1px solid var(--border)" } }, "📋 " + open.assignDate),
             isUWStuck(open) && React.createElement("span", { className: "pulse-red", style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--red-dim)", color: "var(--red)", fontWeight: "800", border: "1px solid #FCA5A5" } }, "⚠ UW " + daysInUW(open) + "d")
           )
+        ),
+
+        // ── Phase / Sequence indicator strip ─────────────────────────────
+        React.createElement("div", { style: { display:"flex", gap:"6px", padding:"6px 18px", background:"var(--surface-2)", borderBottom:"1px solid var(--border)", flexShrink:0, flexWrap:"wrap", alignItems:"center" } },
+
+          // Pill 1 — Phase + next dial
+          (function() {
+            var phaseDef = PHASE_DEFS[open.phase] || null;
+            var phaseColor = phaseDef ? phaseDef.color : "var(--t4)";
+            var nd = open.next_dial ? new Date(open.next_dial) : null;
+            var today0 = new Date(); today0.setHours(0,0,0,0);
+            var dialLabel;
+            if (!nd) {
+              dialLabel = "No schedule";
+            } else {
+              var ndDay = new Date(nd); ndDay.setHours(0,0,0,0);
+              if (ndDay <= today0) {
+                dialLabel = "Due today";
+              } else {
+                dialLabel = "Next dial " + nd.toLocaleDateString("en-US", { month:"short", day:"numeric" });
+              }
+            }
+            var isDue = nd && ndDay <= today0;
+            return React.createElement("span", {
+              title: "Phase: " + (open.phase || "—"),
+              style: { display:"inline-flex", alignItems:"center", gap:"4px", fontSize:"11px", fontWeight:"700",
+                padding:"3px 9px", borderRadius:"20px",
+                background: phaseColor + "18", color: phaseColor, border:"1px solid " + phaseColor + "44" }
+            },
+              open.phase || "—",
+              React.createElement("span", { style: { fontWeight:"500", color: isDue ? "var(--green)" : "inherit" } },
+                " · " + dialLabel
+              )
+            );
+          })(),
+
+          // Pill 2 — Sequence step + next touch
+          (function() {
+            if (!open.seqTrack) {
+              return React.createElement("span", {
+                style: { fontSize:"11px", fontWeight:"500", padding:"3px 9px", borderRadius:"20px",
+                  background:"var(--surface)", color:"var(--t4)", border:"1px solid var(--border)" }
+              }, "Not enrolled");
+            }
+            var total = getTrackLength(open.seqTrack);
+            var step  = open.seqStep != null ? open.seqStep : 0;
+            var label;
+            if (open.seqPaused) {
+              var exitMap = { booked:"📅 Booked", sold:"✅ Sold", dnc:"⛔ DNC",
+                not_interested:"🚫 Not Interested", exhausted:"📬 Exhausted", manual:"⏸ Paused" };
+              label = exitMap[open.seqExitReason] || "⏸ Paused";
+            } else {
+              var nt = getNextTouchDate(open);
+              var touchLabel;
+              if (!nt) {
+                touchLabel = "Dial reminder";
+              } else {
+                var today2 = new Date(); today2.setHours(0,0,0,0);
+                var ntDay  = new Date(nt);  ntDay.setHours(0,0,0,0);
+                touchLabel = ntDay <= today2
+                  ? "Email today"
+                  : "Email " + nt.toLocaleDateString("en-US", { month:"short", day:"numeric" });
+              }
+              label = "Step " + step + "/" + total + " · " + touchLabel;
+            }
+            return React.createElement("span", {
+              style: { fontSize:"11px", fontWeight:"600", padding:"3px 9px", borderRadius:"20px",
+                background:"var(--surface)", color:"var(--t2)", border:"1px solid var(--border)" }
+            }, label);
+          })(),
+
+          // Pill 3 — Status badge
+          (function() {
+            if (!open.seqTrack) return null;
+            var badge, bg, col;
+            if (open.seqExitReason === "exhausted") {
+              badge = "📬 Exhausted"; bg = "var(--surface)"; col = "var(--t4)";
+            } else if (open.seqPaused) {
+              badge = "⏸ Paused"; bg = "#FEF3C7"; col = "#D97706";
+            } else {
+              var nt2   = getNextTouchDate(open);
+              var tdy   = new Date(); tdy.setHours(0,0,0,0);
+              var nt2d  = nt2 ? (new Date(nt2).setHours(0,0,0,0)) : null;
+              if (nt2d !== null && nt2d <= tdy.getTime()) {
+                badge = "🔥 Email today"; bg = "#FEF2F2"; col = "#DC2626";
+              } else {
+                badge = "⚡ Active"; bg = "#ECFDF5"; col = "#065F46";
+              }
+            }
+            return React.createElement("span", {
+              style: { fontSize:"11px", fontWeight:"700", padding:"3px 9px", borderRadius:"20px",
+                background: bg, color: col, border:"1px solid " + col + "33" }
+            }, badge);
+          })()
         ),
 
         // Scrollable body
@@ -534,6 +642,7 @@ export default function DialView({
 
     // ── RIGHT: Tab rail (extracted) ──
     React.createElement(DialRightPanel, {
+      panelExpanded, togglePanel,
       dialRightTab, setDialRightTab,
       open, upd,
       noteText, setNoteText,
