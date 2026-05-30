@@ -1,5 +1,6 @@
 import React from 'react';
 import { isDueToday } from '../lib/phaseEngine';
+import { dayKey } from '../lib/activityLog.js';
 import { priority } from '../lib/leadScoring';
 import { getSequenceStatus, getSequenceBadgeColor } from '../lib/sequenceEngine.js';
 
@@ -11,14 +12,16 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
   const pad = n => String(n).padStart(2, '0');
   const TODAY_KEY = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
 
+  // Symmetry week: Saturday → Friday (day 6 = Sat is day 0 of production week)
   function getWeekKeys() {
     const keys = [];
-    const day = now.getDay();
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+    const day = now.getDay(); // 0=Sun … 6=Sat
+    const daysFromSat = (day - 6 + 7) % 7; // 0 on Sat, 1 on Sun, …, 6 on Fri
+    const saturday = new Date(now);
+    saturday.setDate(now.getDate() - daysFromSat);
     for (let i = 0; i < 7; i++) {
-      const dd = new Date(monday);
-      dd.setDate(monday.getDate() + i);
+      const dd = new Date(saturday);
+      dd.setDate(saturday.getDate() + i);
       keys.push(`${dd.getFullYear()}-${pad(dd.getMonth()+1)}-${pad(dd.getDate())}`);
     }
     return keys;
@@ -27,11 +30,12 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
   function getLastWeekKeys() {
     const keys = [];
     const day = now.getDay();
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) - 7);
+    const daysFromSat = (day - 6 + 7) % 7;
+    const saturday = new Date(now);
+    saturday.setDate(now.getDate() - daysFromSat - 7); // prior Sat
     for (let i = 0; i < 7; i++) {
-      const dd = new Date(monday);
-      dd.setDate(monday.getDate() + i);
+      const dd = new Date(saturday);
+      dd.setDate(saturday.getDate() + i);
       keys.push(`${dd.getFullYear()}-${pad(dd.getMonth()+1)}-${pad(dd.getDate())}`);
     }
     return keys;
@@ -40,10 +44,15 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
   const WEEK_KEYS      = getWeekKeys();
   const LAST_WEEK_KEYS = getLastWeekKeys();
 
+  // v3.40 — use e.date (local day key, pre-computed at log time) not e.ts.substring (UTC).
+  // e.ts is ISO/UTC — substring gives UTC date, which mismatches local TODAY_KEY/WEEK_KEYS
+  // for anyone in US timezones after ~7PM. e.date is always local. Falls back to ts slice
+  // for legacy events that predate the e.date field.
   function countEvents(keys, type) {
     return activity.filter(e => {
-      if (!e || !e.ts) return false;
-      return keys.includes(e.ts.substring(0, 10)) && e.type === type;
+      if (!e || (!e.ts && !e.date)) return false;
+      const dateKey = e.date || e.ts.substring(0, 10);
+      return keys.includes(dateKey) && e.type === type;
     }).length;
   }
 
@@ -53,15 +62,19 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
   const weekDials      = countEvents(WEEK_KEYS, 'dial');
   const weekContacts   = countEvents(WEEK_KEYS, 'contact');
   const weekAppts      = countEvents(WEEK_KEYS, 'appointment');
-  const weekAuditsRan  = countEvents(WEEK_KEYS, 'audit_ran');
+  // audit_ran event type has no source — removed. closeRate now uses contacts as denominator.
+  // const weekAuditsRan  = countEvents(WEEK_KEYS, 'audit_ran'); // ← was always 0
   const lastWeekDials     = countEvents(LAST_WEEK_KEYS, 'dial');
   const lastWeekContacts  = countEvents(LAST_WEEK_KEYS, 'contact');
   const lastWeekAppts     = countEvents(LAST_WEEK_KEYS, 'appointment');
-  const lastWeekAuditsRan = countEvents(LAST_WEEK_KEYS, 'audit_ran');
+  // const lastWeekAuditsRan = countEvents(LAST_WEEK_KEYS, 'audit_ran'); // ← was always 0
 
-  const dailyDialGoal    = goals.dials        || 118;
-  const dailyContactGoal = goals.contacts     || 18;
+  // v3.40 — defaults now match DEFAULT_GOALS in activityLog.js (30/10/3)
+  // and AppHeader (also updated to 30). Set your real goals in Settings → Goals.
+  const dailyDialGoal    = goals.dials        || 30;
+  const dailyContactGoal = goals.contacts     || 10;
   const dailyApptGoal    = goals.appointments || 3;
+  const weeklyDialGoal   = dailyDialGoal * 5; // v3.40 — replaces hardcoded 710
 
   const activeLeads = leads.filter(l => !l.archived && !l.invalid);
   const issuedLeads = leads.filter(l => l.stage === 'issued');
@@ -105,19 +118,22 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
   const leadsLast30 = activeLeads.filter(l => l.assignDate && l.assignDate.substring(0,10) >= D30).length;
   const leadsMTD    = activeLeads.filter(l => l.assignDate && l.assignDate.substring(0,10) >= MTD_START).length;
 
+  // v3.41 — submittedDate is ISO (UTC); use dayKey() to get local date before comparing
   const weekSubmitted = activeLeads.filter(l =>
-    l.submittedDate && WEEK_KEYS.includes(l.submittedDate.substring(0,10))
+    l.submittedDate && WEEK_KEYS.includes(dayKey(l.submittedDate))
   ).length;
   const lastWeekSubmitted = activeLeads.filter(l =>
-    l.submittedDate && LAST_WEEK_KEYS.includes(l.submittedDate.substring(0,10))
+    l.submittedDate && LAST_WEEK_KEYS.includes(dayKey(l.submittedDate))
   ).length;
 
   const contactRate     = pct(weekContacts,  weekDials);
-  const showRate        = pct(weekAuditsRan, weekAppts);
-  const closeRate       = pct(weekSubmitted, weekAuditsRan);
+  // v3.40 — showRate replaced with apptRate (appts per contact — real data).
+  // closeRate now uses weekContacts as denominator (submissions per real contact).
+  const apptRate        = pct(weekAppts,     weekContacts);
+  const closeRate       = pct(weekSubmitted, weekContacts);
   const lastContactRate = pct(lastWeekContacts,  lastWeekDials);
-  const lastShowRate    = pct(lastWeekAuditsRan,  lastWeekAppts);
-  const lastCloseRate   = pct(lastWeekSubmitted,  lastWeekAuditsRan);
+  const lastApptRate    = pct(lastWeekAppts,     lastWeekContacts);
+  const lastCloseRate   = pct(lastWeekSubmitted,  lastWeekContacts);
 
   const MONTHLY_OVERHEAD   = financialConfig.monthlyOverhead   || 3921;
   const MONTHLY_NET_NEEDED = financialConfig.monthlyNetNeeded  || 2121;
@@ -129,7 +145,7 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
   const CONTRACT_TARGET    = financialConfig.contractTarget    || '100%';
 
   const weekAPV = activeLeads
-    .filter(l => l.submittedDate && WEEK_KEYS.includes(l.submittedDate.substring(0,10)))
+    .filter(l => l.submittedDate && WEEK_KEYS.includes(dayKey(l.submittedDate)))
     .reduce((sum, l) => {
       const apv = (parseFloat(l.expectedPremium) || 0) * 12;
       const myPct = l.splitDeal ? (Number(l.splitPct) || 50) / 100 : 1;
@@ -338,7 +354,7 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
             <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
               <span style={{fontWeight:700,fontSize:'0.9rem',color:'#e2e8f0'}}>Today's Activity</span>
             </div>
-            <span style={{fontSize:'0.7rem',color:'#94a3b8',background:'rgba(255,255,255,0.04)',padding:'0.2rem 0.6rem',borderRadius:6,border:'1px solid rgba(255,255,255,0.06)'}}>{TODAY_KEY} · 710 dials/wk target</span>
+            <span style={{fontSize:'0.7rem',color:'#94a3b8',background:'rgba(255,255,255,0.04)',padding:'0.2rem 0.6rem',borderRadius:6,border:'1px solid rgba(255,255,255,0.06)'}}>{TODAY_KEY} · ${weeklyDialGoal} dials/wk target</span>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'1.5rem'}}>
             <ProgressBar value={todayDials}    goal={dailyDialGoal}    label="Dials" />
@@ -457,29 +473,29 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
               <SectionHeader label="Weekly KPIs" accent="var(--amber)" />
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'0.65rem',marginBottom:'0.75rem'}}>
                 <KpiCard label="Contact Rate" value={contactRate} prevValue={lastContactRate} target={15} />
-                <KpiCard label="Show Rate"    value={showRate}    prevValue={lastShowRate}    target={70} />
+                <KpiCard label="Appt Rate"   value={apptRate}    prevValue={lastApptRate}    target={15} />
                 <KpiCard label="Close Rate"   value={closeRate}   prevValue={lastCloseRate}   target={40} />
               </div>
               {/* Week Dials as a full-width bar */}
               <div style={{
                 background:'rgba(255,255,255,0.03)', borderRadius:10, padding:'0.8rem 1rem',
-                border:`1px solid ${weekDials>=710?'rgba(16,185,129,0.3)':'rgba(255,255,255,0.06)'}`,
+                border:`1px solid ${weekDials>=weeklyDialGoal?'rgba(16,185,129,0.3)':'rgba(255,255,255,0.06)'}`,
                 display:'flex', alignItems:'center', gap:'1rem'
               }}>
                 <div style={{flexShrink:0}}>
                   <div style={{fontSize:'0.62rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700,marginBottom:'2px'}}>Week Dials</div>
-                  <div style={{fontSize:'2rem',fontWeight:900,color:weekDials>=710?'var(--green)':'var(--amber)',fontFamily:"'Syne',sans-serif",lineHeight:1}}>
-                    {weekDials}<span style={{fontSize:'1rem',color:'rgba(255,255,255,0.2)',fontWeight:400}}>/710</span>
+                  <div style={{fontSize:'2rem',fontWeight:900,color:weekDials>=weeklyDialGoal?'var(--green)':'var(--amber)',fontFamily:"'Syne',sans-serif",lineHeight:1}}>
+                    {weekDials}<span style={{fontSize:'1rem',color:'rgba(255,255,255,0.2)',fontWeight:400}}>/weeklyDialGoal</span>
                   </div>
-                  <div style={{fontSize:'0.65rem',color:'#94a3b8',marginTop:'2px'}}>{weekDials>=710?'✓ Weekly goal hit':`${710-weekDials} remaining`}</div>
+                  <div style={{fontSize:'0.65rem',color:'#94a3b8',marginTop:'2px'}}>{weekDials>=weeklyDialGoal?'✓ Weekly goal hit':`${weeklyDialGoal-weekDials} remaining`}</div>
                 </div>
                 <div style={{flex:1}}>
                   <div style={{height:14,background:'rgba(255,255,255,0.05)',borderRadius:7,overflow:'hidden',boxShadow:'inset 0 2px 4px rgba(0,0,0,0.3)'}}>
                     <div style={{
-                      width:`${Math.min(Math.round((weekDials/710)*100),100)}%`,height:'100%',
-                      background:weekDials>=710?'linear-gradient(90deg,rgba(16,185,129,0.7),var(--green))':'linear-gradient(90deg,rgba(245,158,11,0.6),var(--amber))',
+                      width:`${Math.min(Math.round((weekDials/weeklyDialGoal)*100),100)}%`,height:'100%',
+                      background:weekDials>=weeklyDialGoal?'linear-gradient(90deg,rgba(16,185,129,0.7),var(--green))':'linear-gradient(90deg,rgba(245,158,11,0.6),var(--amber))',
                       borderRadius:7,transition:'width 0.4s',
-                      boxShadow:weekDials>=710?'0 0 10px rgba(16,185,129,0.4)':'0 0 10px rgba(245,158,11,0.3)'
+                      boxShadow:weekDials>=weeklyDialGoal?'0 0 10px rgba(16,185,129,0.4)':'0 0 10px rgba(245,158,11,0.3)'
                     }} />
                   </div>
                 </div>

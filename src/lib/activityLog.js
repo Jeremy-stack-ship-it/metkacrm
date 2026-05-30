@@ -52,17 +52,18 @@ export const lastNDays = (n) => {
 };
 
 // Returns YYYY-MM-DD keys for current local week (Mon→Sun) and current month.
+// Symmetry production week: Saturday → Friday
 export const weekKeys = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const dow = today.getDay(); // 0=Sun
-  const offset = dow === 0 ? -6 : 1 - dow; // Monday-start week
-  const monday = new Date(today);
-  monday.setDate(today.getDate() + offset);
+  const dow = today.getDay(); // 0=Sun … 6=Sat
+  const daysFromSat = (dow - 6 + 7) % 7; // 0 on Sat, 1 on Sun, …, 6 on Fri
+  const saturday = new Date(today);
+  saturday.setDate(today.getDate() - daysFromSat);
   const out = [];
   for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
+    const d = new Date(saturday);
+    d.setDate(saturday.getDate() + i);
     out.push(dayKey(d));
   }
   return out;
