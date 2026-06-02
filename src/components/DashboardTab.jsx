@@ -62,12 +62,12 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
   const weekDials      = countEvents(WEEK_KEYS, 'dial');
   const weekContacts   = countEvents(WEEK_KEYS, 'contact');
   const weekAppts      = countEvents(WEEK_KEYS, 'appointment');
-  // audit_ran event type has no source — removed. closeRate now uses contacts as denominator.
-  // const weekAuditsRan  = countEvents(WEEK_KEYS, 'audit_ran'); // ← was always 0
+  // audit_ran fires when Audit Held button is clicked in DialView (v3.42 Build 2)
+  const weekAuditsRan     = countEvents(WEEK_KEYS, 'audit_ran');
   const lastWeekDials     = countEvents(LAST_WEEK_KEYS, 'dial');
   const lastWeekContacts  = countEvents(LAST_WEEK_KEYS, 'contact');
   const lastWeekAppts     = countEvents(LAST_WEEK_KEYS, 'appointment');
-  // const lastWeekAuditsRan = countEvents(LAST_WEEK_KEYS, 'audit_ran'); // ← was always 0
+  const lastWeekAuditsRan = countEvents(LAST_WEEK_KEYS, 'audit_ran');
 
   // v3.40 — defaults now match DEFAULT_GOALS in activityLog.js (30/10/3)
   // and AppHeader (also updated to 30). Set your real goals in Settings → Goals.
@@ -130,9 +130,11 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
   // v3.40 — showRate replaced with apptRate (appts per contact — real data).
   // closeRate now uses weekContacts as denominator (submissions per real contact).
   const apptRate        = pct(weekAppts,     weekContacts);
+  const setRate         = pct(weekAuditsRan, weekAppts);   // audits held / appts booked
   const closeRate       = pct(weekSubmitted, weekContacts);
   const lastContactRate = pct(lastWeekContacts,  lastWeekDials);
   const lastApptRate    = pct(lastWeekAppts,     lastWeekContacts);
+  const lastSetRate     = pct(lastWeekAuditsRan, lastWeekAppts);
   const lastCloseRate   = pct(lastWeekSubmitted,  lastWeekContacts);
 
   const MONTHLY_OVERHEAD   = financialConfig.monthlyOverhead   || 3921;
@@ -470,10 +472,54 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
               border:'1px solid rgba(255,255,255,0.07)',
               borderTop:'2px solid var(--amber)'
             }}>
+{(() => {
+                  const smsLeads = (leads || [])
+                    .map(l => {
+                      const smsNotes = (l.notes||[]).filter(n=>n&&n.text&&(n.type==='sms_inbound'||n.text.startsWith('📱 SMS sent:')||n.text.startsWith('[SEQ] SMS sent')));
+                      if(!smsNotes.length) return null;
+                      const latest = smsNotes.sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
+                      return {lead:l, latest, unread:!!l.smsUnread};
+                    }).filter(Boolean)
+                    .sort((a,b)=>{if(a.unread&&!b.unread)return -1;if(!a.unread&&b.unread)return 1;return new Date(b.latest.ts)-new Date(a.latest.ts);})
+                    .slice(0,5);
+                  if(!smsLeads.length) return null;
+                  const unreadCount = smsLeads.filter(c=>c.unread).length;
+                  return (
+                    <div style={{marginBottom:'1rem'}}>
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'0.5rem'}}>
+                        <SectionHeader label="Recent SMS" accent="var(--blue)" />
+                        <button onClick={()=>setView('messages')} style={{fontSize:'10px',fontWeight:'700',color:'var(--blue)',background:'var(--blue-dim)',border:'1px solid var(--blue-mid)',borderRadius:'6px',padding:'3px 10px',cursor:'pointer'}}>
+                          {unreadCount>0 ? unreadCount+' unread →' : 'View all →'}
+                        </button>
+                      </div>
+                      <div style={{background:'var(--surface)',borderRadius:'10px',border:'1px solid var(--border)',overflow:'hidden'}}>
+                        {smsLeads.map(({lead,latest,unread}) => {
+                          const preview = latest.type==='sms_inbound' ? '← '+(latest.text||'').slice(0,45) : '↑ '+(latest.text||'').replace('📱 SMS sent: ','').replace(/^\[SEQ\].+/,'[Auto]').slice(0,45);
+                          const time = new Date(latest.ts).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+                          return (
+                            <div key={lead.id} onClick={()=>setView('messages')}
+                              style={{display:'flex',alignItems:'center',gap:'10px',padding:'9px 12px',borderBottom:'1px solid var(--border)',cursor:'pointer'}}
+                              onMouseEnter={e=>e.currentTarget.style.background='var(--surface-2)'}
+                              onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                              {unread && <div style={{width:'7px',height:'7px',borderRadius:'50%',background:'var(--blue)',flexShrink:0}}/>}
+                              <div style={{flex:1,minWidth:0}}>
+                                <div style={{fontSize:'12px',fontWeight:unread?'800':'600',color:'var(--t1)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{lead.name||lead.phone||'Unknown'}</div>
+                                <div style={{fontSize:'11px',color:'var(--t3)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{preview}</div>
+                              </div>
+                              <div style={{fontSize:'10px',color:'var(--t4)',flexShrink:0}}>{time}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
               <SectionHeader label="Weekly KPIs" accent="var(--amber)" />
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'0.65rem',marginBottom:'0.75rem'}}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:'0.65rem',marginBottom:'0.75rem'}}>
                 <KpiCard label="Contact Rate" value={contactRate} prevValue={lastContactRate} target={15} />
                 <KpiCard label="Appt Rate"   value={apptRate}    prevValue={lastApptRate}    target={15} />
+                <KpiCard label="Set Rate"     value={setRate}     prevValue={lastSetRate}     target={75} />
                 <KpiCard label="Close Rate"   value={closeRate}   prevValue={lastCloseRate}   target={40} />
               </div>
               {/* Week Dials as a full-width bar */}

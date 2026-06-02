@@ -59,6 +59,7 @@ import DashboardTab from './components/DashboardTab';
 import CallBar from './components/CallBar';
 import HourlyStats from './components/HourlyStats';
 import ContactDetail, { StageStepper, UnderwritingCard } from './components/ContactDetail.jsx';
+import MessagesView from './components/MessagesView.jsx';
 import ContactsView from './components/ContactsView.jsx';
 import PipelineView from './components/PipelineView.jsx';
 import ScriptsView from './components/ScriptsView.jsx';
@@ -1102,6 +1103,11 @@ const queue = useMemo(() => {
     return { today, week, month, last7, last7Agg, view, days, contactRate, setRate };
   },[activity, activityRange]);
 
+  // Unread SMS count for nav badge
+  const unreadSmsCount = React.useMemo(() =>
+    (leads || []).filter(l => l && l.smsUnread).length
+  , [leads]);
+
   if(loading) return React.createElement("div",{style:{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:"13px",fontFamily:"'Inter',sans-serif"}},"Loading Metka Field Ops…");
 
   // ── ScriptPanel → components/ScriptPanel.jsx ─────────────────────────
@@ -1113,7 +1119,7 @@ const queue = useMemo(() => {
   return React.createElement("div",{style:{display:"flex",height:"100vh",background:"var(--bg)",color:"var(--t1)",fontFamily:"'Inter',system-ui,sans-serif",overflow:"hidden"}},
 
     // ── 1. DARK SIDEBAR (hamburger-controlled on dial view) ──
-    React.createElement(NavSidebar, { view, setView, navOpen }),
+    React.createElement(NavSidebar, { view, setView, navOpen, unreadSms: unreadSmsCount }),
 
     // ── 2. MAIN WORKSPACE COLUMN ──
     React.createElement("div",{style:{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}},
@@ -1273,6 +1279,22 @@ const queue = useMemo(() => {
             } catch(e) { alert('SMS failed: ' + e.message); }
           },
           selfApplyUrl: 'https://apply.quility.com/#/symmetry/raq/SFG0092434?redirect_url=https%3A%2F%2Fyourlivingbenefit.com%2F&leadtype=Life%20Insurance&producttype=Life%20Insurance',
+        }),
+
+        // ── MESSAGES VIEW ──
+        view==="messages" && React.createElement(MessagesView, {
+          leads,
+          sendSms: async (phone, body, leadId) => {
+            try {
+              await sbSendSms(phone, body, leadId);
+              upd(leadId, (fresh) => ({
+                notes: [{ ts: new Date().toISOString(), type: 'note', text: '📱 SMS sent: ' + body.slice(0, 80) + (body.length > 80 ? '\u2026' : '') }, ...(fresh.notes || [])]
+              }));
+            } catch(e) { alert('SMS failed: ' + e.message); }
+          },
+          upd,
+          setView, setOpenId,
+          setPrevView,
         }),
 
         // ── PIPELINE VIEW ──

@@ -135,6 +135,9 @@ serve(async (req) => {
       notes: [inboundNote, ...existingNotes],
     };
 
+    // Mark lead as having unread SMS
+    patch.smsUnread = true;
+
     // Handle opt-out / opt-in
     if (isOptOut)  { patch.smsOptOut = true;  patch.smsOptIn = false; }
     if (isOptIn)   { patch.smsOptOut = false; patch.smsOptIn = true;  }

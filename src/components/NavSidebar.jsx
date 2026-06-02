@@ -8,6 +8,7 @@ const GROUPS = [
     label: 'WORK',
     items: [
       { id: 'dial',         icon: '🎙️', label: 'DIAL'  },
+      { id: 'messages',     icon: '💬', label: 'SMS'   },
       { id: 'callbacks',    icon: '📞', label: 'CB'    },
       { id: 'appointments', icon: '📅', label: 'APPTS' },
     ],
@@ -47,7 +48,7 @@ const VIEW_GROUP = {};
 GROUPS.forEach(g => g.items.forEach(i => { VIEW_GROUP[i.id] = g.id; }));
 
 // ── NAV BUTTON ────────────────────────────────────────────────────────────────
-const NavBtn = ({ icon, label, active, onClick }) =>
+const NavBtn = ({ icon, label, active, onClick, badge }) =>
   React.createElement('button', {
     onClick,
     style: {
@@ -56,16 +57,20 @@ const NavBtn = ({ icon, label, active, onClick }) =>
       color: active ? '#fff' : 'rgba(255,255,255,0.5)',
       cursor: 'pointer', transition: 'background 0.12s, color 0.12s',
       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
+      position: 'relative',
     },
     onMouseEnter: e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.85)'; } },
     onMouseLeave: e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; } },
   },
     React.createElement('span', { style: { fontSize: '14px', lineHeight: 1 } }, icon),
     React.createElement('span', { style: { fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em' } }, label),
+    badge > 0 && React.createElement('span', {
+      style: { position: 'absolute', top: '3px', right: '6px', fontSize: '9px', fontWeight: '800', background: '#EF4444', color: '#fff', borderRadius: '8px', padding: '1px 4px', lineHeight: 1.4, minWidth: '14px', textAlign: 'center' }
+    }, badge > 99 ? '99+' : String(badge))
   );
 
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
-export default function NavSidebar({ view, setView, navOpen }) {
+export default function NavSidebar({ view, setView, navOpen, unreadSms = 0 }) {
   const [openGroup, setOpenGroup] = useState(() => VIEW_GROUP[view] || 'work');
 
   useEffect(() => {
@@ -169,6 +174,7 @@ export default function NavSidebar({ view, setView, navOpen }) {
                 label:  item.label,
                 active: view === item.id,
                 onClick: () => setView(item.id),
+                badge:  item.id === 'messages' ? unreadSms : 0,
               })
             )
           ),

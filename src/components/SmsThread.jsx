@@ -1,0 +1,221 @@
+import React from 'react';
+import { SMS_SEQUENCES, suggestSeqCat } from '../lib/phaseEngine.js';
+
+const CALENDLY = 'https://calendly.com/metkasolutions/20min';
+const SELF_APPLY = 'https://apply.quility.com/#/symmetry/raq/SFG0092434?redirect_url=https%3A%2F%2Fyourlivingbenefit.com%2F&leadtype=Life%20Insurance&producttype=Life%20Insurance';
+
+// ── SMS THREAD ────────────────────────────────────────────────────────────────
+// Shared two-way SMS thread component.
+// Props:
+//   open       — lead object
+//   sendSms    — async fn(phone, body, leadId)
+//   upd        — lead update fn (to clear unread flag)
+//   height     — optional fixed height (default: '100%')
+// ─────────────────────────────────────────────────────────────────────────────
+export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
+  const [msgText,    setMsgText]    = React.useState('');
+  const [sending,    setSending]    = React.useState(false);
+  const [sendResult, setSendResult] = React.useState(null);
+  const [tplOpen,    setTplOpen]    = React.useState(false);
+  const [tplCat,     setTplCat]     = React.useState('cat1');
+  const bottomRef = React.useRef(null);
+
+  const MAX = 160;
+  const chars = msgText.length;
+  const segs  = Math.ceil(chars / MAX) || 1;
+
+  // Clear unread when thread opens
+  React.useEffect(() => {
+    if (open && open.smsUnread && upd) {
+      upd(open.id, { smsUnread: false });
+    }
+  }, [open && open.id]);
+
+  React.useEffect(() => {
+    if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+  }, [open && (open.notes || []).length]);
+
+  const smsMessages = React.useMemo(() => {
+    if (!open) return [];
+    return (open.notes || [])
+      .filter(n => {
+        if (!n || !n.text) return false;
+        if (n.type === 'sms_inbound') return true;
+        if (n.text.startsWith('📱 SMS sent:')) return true;
+        if (n.text.startsWith('[SEQ] SMS sent')) return true;
+        return false;
+      })
+      .sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
+  }, [open && open.notes]);
+
+  const fill = (text) => {
+    const fn = open ? (open.firstName || (open.name || '').split(' ')[0] || 'there') : 'there';
+    setMsgText(
+      text
+        .replace(/\$\{n\}|\{n\}/g, fn)
+        .replace(/\{firstName\}/gi, fn)
+        .replace(/\{calendly\}|\{calendlyUrl\}/gi, CALENDLY)
+        .replace(/\[YOUR CALENDLY LINK\]/g, CALENDLY)
+        .replace(/\[CALENDLY\]/g, CALENDLY)
+        .replace(/\{selfApply\}/gi, SELF_APPLY)
+    );
+    setTplOpen(false);
+  };
+
+  const insertVar = (val) => setMsgText(prev => prev + val);
+
+  const handleSend = async () => {
+    if (!open || !msgText.trim() || sending || !open.phone || open.smsOptOut) return;
+    setSending(true); setSendResult(null);
+    try {
+      await sendSms(open.phone, msgText.trim(), open.id);
+      setSendResult('ok');
+      setMsgText('');
+      setTimeout(() => setSendResult(null), 2500);
+    } catch { setSendResult('err'); }
+    finally { setSending(false); }
+  };
+
+  const dayLabel = (ts) => {
+    const d = new Date(ts);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const yesterday = new Date(today); yesterday.setDate(yesterday.getDate()-1);
+    const msgDay = new Date(d); msgDay.setHours(0,0,0,0);
+    if (msgDay.getTime() === today.getTime()) return 'Today';
+    if (msgDay.getTime() === yesterday.getTime()) return 'Yesterday';
+    return d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  };
+
+  const catLabels = { cat1:'📭 New/Cold', cat2:'❌ No-Show', cat3:'📋 Sat — No Buy' };
+  const sugCat = open ? suggestSeqCat(open) : 'cat1';
+  const optedOut = !!(open && open.smsOptOut);
+  let lastDay = '';
+
+  if (!open) return React.createElement('div', {
+    style:{ display:'flex', alignItems:'center', justifyContent:'center', height, color:'var(--t4)', fontSize:'13px' }
+  }, '← Select a conversation');
+
+  return React.createElement('div', {
+    style:{ display:'flex', flexDirection:'column', height, background:'var(--surface)', overflow:'hidden' }
+  },
+
+    // ── Header ──────────────────────────────────────────────────────
+    React.createElement('div', { style:{ padding:'10px 16px', borderBottom:'1px solid var(--border)', background:'var(--surface-2)', display:'flex', alignItems:'center', gap:'10px', flexShrink:0 } },
+      React.createElement('div', { style:{ flex:1 } },
+        React.createElement('div', { style:{ fontSize:'14px', fontWeight:'800', color:'var(--t1)' } }, open.name || 'Unknown'),
+        React.createElement('div', { style:{ fontSize:'11px', color:'var(--t3)', fontFamily:"'JetBrains Mono',monospace", marginTop:'2px' } }, open.phone || '')
+      ),
+      React.createElement('div', { style:{ fontSize:'10px', padding:'3px 8px', borderRadius:'12px', background: optedOut?'var(--red-dim)':'var(--green-dim)', color:optedOut?'var(--red)':'var(--green)', fontWeight:'800', border:'1px solid '+(optedOut?'#FCA5A5':'#6EE7B7') } },
+        optedOut ? '🔴 STOP' : '✅ A2P'
+      )
+    ),
+
+    // ── Thread ──────────────────────────────────────────────────────
+    React.createElement('div', { style:{ flex:1, overflowY:'auto', padding:'12px 16px', display:'flex', flexDirection:'column', gap:'4px' } },
+      smsMessages.length === 0
+        ? React.createElement('div', { style:{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', color:'var(--t4)', fontSize:'12px', textAlign:'center', padding:'32px', gap:'8px' } },
+            React.createElement('div', { style:{ fontSize:'32px' } }, '💬'),
+            'No messages yet.',
+            React.createElement('div', { style:{ fontSize:'11px' } }, 'Send the first one below.')
+          )
+        : smsMessages.map((msg, i) => {
+            const isInbound = msg.type === 'sms_inbound';
+            const isAuto    = msg.text && msg.text.startsWith('[SEQ]');
+            const display   = isAuto
+              ? '[Auto · ' + (msg.text.match(/Step (\d+)/)?.[0] || 'sequence') + ']'
+              : msg.text.replace('📱 SMS sent: ', '');
+            const msgDay    = dayLabel(msg.ts);
+            const showDiv   = msgDay !== lastDay;
+            lastDay = msgDay;
+            const time = new Date(msg.ts).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+
+            return React.createElement(React.Fragment, { key: msg.ts + i },
+              showDiv && React.createElement('div', { style:{ display:'flex', alignItems:'center', gap:'8px', margin:'8px 0 4px' } },
+                React.createElement('div', { style:{ flex:1, height:'1px', background:'var(--border)' } }),
+                React.createElement('span', { style:{ fontSize:'10px', color:'var(--t4)', fontWeight:'600', whiteSpace:'nowrap' } }, msgDay),
+                React.createElement('div', { style:{ flex:1, height:'1px', background:'var(--border)' } })
+              ),
+              React.createElement('div', { style:{ display:'flex', justifyContent: isInbound?'flex-start':'flex-end', marginBottom:'2px' } },
+                React.createElement('div', {
+                  style:{
+                    maxWidth:'75%', padding:'8px 12px',
+                    borderRadius: isInbound?'4px 16px 16px 16px':'16px 4px 16px 16px',
+                    background: isInbound?'var(--surface-2)':'#1a2a44',
+                    color: isInbound?'var(--t1)':'#fff',
+                    border: isInbound?'1px solid var(--border)':'none',
+                    fontSize:'13px', lineHeight:'1.5', wordBreak:'break-word'
+                  }
+                },
+                  React.createElement('div', null, display),
+                  React.createElement('div', { style:{ fontSize:'9px', marginTop:'3px', opacity:0.55, textAlign: isInbound?'left':'right' } }, time + (isAuto?' · auto':''))
+                )
+              )
+            );
+          }),
+      React.createElement('div', { ref: bottomRef })
+    ),
+
+    // ── Compose ─────────────────────────────────────────────────────
+    React.createElement('div', { style:{ borderTop:'1px solid var(--border)', background:'var(--surface)', padding:'10px 12px', flexShrink:0, position:'relative' } },
+
+      // Template drawer
+      tplOpen && React.createElement('div', {
+        style:{ position:'absolute', bottom:'calc(100% + 4px)', left:0, right:0, zIndex:200, background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'12px', boxShadow:'0 -4px 20px rgba(0,0,0,0.15)', padding:'12px', maxHeight:'300px', overflow:'hidden', display:'flex', flexDirection:'column' }
+      },
+        React.createElement('div', { style:{ display:'flex', gap:'4px', marginBottom:'8px', flexShrink:0 } },
+          Object.entries(catLabels).map(([cat, lbl]) =>
+            React.createElement('button', {
+              key:cat, onClick:()=>setTplCat(cat),
+              style:{ flex:1, padding:'5px 4px', fontSize:'10px', fontWeight:'700', borderRadius:'6px', cursor:'pointer', border:'1px solid '+(tplCat===cat?'var(--blue)':'var(--border)'), background:tplCat===cat?'var(--blue)':'transparent', color:tplCat===cat?'#fff':'var(--t3)' }
+            }, (cat===sugCat?'⭐ ':'')+lbl)
+          )
+        ),
+        React.createElement('div', { style:{ overflowY:'auto', flex:1 } },
+          (SMS_SEQUENCES[tplCat] && SMS_SEQUENCES[tplCat].texts || []).map(step => {
+            const fn = open ? (open.firstName || (open.name||'').split(' ')[0] || 'there') : 'there';
+            const preview = step.body(fn, CALENDLY).slice(0, 90) + '…';
+            return React.createElement('div', {
+              key: step.step,
+              onClick: () => fill(step.body(fn, CALENDLY)),
+              style:{ padding:'7px 10px', marginBottom:'3px', borderRadius:'7px', border:'1px solid var(--border)', cursor:'pointer', background:'var(--surface-2)', fontSize:'11px' },
+              onMouseEnter: e => e.currentTarget.style.background='var(--blue-dim)',
+              onMouseLeave: e => e.currentTarget.style.background='var(--surface-2)',
+            },
+              React.createElement('span', { style:{ fontSize:'10px', fontWeight:'800', color:'var(--t3)', marginRight:'6px' } }, 'Step '+step.step),
+              React.createElement('span', { style:{ color:'var(--t2)', lineHeight:'1.4' } }, preview)
+            );
+          })
+        )
+      ),
+
+      // Toolbar
+      React.createElement('div', { style:{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'8px' } },
+        React.createElement('button', { onClick:()=>setTplOpen(v=>!v), style:{ fontSize:'11px', fontWeight:'700', padding:'4px 10px', borderRadius:'6px', border:'1px solid '+(tplOpen?'var(--blue)':'var(--border)'), background:tplOpen?'var(--blue)':'var(--surface-2)', color:tplOpen?'#fff':'var(--t2)', cursor:'pointer' } },
+          '📋 ' + (tplOpen?'▲':'▾')
+        ),
+        [['Name', open.firstName||(open.name||'').split(' ')[0]||'there'], ['Cal', CALENDLY], ['Apply', SELF_APPLY]].map(([lbl, val]) =>
+          React.createElement('button', { key:lbl, onClick:()=>insertVar(val), style:{ fontSize:'10px', fontWeight:'700', padding:'3px 7px', borderRadius:'6px', border:'1px solid var(--border)', background:'var(--surface-2)', color:'var(--t3)', cursor:'pointer' } }, '{'+lbl+'}')
+        ),
+        React.createElement('div', { style:{ marginLeft:'auto', fontSize:'10px', fontWeight:'700', fontFamily:'monospace', color: chars>MAX?'var(--red)':chars>MAX*0.85?'var(--amber)':'var(--t4)' } },
+          chars+'/'+MAX+(segs>1?' ·'+segs+'seg':'')
+        )
+      ),
+
+      // Input row
+      React.createElement('div', { style:{ display:'flex', gap:'8px', alignItems:'flex-end' } },
+        React.createElement('textarea', {
+          value:msgText, onChange:e=>setMsgText(e.target.value),
+          onKeyDown:e=>{ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)) handleSend(); },
+          placeholder: optedOut?'Lead opted out — cannot send':'Message… (⌘+Enter to send)',
+          disabled:optedOut, rows:2,
+          style:{ flex:1, resize:'none', padding:'8px 10px', fontSize:'13px', borderRadius:'8px', border:'1px solid var(--border)', background: optedOut?'var(--surface-2)':'var(--surface)', color:'var(--t1)', fontFamily:"'Inter',sans-serif", lineHeight:'1.5', boxSizing:'border-box' }
+        }),
+        React.createElement('button', {
+          onClick:handleSend,
+          disabled:!msgText.trim()||sending||optedOut,
+          style:{ padding:'8px 18px', borderRadius:'8px', border:'none', cursor:msgText.trim()&&!sending&&!optedOut?'pointer':'default', background:sendResult==='ok'?'var(--green)':sendResult==='err'?'var(--red)':msgText.trim()&&!optedOut?'#1a2a44':'var(--border)', color:msgText.trim()||sendResult?'#fff':'var(--t3)', fontSize:'13px', fontWeight:'800', transition:'background 0.15s', whiteSpace:'nowrap', alignSelf:'stretch', minHeight:'54px' }
+        }, sending?'⏳':sendResult==='ok'?'✅':sendResult==='err'?'❌':'Send ▶')
+      )
+    )
+  );
+}
