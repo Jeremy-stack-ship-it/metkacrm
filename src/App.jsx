@@ -1295,6 +1295,7 @@ const queue = useMemo(() => {
           upd,
           setView, setOpenId,
           setPrevView,
+          onRefresh: () => window.location.reload(),
         }),
 
         // ── PIPELINE VIEW ──

@@ -6,7 +6,7 @@ import SmsThread from './SmsThread.jsx';
 // Shows ALL leads with any SMS activity (inbound or outbound).
 // Unread leads (smsUnread: true) float to top with blue dot.
 // ─────────────────────────────────────────────────────────────────────────────
-export default function MessagesView({ leads, sendSms, upd, setView, setOpenId, setPrevView }) {
+export default function MessagesView({ leads, sendSms, upd, setView, setOpenId, setPrevView, onRefresh }) {
   const [selectedId, setSelectedId] = React.useState(null);
   const [search,     setSearch]     = React.useState('');
 
@@ -73,11 +73,17 @@ export default function MessagesView({ leads, sendSms, upd, setView, setOpenId, 
 
       // Header
       React.createElement('div', { style:{ padding:'14px 16px', borderBottom:'1px solid var(--border)', flexShrink:0 } },
-        React.createElement('div', { style:{ fontSize:'13px', fontWeight:'800', color:'var(--t1)', marginBottom:'10px', letterSpacing:'0.5px' } },
-          '💬 MESSAGES',
-          conversations.filter(c=>c.hasUnread).length > 0 && React.createElement('span', {
-            style:{ marginLeft:'8px', fontSize:'11px', fontWeight:'800', background:'var(--blue)', color:'#fff', borderRadius:'10px', padding:'2px 7px' }
-          }, conversations.filter(c=>c.hasUnread).length + ' new')
+        React.createElement('div', { style:{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' } },
+          React.createElement('div', { style:{ fontSize:'13px', fontWeight:'800', color:'var(--t1)', display:'flex', alignItems:'center', gap:'6px' } },
+            '💬 MESSAGES',
+            conversations.filter(c=>c.hasUnread).length > 0 && React.createElement('span', {
+              style:{ fontSize:'11px', fontWeight:'800', background:'var(--blue)', color:'#fff', borderRadius:'10px', padding:'2px 7px' }
+            }, conversations.filter(c=>c.hasUnread).length + ' new')
+          ),
+          onRefresh && React.createElement('button', {
+            onClick: onRefresh, title:'Sync from cloud',
+            style:{ fontSize:'18px', background:'none', border:'none', cursor:'pointer', color:'var(--t3)', lineHeight:1, padding:'2px' }
+          }, '🔄')
         ),
         React.createElement('input', {
           value:search, onChange:e=>setSearch(e.target.value),
@@ -88,11 +94,11 @@ export default function MessagesView({ leads, sendSms, upd, setView, setOpenId, 
 
       // List
       filtered.length === 0
-        ? React.createElement('div', { style:{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:'var(--t4)', fontSize:'12px', textAlign:'center', padding:'24px' } },
-            React.createElement('div', null,
-              React.createElement('div', { style:{ fontSize:'28px', marginBottom:'8px' } }, '💬'),
-              conversations.length === 0 ? 'No SMS activity yet.\nSend a message from any lead card.' : 'No results.'
-            )
+        ? React.createElement('div', { style:{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:'var(--t4)', fontSize:'12px', textAlign:'center', padding:'24px', flexDirection:'column', gap:'8px' } },
+            React.createElement('div', { style:{ fontSize:'32px' } }, '💬'),
+            React.createElement('div', { style:{ fontWeight:'700', color:'var(--t3)' } }, conversations.length === 0 ? 'No messages yet' : 'No results'),
+            conversations.length === 0 && React.createElement('div', { style:{ fontSize:'11px', lineHeight:'1.5' } }, "Open any lead's contact card,\nclick the SMS tab, and send the first message.\nReplies will appear here automatically."),
+            onRefresh && React.createElement('button', { onClick:onRefresh, style:{ marginTop:'8px', fontSize:'11px', fontWeight:'700', padding:'5px 12px', borderRadius:'6px', border:'1px solid var(--border)', background:'var(--surface)', color:'var(--t2)', cursor:'pointer' } }, '🔄 Refresh from cloud')
           )
         : React.createElement('div', { style:{ flex:1, overflowY:'auto' } },
             filtered.map(({ lead, latest, hasUnread }) =>

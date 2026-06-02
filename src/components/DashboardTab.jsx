@@ -482,7 +482,15 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
                     }).filter(Boolean)
                     .sort((a,b)=>{if(a.unread&&!b.unread)return -1;if(!a.unread&&b.unread)return 1;return new Date(b.latest.ts)-new Date(a.latest.ts);})
                     .slice(0,5);
-                  if(!smsLeads.length) return null;
+                  if(!smsLeads.length) return (
+                    <div style={{marginBottom:'1rem'}}>
+                      <SectionHeader label='Recent SMS' accent='var(--blue)' />
+                      <div style={{background:'var(--surface)',borderRadius:'10px',border:'1px solid var(--border)',padding:'16px',textAlign:'center',color:'var(--t4)',fontSize:'12px'}}>
+                        No SMS activity yet — messages will appear here once you start texting leads.
+                        <br/><button onClick={()=>setView('messages')} style={{marginTop:'8px',fontSize:'11px',fontWeight:'700',color:'var(--blue)',background:'var(--blue-dim)',border:'1px solid var(--blue-mid)',borderRadius:'6px',padding:'3px 10px',cursor:'pointer'}}>Open Messages →</button>
+                      </div>
+                    </div>
+                  );
                   const unreadCount = smsLeads.filter(c=>c.unread).length;
                   return (
                     <div style={{marginBottom:'1rem'}}>

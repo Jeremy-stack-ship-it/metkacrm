@@ -38,7 +38,7 @@ const GROUPS = [
     label: 'CONTENT',
     items: [
       { id: 'scripts',   icon: '📝', label: 'SCRIPT' },
-      { id: 'templates', icon: '💬', label: 'SMS'    },
+      { id: 'templates', icon: '📋', label: 'TMPLT'  },
     ],
   },
 ];
