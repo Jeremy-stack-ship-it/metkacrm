@@ -69,8 +69,8 @@ import { STATE_TZ, STAGES, DISPS, BC, BL, NC, FIELD_MAP_DEFS,
   daysInUW, isUWStuck, reqStats,
   fmt, fmtDate, currency, chip, inp } from './constants.js';
 // ── Library Modules (v3.6) ───────────────────────────────────────
-import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity, sbLoadSeqStats, sbBeaconFlush } from './lib/supabaseSync.js';
-import { backfillLead, applyPhaseTransition, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule } from './lib/phaseEngine.js';
+import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity, sbLoadSeqStats, sbBeaconFlush, sbSendSms } from './lib/supabaseSync.js';
+import { backfillLead, applyPhaseTransition, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, spreadOverdueLeads } from './lib/phaseEngine.js';
 import { DEFAULT_GOALS, CONTACT_DISPS, ACTIVITY_TYPES, dayKey, TODAY_KEY, lastNDays, weekKeys, monthKeys, aggregateActivity, fmtTime, goalTone, makeActivityManager } from './lib/activityLog.js';
 import { makeLeadManager } from './lib/leads.js';
 import LoginGate, { useAuth } from './components/LoginGate.jsx';
@@ -359,6 +359,18 @@ function MetkaCRM(){
           localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
         } catch(e) { console.warn('[CRM v3.15] Could not persist phase normalization:', e); }
         console.log(`[CRM v3.15] Normalized past-due phase schedules on ${normCount} leads`);
+      }
+
+      // v3.42 — Spread overdue leads forward so today's queue stays manageable.
+      // Leads overdue >1 day get rescheduled into future days (80/day, priority-sorted).
+      // No leads are lost — they're given a realistic future next_dial date.
+      const spreadLeads = spreadOverdueLeads(initialLeads);
+      if (spreadLeads !== initialLeads) {
+        initialLeads = spreadLeads;
+        try {
+          localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
+        } catch(e) { console.warn('[CRM v3.42] Could not persist overdue spread:', e); }
+        console.log('[CRM v3.42] Spread overdue leads into future sessions');
       }
 
       setLeads(initialLeads);
@@ -728,6 +740,7 @@ const saveLeads = useCallback((next, opts = {}) => {
       callback:           "contacted",
       hung_up:            "contacted",
       no_show:            "contacted",
+      no_sale:            "contacted",
       appointment_booked: "appointment_set",
       follow_up_needed:   "follow_up",
       not_interested:     "removed",
@@ -745,6 +758,7 @@ const saveLeads = useCallback((next, opts = {}) => {
       hung_up:        "📴 Hung Up",
       dnc:            "⛔ Do Not Call — file closed",
       no_show:        "❌ No-Show — appointment missed",
+      no_sale:        "📋 Household Protection Audit held — no application",
     };
     const noteText = DISP_NOTE_TEXT[dispId];
     // notePatch removed — notes computed inside functional updater from freshestLead.notes (v3.39)
@@ -811,7 +825,7 @@ const saveLeads = useCallback((next, opts = {}) => {
   const handleTodayDispose = useCallback((id, dispId) => {
     const DISP_STAGE_MAP = {
       vm_left: 'contacted', callback: 'contacted', hung_up: 'contacted', no_show: 'contacted',
-      appointment_booked: 'appointment_set', follow_up_needed: 'follow_up',
+      appointment_booked: 'appointment_set', follow_up_needed: 'follow_up', no_sale: 'contacted',
       not_interested: 'removed', dnc: 'removed', withdrawn: 'removed', chargeback: 'removed',
     };
     const stagePatch = DISP_STAGE_MAP[dispId] ? { stage: DISP_STAGE_MAP[dispId] } : {};
@@ -1202,7 +1216,15 @@ const queue = useMemo(() => {
           scripts, scriptType, setScriptType, scriptSection, setScriptSection,
           templates, calendlyUrl, setCalendlyTargetId,
           refreshQueueOrder, openCalendlyPopup, logActivity,
-          todayCount,
+          sendSms: async (phone, body, leadId) => {
+            try {
+              await sbSendSms(phone, body, leadId);
+              upd(leadId, (fresh) => ({
+                notes: [{ ts: new Date().toISOString(), type: 'note', text: '📱 SMS sent: ' + body.slice(0, 80) + (body.length > 80 ? '\u2026' : '') }, ...(fresh.notes || [])]
+              }));
+            } catch(e) { alert('SMS failed: ' + e.message); }
+          },
+          todayCount:
           setView, setPrevView,
           callbackPresets, setCallbackPresets,
           pendingDialSlot, clearPendingDialSlot: () => setPendingDialSlot(null),
@@ -1242,6 +1264,15 @@ const queue = useMemo(() => {
           openCalendlyPopup, calendlyUrl, setCalendlyTargetId,
           newReqText, setNewReqText,
           initUWReqs, toggleUWReq, removeUWReq, addUWReq,
+          sendSms: async (phone, body, leadId) => {
+            try {
+              await sbSendSms(phone, body, leadId);
+              upd(leadId, (fresh) => ({
+                notes: [{ ts: new Date().toISOString(), type: 'note', text: '📱 SMS sent: ' + body.slice(0, 80) + (body.length > 80 ? '\u2026' : '') }, ...(fresh.notes || [])]
+              }));
+            } catch(e) { alert('SMS failed: ' + e.message); }
+          },
+          selfApplyUrl: 'https://apply.quility.com/#/symmetry/raq/SFG0092434?redirect_url=https%3A%2F%2Fyourlivingbenefit.com%2F&leadtype=Life%20Insurance&producttype=Life%20Insurance',
         }),
 
         // ── PIPELINE VIEW ──

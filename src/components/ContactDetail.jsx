@@ -18,6 +18,7 @@ import {
   pauseSequence, resumeSequence, advanceSequence,
 } from '../lib/sequenceEngine.js';
 import { getLBLDay1Opener } from '../lib/sequenceTemplates.js';
+import { SMS_SEQUENCES, suggestSeqCat } from '../lib/phaseEngine.js';
 
 // ── STAGE STEPPER (local — only used in ContactDetail) ───────────
 const StageStepper = ({ stage, onSelect }) => {
@@ -173,6 +174,279 @@ const UnderwritingCard = ({ lead, upd, newReqText, setNewReqText, initUWReqs, to
   );
 };
 
+
+// ── SMS THREAD TAB ─────────────────────────────────────────────────────────────
+// Full two-way SMS thread: outbound bubbles (right, navy) + inbound (left, gray).
+// Template picker: cat1/cat2/cat3 sequences. Variable insertion. Char counter.
+function SmsThreadTab({ open, sendSms, selfApplyUrl }) {
+  const [msgText,      setMsgText]      = React.useState('');
+  const [sending,      setSending]      = React.useState(false);
+  const [sendResult,   setSendResult]   = React.useState(null); // 'ok'|'err'
+  const [tplOpen,      setTplOpen]      = React.useState(false);
+  const [tplCategory,  setTplCategory]  = React.useState('cat1');
+  const bottomRef = React.useRef(null);
+
+  const MAX = 160;
+  const chars = msgText.length;
+  const segs  = Math.ceil(chars / MAX) || 1;
+
+  // Auto-scroll to bottom when messages change
+  React.useEffect(() => {
+    if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+  }, [(open && open.notes || []).length]);
+
+  // Pull SMS messages from notes — inbound + outbound
+  const smsMessages = React.useMemo(() => {
+    if (!open) return [];
+    return (open.notes || [])
+      .filter(n => {
+        if (!n || !n.text) return false;
+        if (n.type === 'sms_inbound') return true;
+        if (n.text.startsWith('📱 SMS sent:')) return true;
+        if (n.text.startsWith('[SEQ] SMS sent')) return true;
+        return false;
+      })
+      .sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
+  }, [open && open.notes]);
+
+  const fill = (text) => {
+    const firstName = open ? (open.firstName || (open.name || '').split(' ')[0] || 'there') : 'there';
+    const calendly  = 'https://calendly.com/metkasolutions/20min';
+    setMsgText(
+      text
+        .replace(/\$\{n\}|\{n\}/g, firstName)
+        .replace(/\{firstName\}/gi, firstName)
+        .replace(/\{calendly\}|\{calendlyUrl\}/gi, calendly)
+        .replace(/\{selfApply\}/gi, selfApplyUrl || '')
+        .replace(/\[YOUR CALENDLY LINK\]/g, calendly)
+        .replace(/\[CALENDLY\]/g, calendly)
+    );
+    setTplOpen(false);
+  };
+
+  const insertVar = (v) => {
+    const firstName = open ? (open.firstName || (open.name || '').split(' ')[0] || 'there') : 'there';
+    const map = {
+      '{firstName}':  firstName,
+      '{calendly}':   'https://calendly.com/metkasolutions/20min',
+      '{selfApply}':  selfApplyUrl || '',
+    };
+    setMsgText(prev => prev + (map[v] || v));
+  };
+
+  const handleSend = async () => {
+    if (!open || !msgText.trim() || sending || !open.phone) return;
+    setSending(true); setSendResult(null);
+    try {
+      await sendSms(open.phone, msgText.trim(), open.id);
+      setSendResult('ok');
+      setMsgText('');
+      setTimeout(() => setSendResult(null), 2500);
+    } catch { setSendResult('err'); }
+    finally { setSending(false); }
+  };
+
+  // Date divider helper
+  const dayLabel = (ts) => {
+    const d = new Date(ts);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+    const msgDay = new Date(d); msgDay.setHours(0,0,0,0);
+    if (msgDay.getTime() === today.getTime()) return 'Today';
+    if (msgDay.getTime() === yesterday.getTime()) return 'Yesterday';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: msgDay.getFullYear() !== today.getFullYear() ? 'numeric' : undefined });
+  };
+
+  const catLabels = { cat1: '📭 New / Cold', cat2: '❌ No-Show', cat3: '📋 Sat — No Buy' };
+  const suggestedCat = open ? suggestSeqCat(open) : 'cat1';
+
+  // Group messages by day for date dividers
+  let lastDay = '';
+
+  if (!open) return React.createElement('div', { style: { padding: '32px', textAlign: 'center', color: 'var(--t4)', fontSize: '12px' } }, 'No lead selected.');
+
+  const optedOut = !!(open.smsOptOut);
+
+  return React.createElement('div', {
+    style: { display: 'flex', flexDirection: 'column', height: '560px', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)', overflow: 'hidden' }
+  },
+
+    // ── Header ─────────────────────────────────────────────────────
+    React.createElement('div', {
+      style: { padding: '10px 16px', borderBottom: '1px solid var(--border)', background: 'var(--surface-2)', display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }
+    },
+      React.createElement('div', { style: { flex: 1 } },
+        React.createElement('div', { style: { fontSize: '13px', fontWeight: '800', color: 'var(--t1)', fontFamily: "'JetBrains Mono',monospace" } }, open.phone || 'No phone'),
+        React.createElement('div', { style: { fontSize: '10px', color: 'var(--t3)', marginTop: '2px' } },
+          smsMessages.length + ' messages · ' + (optedOut ? '🔴 Opted Out' : '✅ A2P Cleared')
+        )
+      ),
+      optedOut && React.createElement('span', {
+        style: { fontSize: '10px', fontWeight: '800', padding: '3px 8px', borderRadius: '12px', background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid #FCA5A5' }
+      }, 'STOP RECEIVED')
+    ),
+
+    // ── Thread ─────────────────────────────────────────────────────
+    React.createElement('div', {
+      style: { flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }
+    },
+      smsMessages.length === 0
+        ? React.createElement('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--t4)', fontSize: '12px', textAlign: 'center', padding: '24px' } },
+            React.createElement('div', null,
+              React.createElement('div', { style: { fontSize: '28px', marginBottom: '8px' } }, '💬'),
+              'No messages yet.',
+              React.createElement('br', null),
+              'Send the first one below.'
+            )
+          )
+        : smsMessages.map((msg, i) => {
+            const isInbound  = msg.type === 'sms_inbound';
+            const isAuto     = msg.text && msg.text.startsWith('[SEQ]');
+            const msgText    = msg.text
+              .replace('📱 SMS sent: ', '')
+              .replace(/^\[SEQ\] SMS sent — Track: .+ \| Step \d+ \| To: .+/, '[Auto sequence message]')
+              .replace(/^\[SEQ\] SMS sent — .+/, '[Auto sequence]');
+            const msgDay     = dayLabel(msg.ts);
+            const showDivider = msgDay !== lastDay;
+            lastDay = msgDay;
+            const time = new Date(msg.ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+            return React.createElement(React.Fragment, { key: msg.ts + i },
+              showDivider && React.createElement('div', {
+                style: { textAlign: 'center', margin: '8px 0 4px', display: 'flex', alignItems: 'center', gap: '8px' }
+              },
+                React.createElement('div', { style: { flex: 1, height: '1px', background: 'var(--border)' } }),
+                React.createElement('span', { style: { fontSize: '10px', color: 'var(--t4)', fontWeight: '600', whiteSpace: 'nowrap' } }, msgDay),
+                React.createElement('div', { style: { flex: 1, height: '1px', background: 'var(--border)' } })
+              ),
+              React.createElement('div', {
+                style: { display: 'flex', justifyContent: isInbound ? 'flex-start' : 'flex-end', marginBottom: '2px' }
+              },
+                React.createElement('div', {
+                  style: {
+                    maxWidth: '78%', padding: '8px 12px', borderRadius: isInbound ? '4px 16px 16px 16px' : '16px 4px 16px 16px',
+                    background: isInbound ? 'var(--surface-2)' : '#1a2a44',
+                    color: isInbound ? 'var(--t1)' : '#fff',
+                    border: isInbound ? '1px solid var(--border)' : 'none',
+                    fontSize: '12px', lineHeight: '1.5', wordBreak: 'break-word'
+                  }
+                },
+                  React.createElement('div', null, msgText),
+                  React.createElement('div', {
+                    style: { fontSize: '9px', marginTop: '4px', opacity: 0.6, textAlign: isInbound ? 'left' : 'right' }
+                  }, time + (isAuto ? ' · auto' : ''))
+                )
+              )
+            );
+          }),
+      React.createElement('div', { ref: bottomRef })
+    ),
+
+    // ── Toolbar + Compose ──────────────────────────────────────────
+    React.createElement('div', {
+      style: { borderTop: '1px solid var(--border)', background: 'var(--surface)', padding: '10px 12px', flexShrink: 0, position: 'relative' }
+    },
+
+      // Template popover
+      tplOpen && React.createElement('div', {
+        style: {
+          position: 'absolute', bottom: 'calc(100% + 4px)', left: '0', right: '0', zIndex: 200,
+          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px',
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.15)', padding: '12px', maxHeight: '320px', overflow: 'hidden', display: 'flex', flexDirection: 'column'
+        }
+      },
+        // Category tabs
+        React.createElement('div', { style: { display: 'flex', gap: '4px', marginBottom: '10px', flexShrink: 0 } },
+          Object.entries(catLabels).map(([cat, label]) =>
+            React.createElement('button', {
+              key: cat,
+              onClick: () => setTplCategory(cat),
+              style: {
+                flex: 1, padding: '5px 4px', fontSize: '10px', fontWeight: '700', borderRadius: '6px', cursor: 'pointer', border: '1px solid ' + (tplCategory === cat ? 'var(--blue)' : 'var(--border)'),
+                background: tplCategory === cat ? 'var(--blue)' : 'transparent',
+                color: tplCategory === cat ? '#fff' : 'var(--t3)'
+              }
+            }, (cat === suggestedCat ? '⭐ ' : '') + label)
+          )
+        ),
+        // Steps list
+        React.createElement('div', { style: { overflowY: 'auto', flex: 1 } },
+          (SMS_SEQUENCES[tplCategory] && SMS_SEQUENCES[tplCategory].texts || []).map(step => {
+            const firstName = open ? (open.firstName || (open.name || '').split(' ')[0] || 'there') : 'there';
+            const preview = step.body(firstName, 'calendly.com/metkasolutions/20min').slice(0, 80) + '…';
+            return React.createElement('div', {
+              key: step.step,
+              onClick: () => fill(step.body(firstName, 'https://calendly.com/metkasolutions/20min')),
+              style: {
+                padding: '8px 10px', marginBottom: '4px', borderRadius: '8px', border: '1px solid var(--border)',
+                cursor: 'pointer', background: 'var(--surface-2)', transition: 'background 0.1s'
+              },
+              onMouseEnter: e => e.currentTarget.style.background = 'var(--blue-dim)',
+              onMouseLeave: e => e.currentTarget.style.background = 'var(--surface-2)',
+            },
+              React.createElement('div', { style: { fontSize: '10px', fontWeight: '800', color: 'var(--t3)', marginBottom: '2px' } }, 'Step ' + step.step),
+              React.createElement('div', { style: { fontSize: '11px', color: 'var(--t2)', lineHeight: '1.4' } }, preview)
+            );
+          })
+        )
+      ),
+
+      // Toolbar row
+      React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' } },
+        React.createElement('button', {
+          onClick: () => setTplOpen(v => !v),
+          style: { fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '6px', border: '1px solid ' + (tplOpen ? 'var(--blue)' : 'var(--border)'), background: tplOpen ? 'var(--blue)' : 'var(--surface-2)', color: tplOpen ? '#fff' : 'var(--t2)', cursor: 'pointer', whiteSpace: 'nowrap' }
+        }, '📋 Templates ' + (tplOpen ? '▲' : '▾')),
+        // Variable insertion
+        React.createElement('div', { style: { display: 'flex', gap: '3px' } },
+          [
+            ['{firstName}', 'Name'],
+            ['{calendly}',  'Cal'],
+            ['{selfApply}', 'Apply'],
+          ].map(([v, lbl]) =>
+            React.createElement('button', {
+              key: v,
+              onClick: () => insertVar(v),
+              title: 'Insert ' + v,
+              style: { fontSize: '10px', fontWeight: '700', padding: '3px 7px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface-2)', color: 'var(--t3)', cursor: 'pointer' }
+            }, '{' + lbl + '}')
+          )
+        ),
+        React.createElement('div', { style: { marginLeft: 'auto', fontSize: '10px', color: chars > MAX ? 'var(--red)' : chars > MAX * 0.85 ? 'var(--amber)' : 'var(--t4)', fontWeight: '700', fontFamily: 'monospace' } },
+          chars + '/' + MAX + (segs > 1 ? ' ·' + segs + 'seg' : '')
+        )
+      ),
+
+      // Compose row
+      React.createElement('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-end' } },
+        React.createElement('textarea', {
+          value: msgText,
+          onChange: e => setMsgText(e.target.value),
+          onKeyDown: e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSend(); },
+          placeholder: optedOut ? 'Lead has opted out — cannot send' : 'Type a message… (Cmd+Enter to send)',
+          disabled: optedOut,
+          rows: 2,
+          style: {
+            flex: 1, resize: 'none', padding: '8px 10px', fontSize: '12px', borderRadius: '8px',
+            border: '1px solid var(--border)', background: optedOut ? 'var(--surface-2)' : 'var(--surface)',
+            color: 'var(--t1)', fontFamily: "'Inter',sans-serif", lineHeight: '1.5', boxSizing: 'border-box'
+          }
+        }),
+        React.createElement('button', {
+          onClick: handleSend,
+          disabled: !msgText.trim() || sending || optedOut,
+          style: {
+            padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: msgText.trim() && !sending && !optedOut ? 'pointer' : 'default',
+            background: sendResult === 'ok' ? 'var(--green)' : sendResult === 'err' ? 'var(--red)' : msgText.trim() && !optedOut ? '#1a2a44' : 'var(--border)',
+            color: msgText.trim() || sendResult ? '#fff' : 'var(--t3)',
+            fontSize: '12px', fontWeight: '800', transition: 'background 0.15s', whiteSpace: 'nowrap', alignSelf: 'stretch', minHeight: '54px'
+          }
+        }, sending ? '⏳' : sendResult === 'ok' ? '✅ Sent' : sendResult === 'err' ? '❌ Retry' : '📱 Send')
+      )
+    )
+  );
+}
+
 // ── CONTACT DETAIL PAGE ───────────────────────────────────────────
 export default function ContactDetail({
   open, prevView, setView,
@@ -184,10 +458,13 @@ export default function ContactDetail({
   openCalendlyPopup, calendlyUrl, setCalendlyTargetId,
   newReqText, setNewReqText,
   initUWReqs, toggleUWReq, removeUWReq, addUWReq,
+  sendSms,
+  selfApplyUrl,
 }) {
   if (!open) return null;
 
   // v3.35 — local state for structured meeting log
+  const [cdTab, setCdTab] = React.useState('overview'); // 'overview' | 'sms'
   const [meetingOutcome, setMeetingOutcome] = React.useState('Held');
   const [meetingTs, setMeetingTs]           = React.useState('');
 
@@ -384,8 +661,30 @@ export default function ContactDetail({
         )
       ),
 
-      // ── RIGHT: disposition + stage + callback + UW
-      React.createElement("div", { style:{ flex:"1 1 320px", minWidth:"280px", display:"flex", flexDirection:"column", gap:"16px" } },
+      // ── RIGHT: tabbed panel — Overview | SMS
+      React.createElement("div", { style:{ flex:"1 1 320px", minWidth:"280px", display:"flex", flexDirection:"column", gap:"0" } },
+
+        // Tab bar
+        React.createElement("div", { style:{ display:"flex", marginBottom:"16px", borderRadius:"10px", overflow:"hidden", border:"1px solid var(--border)", background:"var(--surface-2)", flexShrink:0 } },
+          [["overview","📋 Overview"],["sms","💬 SMS"]].map(([tab,label]) =>
+            React.createElement("button", {
+              key:tab, onClick:()=>setCdTab(tab),
+              style:{
+                flex:1, padding:"9px 6px", fontSize:"11px", fontWeight:"700", border:"none", cursor:"pointer",
+                background: cdTab===tab ? "var(--navy)" : "transparent",
+                color: cdTab===tab ? "#fff" : "var(--t3)",
+                borderRight: tab==="overview" ? "1px solid var(--border)" : "none",
+                transition:"all 0.1s"
+              }
+            }, label)
+          )
+        ),
+
+        // SMS tab
+        cdTab === "sms" && React.createElement(SmsThreadTab, { open, sendSms, selfApplyUrl }),
+
+        // Overview tab contents — disposition + stage + callback + UW
+        cdTab === "overview" && React.createElement("div", { style:{ display:"flex", flexDirection:"column", gap:"16px" } },
 
         // Disposition card
         React.createElement("div", { style:{ background:"var(--surface)", borderRadius:"12px", border:"1px solid var(--border)", padding:"20px 24px" } },
@@ -604,7 +903,8 @@ export default function ContactDetail({
             })
           )
         )
-      );
+      )
+    );
     }
 
     export { StageStepper, UnderwritingCard };

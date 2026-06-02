@@ -33,16 +33,133 @@ function renderLiveTokens(text, lead, upd) {
   });
 }
 
+
+// ── SMS TAB COMPONENT ─────────────────────────────────────────────────────────
+// Live send via Twilio send-sms Edge Function.
+// Templates: quick-access chips from manual templates + freeform compose.
+// Char counter: 160 chars = 1 SMS segment. Logs every send to lead notes.
+function SmsTab({ open, upd, sendSms, templates }) {
+  const [msgText,    setMsgText]    = React.useState('');
+  const [sending,    setSending]    = React.useState(false);
+  const [lastResult, setLastResult] = React.useState(null); // 'ok' | 'err'
+
+  const MAX_SEG = 160;
+  const chars   = msgText.length;
+  const segs    = Math.ceil(chars / MAX_SEG) || 1;
+  const charColor = chars > MAX_SEG * 2 ? 'var(--red)' : chars > MAX_SEG ? 'var(--amber)' : 'var(--t3)';
+
+  const fill = (text) => {
+    if (!open) return;
+    const first = (open.firstName || (open.name || '').split(' ')[0] || 'there');
+    setMsgText(text.replace(/\{n\}/g, first).replace(/\{name\}/gi, first).replace(/\{firstName\}/gi, first));
+  };
+
+  const handleSend = async () => {
+    if (!open || !msgText.trim() || sending) return;
+    if (!open.phone) { alert('No phone number on this lead.'); return; }
+    setSending(true);
+    setLastResult(null);
+    try {
+      await sendSms(open.phone, msgText.trim(), open.id);
+      setLastResult('ok');
+      setMsgText('');
+      setTimeout(() => setLastResult(null), 3000);
+    } catch (e) {
+      setLastResult('err');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  // SMS history — notes that contain SMS sends
+  const smsNotes = (open && open.notes || []).filter(n =>
+    n.text && (n.text.startsWith('📱 SMS') || n.text.startsWith('[SEQ] SMS'))
+  ).slice(0, 6);
+
+  if (!open) return React.createElement('div', { id: 'dial-panel-sms', role: 'tabpanel', 'aria-labelledby': 'dial-tab-sms',
+    style: { padding: '32px', textAlign: 'center', color: 'var(--t4)', fontSize: '12px' } }, 'Select a lead to send SMS.');
+
+  return React.createElement('div', {
+    id: 'dial-panel-sms', role: 'tabpanel', 'aria-labelledby': 'dial-tab-sms',
+    style: { padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }
+  },
+
+    // Phone + TCPA status
+    React.createElement('div', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--t2)', padding: '6px 10px', background: 'var(--surface)', borderRadius: '6px', border: '1px solid var(--border)' } },
+      '📱 ', open.phone || 'No phone',
+      React.createElement('span', { style: { marginLeft: '8px', color: 'var(--green)', fontWeight: '800' } }, '✓ A2P Cleared')
+    ),
+
+    // Quick-fill chips from manual templates
+    Object.keys(templates || {}).length > 0 && React.createElement('div', null,
+      React.createElement('div', { style: { fontSize: '10px', fontWeight: '800', color: 'var(--t3)', letterSpacing: '0.08em', marginBottom: '5px' } }, 'QUICK TEMPLATES'),
+      React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+        Object.entries(templates || {}).slice(0, 8).map(([key, tpl]) =>
+          React.createElement('button', {
+            key,
+            onClick: () => fill(tpl.text || ''),
+            style: { fontSize: '10px', padding: '3px 8px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--t2)', cursor: 'pointer', fontWeight: '600', lineHeight: 1.4 }
+          }, (tpl.name || key).replace(/^[A-Z0-9]+ — /, '').slice(0, 22))
+        )
+      )
+    ),
+
+    // Compose area
+    React.createElement('div', null,
+      React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '4px' } },
+        React.createElement('div', { style: { fontSize: '10px', fontWeight: '800', color: 'var(--t3)', letterSpacing: '0.08em' } }, 'MESSAGE'),
+        React.createElement('div', { style: { fontSize: '10px', color: charColor, fontWeight: '700' } },
+          chars + ' chars · ' + segs + (segs === 1 ? ' segment' : ' segments'))
+      ),
+      React.createElement('textarea', {
+        value: msgText,
+        onChange: e => setMsgText(e.target.value),
+        placeholder: 'Type a message or pick a template above...',
+        style: { width: '100%', minHeight: '90px', padding: '8px 10px', fontSize: '12px', borderRadius: '7px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--t1)', fontFamily: "'Inter',sans-serif", resize: 'vertical', boxSizing: 'border-box', lineHeight: '1.5' }
+      })
+    ),
+
+    // Send button + result
+    React.createElement('button', {
+      onClick: handleSend,
+      disabled: !msgText.trim() || sending,
+      style: {
+        width: '100%', minHeight: '42px', borderRadius: '8px', border: 'none',
+        background: lastResult === 'ok' ? 'var(--green)' : lastResult === 'err' ? 'var(--red)' : msgText.trim() ? '#2563EB' : 'var(--border)',
+        color: msgText.trim() || lastResult ? '#fff' : 'var(--t3)',
+        fontSize: '12px', fontWeight: '800', letterSpacing: '0.5px',
+        cursor: msgText.trim() && !sending ? 'pointer' : 'default',
+        transition: 'background 0.2s'
+      }
+    }, sending ? '⏳ Sending...' : lastResult === 'ok' ? '✅ Sent!' : lastResult === 'err' ? '❌ Failed — Try Again' : '📱 SEND SMS'),
+
+    // SMS history
+    smsNotes.length > 0 && React.createElement('div', null,
+      React.createElement('div', { style: { fontSize: '10px', fontWeight: '800', color: 'var(--t3)', letterSpacing: '0.08em', marginBottom: '5px' } }, 'SENT HISTORY'),
+      smsNotes.map((n, i) =>
+        React.createElement('div', { key: n.ts || i, style: { fontSize: '11px', color: 'var(--t2)', padding: '6px 8px', background: 'var(--surface)', borderRadius: '5px', border: '1px solid var(--border)', marginBottom: '4px', lineHeight: '1.4' } },
+          React.createElement('span', { style: { color: 'var(--t4)', marginRight: '5px' } },
+            n.ts ? new Date(n.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''
+          ),
+          n.text.replace('📱 SMS sent: ', '').replace('[SEQ] SMS sent — ', '')
+        )
+      )
+    )
+  );
+}
+
 // ── DialRightPanel — Script / Notes / SMS / Activity / Q's tabs ───────────
 export default function DialRightPanel({
+  panelExpanded, togglePanel,
   dialRightTab, setDialRightTab,
   open, upd,
   noteText, setNoteText,
   addNote,
   scripts, scriptType, setScriptType, scriptSection, setScriptSection,
   templates,
+  sendSms,
 }) {
-  return React.createElement('div', { style: { width: '300px', flexShrink: 0, display: 'flex', flexDirection: 'column', background: 'var(--surface-2)', borderLeft: '1px solid var(--border)', overflow: 'hidden' } },
+  return React.createElement('div', { style: { width: panelExpanded ? '100%' : '300px', flexShrink: panelExpanded ? 1 : 0, flex: panelExpanded ? 1 : undefined, display: 'flex', flexDirection: 'column', background: 'var(--surface-2)', borderLeft: '1px solid var(--border)', overflow: 'hidden', transition: 'width 0.25s ease' } },
 
     // Tab bar
     React.createElement('div', {
@@ -69,7 +186,13 @@ export default function DialRightPanel({
           React.createElement('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, icon),
           React.createElement('span', null, lbl)
         )
-      )
+      ),
+      // v3.38 — expand/collapse toggle
+      React.createElement('button', {
+        onClick: togglePanel,
+        title: panelExpanded ? 'Show Queue' : 'Focus Mode',
+        style: { padding:'0 10px', minHeight:'44px', background:'transparent', border:'none', borderBottom:'2px solid transparent', borderLeft:'1px solid var(--border)', cursor:'pointer', color:'var(--t3)', fontSize:'16px', flexShrink:0, lineHeight:1 }
+      }, panelExpanded ? '◀' : '▶')
     ),
 
     // Tab panels
@@ -133,31 +256,11 @@ export default function DialRightPanel({
           : React.createElement('div', { style: { textAlign: 'center', padding: '32px 0', color: 'var(--t4)', fontSize: '12px' } }, 'No notes yet.')
       ),
 
-      // SMS tab
-      dialRightTab === 'sms' && React.createElement('div', {
-        id: 'dial-panel-sms', role: 'tabpanel', 'aria-labelledby': 'dial-tab-sms', style: { padding: '12px' }
-      },
-        React.createElement('div', { style: { fontSize: '11px', fontWeight: '800', color: 'var(--t3)', letterSpacing: '0.08em', marginBottom: '10px' } }, 'SMS TEMPLATES'),
-        open && Object.entries(templates || {}).length > 0
-          ? Object.entries(templates || {}).map(([key, tpl]) =>
-              React.createElement('div', { key: key, style: { marginBottom: '8px', padding: '10px 12px', background: 'var(--surface)', borderRadius: '8px', border: '1px solid var(--border)' } },
-                React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
-                  React.createElement('span', { style: { fontSize: '11px', fontWeight: '700', color: 'var(--t1)', flex: 1 } }, tpl.name || key),
-                  React.createElement('button', {
-                    onClick: () => {
-                      const first = (open.name || '').split(' ')[0];
-                      const msg = (tpl.text || '').replace(/\{name\}/gi, first).replace(/\{firstname\}/gi, first);
-                      try { navigator.clipboard.writeText(msg); } catch { const ta = document.createElement('textarea'); ta.value = msg; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
-                      alert('📱 SMS copied — open your texting app and paste.');
-                    },
-                    style: { fontSize: '11px', padding: '3px 8px', borderRadius: '4px', background: 'var(--blue)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: '800', letterSpacing: '0.5px' }
-                  }, 'COPY')
-                ),
-                React.createElement('div', { style: { fontSize: '11px', color: 'var(--t2)', lineHeight: '1.5', whiteSpace: 'pre-wrap', fontFamily: "'JetBrains Mono',monospace", background: 'var(--surface-2)', padding: '8px', borderRadius: '4px', border: '1px solid var(--border)' } }, tpl.text || '')
-              )
-            )
-          : React.createElement('div', { style: { textAlign: 'center', padding: '32px 0', color: 'var(--t4)', fontSize: '12px' } }, 'No SMS templates configured.')
-      ),
+      // SMS tab — live send via Twilio (A2P approved 2026-06-01)
+      dialRightTab === 'sms' && React.createElement(SmsTab, {
+        key: open ? open.id : 'no-lead',
+        open, upd, sendSms, templates
+      }),
 
       // ACTIVITY tab
       dialRightTab === 'activity' && React.createElement('div', {
