@@ -25,6 +25,7 @@ export default function SettingsView({
   backupExists, restoreBackup,
   templates, scripts,
   saveScripts, saveTemplates,
+  aiConfig, aiDraft, setAiDraft, aiSaved, setAiSaved, saveAi,
 }) {
   // ── CONSTANT CONTACT LOCAL STATE ─────────────────────────────────────
   const [ccConnected, setCcConnected] = React.useState(() => ccIsConnected());
@@ -508,6 +509,42 @@ export default function SettingsView({
           ccSyncStatus==="error" && ccSyncResult && React.createElement("div",{style:{padding:"10px 14px",background:"var(--red-dim)",border:"1px solid #FCA5A5",borderRadius:"8px",fontSize:"12px",color:"var(--red)",fontWeight:"600"}},
             "❌ Sync failed: "+ccSyncResult.error
           )
+        )
+      ),
+
+
+      // ── AI ASSISTANT CARD ──
+      React.createElement("div",{style:{background:"var(--surface)",border:"1px solid " + (aiConfig && aiConfig.geminiKey ? "var(--green)" : "var(--border)"),borderRadius:"16px",padding:"24px",marginBottom:"16px",boxShadow:"0 4px 16px rgba(0,0,0,0.03)"}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"6px"}},
+          React.createElement("div",{style:{fontSize:"15px",fontWeight:"700",color:"var(--t1)"}},"🤖 AI Assistant (Gemini)"),
+          (aiConfig && aiConfig.geminiKey)
+            ? React.createElement("span",{style:{fontSize:"11px",fontWeight:"800",color:"var(--green)",background:"var(--green-dim)",padding:"4px 10px",borderRadius:"20px",border:"1px solid #6EE7B7"}},"CONNECTED")
+            : React.createElement("span",{style:{fontSize:"11px",fontWeight:"800",color:"var(--amber)",background:"#FEF3C7",padding:"4px 10px",borderRadius:"20px",border:"1px solid #FCD34D"}},"NOT SET")
+        ),
+        React.createElement("div",{style:{fontSize:"12px",color:"var(--t3)",marginBottom:"18px",fontWeight:"500",lineHeight:"1.6"}},"Enables the AI panel (🤖 button in the corner) — Chat, Lead Intel, Draft Copy, and Note Extraction. Powered by Google Gemini 2.0 Flash. Get a free key at aistudio.google.com."),
+        React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"GEMINI API KEY"),
+        React.createElement("input",{
+          type:"password",
+          placeholder:"Paste your Google AI Studio API key…",
+          value:(aiDraft && aiDraft.geminiKey) || "",
+          onChange:e=>setAiDraft(p=>({...p,geminiKey:e.target.value})),
+          style:{background:"var(--surface-2)",border:"1px solid var(--border)",borderRadius:"7px",padding:"10px 14px",fontSize:"12px",color:"var(--t1)",width:"100%",marginBottom:"16px",boxSizing:"border-box",fontFamily:"'JetBrains Mono',monospace"}
+        }),
+        React.createElement("div",{style:{display:"flex",gap:"8px"}},
+          React.createElement("button",{
+            onClick:()=>{
+              const cfg = {geminiKey:(aiDraft && aiDraft.geminiKey || "").trim()};
+              if(saveAi) saveAi(cfg); else { setAiSaved(true); setTimeout(()=>setAiSaved(false),2500); }
+            },
+            style:{padding:"9px 20px",background:"var(--navy)",color:"#fff",border:"none",borderRadius:"8px",fontSize:"12px",fontWeight:"700",cursor:"pointer"}
+          }, aiSaved ? "✓ Saved!" : "Save Key"),
+          (aiConfig && aiConfig.geminiKey) && React.createElement("button",{
+            onClick:()=>{
+              const empty = {geminiKey:""};
+              if(saveAi) saveAi(empty);
+            },
+            style:{padding:"9px 16px",background:"var(--red-dim)",color:"var(--red)",border:"1px solid #FCA5A5",borderRadius:"8px",fontSize:"12px",fontWeight:"700",cursor:"pointer"}
+          },"Disconnect")
         )
       ),
 

@@ -19,6 +19,7 @@ const LS_SEQ_CONFIG = 'metka-seq-config-v1';
 const LS_TWILIO     = 'metka-twilio-config-v1';
 const LS_CB_PRESETS = 'metka-cb-presets-v1';
 const LS_CALENDLY   = 'metka-calendly-v1';
+const LS_AI         = 'metka-ai-config-v1';
 
 // ── Defaults (exported so SettingsView can reference them for reset) ──
 export const DEFAULT_FINANCIAL = {
@@ -39,6 +40,8 @@ export const DEFAULT_CB_PRESETS = [
   { id: 'tom_pm', label: 'Tomorrow PM', minOffset: null, daysAhead: 1, hour: 14  },
   { id: 'week',   label: 'Next Week',   minOffset: null, daysAhead: 7, hour: 9   },
 ];
+
+export const DEFAULT_AI = { geminiKey: '' };
 
 // ── Safe localStorage read helper ────────────────────────────────────
 const readLS = (key, def) => {
@@ -100,6 +103,15 @@ export const useSettingsConfig = () => {
   const [showCalendlyCfg,  setShowCalendlyCfg]  = useState(false);
   const [calendlyTargetId, setCalendlyTargetId] = useState(null);
 
+  // ── AI Config ─────────────────────────────────────────────────────
+  const [aiConfig, setAiConfig] = useState(() => ({
+    ...DEFAULT_AI, ...readLS(LS_AI, {}),
+  }));
+  const [aiDraft, setAiDraft] = useState(() => ({
+    ...DEFAULT_AI, ...readLS(LS_AI, {}),
+  }));
+  const [aiSaved, setAiSaved] = useState(false);
+
   // ── Persist helpers ────────────────────────────────────────────────
   const saveFinancial = useCallback(cfg => {
     setFinancialConfig(cfg);
@@ -139,6 +151,14 @@ export const useSettingsConfig = () => {
     try { localStorage.setItem(LS_CALENDLY, url); } catch {}
   }, []);
 
+  const saveAi = useCallback(cfg => {
+    setAiConfig(cfg);
+    setAiDraft(cfg);
+    try { localStorage.setItem(LS_AI, JSON.stringify(cfg)); } catch {}
+    setAiSaved(true);
+    setTimeout(() => setAiSaved(false), 2000);
+  }, []);
+
   return {
     // Financial
     financialConfig, setFinancialConfig,
@@ -168,6 +188,11 @@ export const useSettingsConfig = () => {
     showCalendlyCfg,  setShowCalendlyCfg,
     calendlyTargetId, setCalendlyTargetId,
     saveCalendly,
+    // AI Config
+    aiConfig, setAiConfig,
+    aiDraft,  setAiDraft,
+    aiSaved,  setAiSaved,
+    saveAi,
     // Exported defaults
     DEFAULT_FINANCIAL,
   };

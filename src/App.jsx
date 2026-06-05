@@ -98,6 +98,7 @@ import { useSettingsConfig } from './lib/useSettingsConfig.js';
 import { useSupabaseHydration } from './lib/useSupabaseHydration.js';
 import SequenceRunsTab from './components/SequenceRunsTab.jsx';
 import { useImportHandlers } from './lib/useImportHandlers.js';
+import AIPanel from './components/AIPanel.jsx';
 
 // ── SUPABASE CLIENT ──────────────────────────────────────────────
 // (All Supabase functions imported from lib/supabaseSync.js v3.6)
@@ -216,6 +217,7 @@ function MetkaCRM(){
     callbackPresets, setCallbackPresets,
     calendlyUrl, setCalendlyUrl, calendlyDraft, setCalendlyDraft,
     showCalendlyCfg, setShowCalendlyCfg, calendlyTargetId, setCalendlyTargetId, saveCalendly,
+    aiConfig, setAiConfig, aiDraft, setAiDraft, aiSaved, setAiSaved, saveAi,
     DEFAULT_FINANCIAL,
   } = useSettingsConfig();
   const [backupExists, setBackupExists]       = useState(false);
@@ -372,6 +374,38 @@ function MetkaCRM(){
           localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
         } catch(e) { console.warn('[CRM v3.42] Could not persist overdue spread:', e); }
         console.log('[CRM v3.42] Spread overdue leads into future sessions');
+      }
+
+      // v3.38 — One-time phone dedup: removes duplicate leads sharing the same phone number.
+      // Newest _ts wins. Tombstones removed IDs so Supabase hydration doesn't re-add them.
+      const LS_PHONE_DEDUP = 'metka-phone-dedup-v1';
+      if (!localStorage.getItem(LS_PHONE_DEDUP)) {
+        console.log('[CRM v3.38] Running one-time phone dedup...');
+        const _phoneMap = new Map();
+        const _noPhone = [];
+        initialLeads.forEach(l => {
+          const p = (l.phone || '').replace(/\D/g, '');
+          if (!p) { _noPhone.push(l); return; }
+          const ex = _phoneMap.get(p);
+          if (!ex || (l._ts || 0) >= (ex._ts || 0)) _phoneMap.set(p, l);
+        });
+        const _deduped = [...Array.from(_phoneMap.values()), ..._noPhone];
+        const _removed = initialLeads.length - _deduped.length;
+        if (_removed > 0) {
+          // Tombstone removed IDs so hydration doesn't re-add them from Supabase
+          let _tombstones = {};
+          try { _tombstones = JSON.parse(localStorage.getItem(LS_DELETED_IDS) || '{}'); } catch {}
+          const _keptIds = new Set(_deduped.map(l => l.id));
+          const _now38 = Date.now();
+          initialLeads.forEach(l => { if (!_keptIds.has(l.id)) _tombstones[l.id] = _now38; });
+          try { localStorage.setItem(LS_DELETED_IDS, JSON.stringify(_tombstones)); } catch {}
+          initialLeads = _deduped;
+          try {
+            localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
+          } catch(e) { console.warn('[CRM v3.38] Could not persist phone dedup:', e); }
+          console.log(`[CRM v3.38] Phone dedup: removed ${_removed} duplicate leads`);
+        }
+        localStorage.setItem(LS_PHONE_DEDUP, '1');
       }
 
       setLeads(initialLeads);
@@ -1348,6 +1382,7 @@ const queue = useMemo(() => {
           backupExists, restoreBackup,
           templates, scripts,
           saveScripts, saveTemplates,
+          aiConfig, aiDraft, setAiDraft, aiSaved, setAiSaved, saveAi,
         })
       )
     ),
@@ -1355,6 +1390,9 @@ const queue = useMemo(() => {
 
            // ── FLOATING CALL CONTROL BAR ──
         view !== 'dial' && React.createElement(CallBar, {activeCall, callStatus, callElapsed, callMuted, activeCallLead, toggleMute, hangUp, sendDigit}),
+
+    // ── AI PANEL (floating) ──
+    React.createElement(AIPanel, { activeLead: open, aiConfig }),
 
     // ── APPOINTMENT CONFIRMATION MODAL ── full-screen lock, no escape
     (open && open.disposition === 'appointment_booked' && open.nextCallback && new Date(open.nextCallback) < new Date() && !open.apptConfirmed) &&
