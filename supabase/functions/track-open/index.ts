@@ -64,12 +64,16 @@ serve(async (req: Request) => {
     };
     const notes = [newNote, ...((lead.notes as unknown[]) || [])];
 
+    // v3.40 — stamp fresh _ts so realtime subscription and boot-time hydration
+    // accept this update (both use _ts to determine "newest wins").
+    // Without this, open-count updates from track-open are silently rejected.
     await sb.from("leads").update({
       data: {
         ...lead,
         emailOpenCount:    openCount,
         lastEmailOpenedAt: now,
         notes,
+        _ts: Date.now(),
       },
       updated_at: now,
     }).eq("id", leadId);

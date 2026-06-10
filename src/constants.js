@@ -36,6 +36,7 @@ export const DISPS = [
   {id:"dnc",                label:"DNC 🚫",            color:"#DC2626"},
   {id:"appointment_booked", label:"📅 Appt Booked",   color:"#8B5CF6"},
   {id:"no_show",            label:"No Show",           color:"#F59E0B"},
+  {id:"no_sale",            label:"Sat — No Sale",     color:"#8B5CF6"},
   {id:"follow_up_needed",   label:"Follow-Up Needed", color:"#6366F1"},
   {id:"withdrawn",          label:"Withdrawn",         color:"#94A3B8"},
   {id:"chargeback",         label:"Chargeback 🔴",    color:"#DC2626"},

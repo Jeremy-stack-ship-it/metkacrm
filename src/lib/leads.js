@@ -67,7 +67,10 @@ export const makeLeadManager = (
         const baseNotes = patch.notes ? [...patch.notes] : [...(cur.notes || [])];
         if (patch.stage === "app_submitted" && !cur.submittedDate) {
           patch.submittedDate = nowIso;
+          // v3.38 — auto-schedule UW check-in 14 days out
+          patch.nextCallback = new Date(Date.now() + 14 * 86_400_000).toISOString();
           baseNotes.unshift({ ts: nowIso, type: "note", text: "\u{1F4E8} Stage advanced to App Submitted — UW clock started." });
+          baseNotes.unshift({ ts: nowIso, type: "note", text: `\u{1F4CB} UW Check-In scheduled — 14 days (${new Date(Date.now() + 14*86400000).toLocaleDateString("en-US",{month:"short",day:"numeric"})})` });
         }
         if (patch.stage === "issued" && !cur.policyIssueDate) {
           patch.policyIssueDate = nowIso;
@@ -100,7 +103,8 @@ export const makeLeadManager = (
         }
       }
 
-      const next = prev.map(l => l.id === id ? { ...l, ...patch } : l);
+      const _updTs = Date.now();
+      const next = prev.map(l => l.id === id ? { ...l, ...patch, _ts: _updTs } : l);
 
       // Overwrite captures every invocation — StrictMode's second (real) run wins.
       sfUpdated = next.find(l => l.id === id) || null;
@@ -123,7 +127,9 @@ export const makeLeadManager = (
     });
 
     // Side effects fire OUTSIDE the updater — exactly once regardless of StrictMode double-runs.
-    if (sfUpdated) setTimeout(() => persistLeads(sfLeads, sfUpdated), 0);
+    // v3.38 — persistLeads is now synchronous (no setTimeout) to prevent notes loss on quick refresh.
+    // StrictMode safety: sfLeads/sfUpdated are overwritten each updater run; final values used here.
+    if (sfUpdated) persistLeads(sfLeads, sfUpdated);
     if (sfEvents)  setTimeout(() => appendActivity(sfEvents), 0);
   };
 
@@ -137,7 +143,11 @@ export const makeLeadManager = (
         type: noteType,
         text: noteText.trim()
       }, ...(freshestLead.notes || [])],
-      lastContact: new Date().toISOString().split("T")[0]
+      // v3.43 — F1: dayKey() = LOCAL date (toISOString was UTC — after ~7PM CT it
+      // stamped tomorrow, breaking contacted-today suppression both days).
+      // v3.43 — F9: plain journal notes no longer mark the lead contacted-today —
+      // only call/appointment notes count as a touch.
+      ...(noteType === "call" || noteType === "appointment" ? { lastContact: dayKey() } : {})
     }));
     // v2.3 — appointment notes also count as appointment activity
     if (noteType === "appointment") {
@@ -168,7 +178,7 @@ export const makeLeadManager = (
         type: "call",
         text: "Outbound Dial (Click-to-Call)"
       }, ...(fresh.notes || [])],
-      lastContact: new Date().toISOString().split("T")[0]
+      lastContact: dayKey() // v3.43 — F1: local date (was UTC)
     }));
     // v2.3 — log dial activity
     const ts = new Date().toISOString();
@@ -202,8 +212,11 @@ export const makeLeadManager = (
   const deleteLead = (id) => {
     const lead = leads.find(l => l.id === id);
     if (!window.confirm(`Permanently delete ${lead?.name || "this lead"}?\n\nThis cannot be undone.`)) return;
-    const next = leads.filter(l => l.id !== id);
-    saveLeads(next);
+    // v3.43 — F6: functional updater (was stale `leads` closure + saveLeads bulk
+    // upsert — deleting mid-dial-burst could persist a pre-disposition snapshot).
+    let sfNext = null;
+    setLeads(prev => { sfNext = prev.filter(l => l.id !== id); return sfNext; });
+    if (sfNext) persistLeads(sfNext);
     sbDeleteLead(id);
     // v3.14 — write tombstone so this lead can't ghost-walk back from Supabase on next hydration
     try {
@@ -237,7 +250,11 @@ export const makeLeadManager = (
             lastName: newL.name.split(" ").slice(1).join(" ") || ""
     };
     const l = { ...backfillLead(rawL), slot: assignSlot(rawL), ...initSequence(rawL) }; // v3.18 + phase + seq fields
-    saveLeads([l, ...leads]);
+    // v3.43 — F6: functional updater + single-row persist (was stale `leads`
+    // closure + saveLeads full-database bulk upsert for one new lead).
+    let sfNext = null;
+    setLeads(prev => { sfNext = [l, ...prev]; return sfNext; });
+    if (sfNext) persistLeads(sfNext, l);
     setNewL({ name: "", phone: "", state: "OK", bucket: "A", leadType: "Mortgage Protection", hobby: "" });
     setAddForm(false);
     setOpenId(l.id);

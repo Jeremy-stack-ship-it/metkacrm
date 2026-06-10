@@ -4,168 +4,6 @@
   "graph": {},
   "nodes": [
     {
-      "label": "CHANGELOG.md",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L1",
-      "id": "changelog_md",
-      "community": 15,
-      "norm_label": "changelog.md"
-    },
-    {
-      "label": "Changelog \u2014 Metka Field Ops CRM",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L1",
-      "id": "metka_crm_changelog_changelog_metka_field_ops_crm",
-      "community": 15,
-      "norm_label": "changelog \u2014 metka field ops crm"
-    },
-    {
-      "label": "[2026-05-13] v3.6 \u2014 Modular Architecture Refactor",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L202",
-      "id": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
-      "community": 15,
-      "norm_label": "[2026-05-13] v3.6 \u2014 modular architecture refactor"
-    },
-    {
-      "label": "Added",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L204",
-      "id": "metka_crm_changelog_added",
-      "community": 15,
-      "norm_label": "added"
-    },
-    {
-      "label": "Changed",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L212",
-      "id": "metka_crm_changelog_changed",
-      "community": 15,
-      "norm_label": "changed"
-    },
-    {
-      "label": "Fixed",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L218",
-      "id": "metka_crm_changelog_fixed",
-      "community": 15,
-      "norm_label": "fixed"
-    },
-    {
-      "label": "Dependencies",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L222",
-      "id": "metka_crm_changelog_dependencies",
-      "community": 15,
-      "norm_label": "dependencies"
-    },
-    {
-      "label": "Notes",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L226",
-      "id": "metka_crm_changelog_notes",
-      "community": 15,
-      "norm_label": "notes"
-    },
-    {
-      "label": "[2026-05-01] v2.0.0 \u2014 Ministry Lead Operating System",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L234",
-      "id": "metka_crm_changelog_2026_05_01_v2_0_0_ministry_lead_operating_system",
-      "community": 15,
-      "norm_label": "[2026-05-01] v2.0.0 \u2014 ministry lead operating system"
-    },
-    {
-      "label": "Added",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L236",
-      "id": "metka_crm_changelog_added_236",
-      "community": 15,
-      "norm_label": "added"
-    },
-    {
-      "label": "Fixed",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L247",
-      "id": "metka_crm_changelog_fixed_247",
-      "community": 15,
-      "norm_label": "fixed"
-    },
-    {
-      "label": "[2026-04-01] v1.0.0 \u2014 Initial Build",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L252",
-      "id": "metka_crm_changelog_2026_04_01_v1_0_0_initial_build",
-      "community": 15,
-      "norm_label": "[2026-04-01] v1.0.0 \u2014 initial build"
-    },
-    {
-      "label": "Added",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L254",
-      "id": "metka_crm_changelog_added_254",
-      "community": 15,
-      "norm_label": "added"
-    },
-    {
-      "label": "[2026-05-14] v3.6.1 \u2014 Power Dialer + Audit Fixes",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L263",
-      "id": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
-      "community": 15,
-      "norm_label": "[2026-05-14] v3.6.1 \u2014 power dialer + audit fixes"
-    },
-    {
-      "label": "Added",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L265",
-      "id": "metka_crm_changelog_added_265",
-      "community": 15,
-      "norm_label": "added"
-    },
-    {
-      "label": "Changed",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L270",
-      "id": "metka_crm_changelog_changed_270",
-      "community": 15,
-      "norm_label": "changed"
-    },
-    {
-      "label": "Fixed",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L279",
-      "id": "metka_crm_changelog_fixed_279",
-      "community": 15,
-      "norm_label": "fixed"
-    },
-    {
-      "label": "Build",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L286",
-      "id": "metka_crm_changelog_build",
-      "community": 15,
-      "norm_label": "build"
-    },
-    {
       "label": "App.jsx",
       "file_type": "code",
       "source_file": "src/App.jsx",
@@ -178,7 +16,7 @@
       "label": "todayStr()",
       "file_type": "code",
       "source_file": "src/App.jsx",
-      "source_location": "L135",
+      "source_location": "L137",
       "id": "src_app_todaystr",
       "community": 0,
       "norm_label": "todaystr()"
@@ -187,7 +25,7 @@
       "label": "SEEDS",
       "file_type": "code",
       "source_file": "src/App.jsx",
-      "source_location": "L137",
+      "source_location": "L139",
       "id": "src_app_seeds",
       "community": 0,
       "norm_label": "seeds"
@@ -196,37 +34,829 @@
       "label": "MetkaCRM()",
       "file_type": "code",
       "source_file": "src/App.jsx",
-      "source_location": "L145",
+      "source_location": "L147",
       "id": "src_app_metkacrm",
       "community": 0,
       "norm_label": "metkacrm()"
+    },
+    {
+      "label": "AIPanel.jsx",
+      "file_type": "code",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L1",
+      "id": "src_components_aipanel_jsx",
+      "community": 29,
+      "norm_label": "aipanel.jsx"
+    },
+    {
+      "label": "GEMINI_URL()",
+      "file_type": "code",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L8",
+      "id": "components_aipanel_gemini_url",
+      "community": 29,
+      "norm_label": "gemini_url()"
+    },
+    {
+      "label": "geminiCall()",
+      "file_type": "code",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L34",
+      "id": "components_aipanel_geminicall",
+      "community": 29,
+      "norm_label": "geminicall()"
+    },
+    {
+      "label": "leadCtx()",
+      "file_type": "code",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L60",
+      "id": "components_aipanel_leadctx",
+      "community": 29,
+      "norm_label": "leadctx()"
+    },
+    {
+      "label": "DRAFT_OPTS",
+      "file_type": "code",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L76",
+      "id": "components_aipanel_draft_opts",
+      "community": 29,
+      "norm_label": "draft_opts"
+    },
+    {
+      "label": "draftPrompt()",
+      "file_type": "code",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L83",
+      "id": "components_aipanel_draftprompt",
+      "community": 29,
+      "norm_label": "draftprompt()"
+    },
+    {
+      "label": "AIPanel()",
+      "file_type": "code",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L97",
+      "id": "components_aipanel_aipanel",
+      "community": 29,
+      "norm_label": "aipanel()"
+    },
+    {
+      "label": "SettingsView.jsx",
+      "file_type": "code",
+      "source_file": "src/components/SettingsView.jsx",
+      "source_location": "L1",
+      "id": "src_components_settingsview_jsx",
+      "community": 6,
+      "norm_label": "settingsview.jsx"
+    },
+    {
+      "label": "SettingsView()",
+      "file_type": "code",
+      "source_file": "src/components/SettingsView.jsx",
+      "source_location": "L5",
+      "id": "components_settingsview_settingsview",
+      "community": 6,
+      "norm_label": "settingsview()"
+    },
+    {
+      "label": "useSettingsConfig.js",
+      "file_type": "code",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L1",
+      "id": "src_lib_usesettingsconfig_js",
+      "community": 11,
+      "norm_label": "usesettingsconfig.js"
+    },
+    {
+      "label": "DEFAULT_FINANCIAL",
+      "file_type": "code",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L25",
+      "id": "lib_usesettingsconfig_default_financial",
+      "community": 11,
+      "norm_label": "default_financial"
+    },
+    {
+      "label": "DEFAULT_GMAIL",
+      "file_type": "code",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L34",
+      "id": "lib_usesettingsconfig_default_gmail",
+      "community": 11,
+      "norm_label": "default_gmail"
+    },
+    {
+      "label": "DEFAULT_SEQ",
+      "file_type": "code",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L35",
+      "id": "lib_usesettingsconfig_default_seq",
+      "community": 11,
+      "norm_label": "default_seq"
+    },
+    {
+      "label": "DEFAULT_TWILIO",
+      "file_type": "code",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L36",
+      "id": "lib_usesettingsconfig_default_twilio",
+      "community": 11,
+      "norm_label": "default_twilio"
+    },
+    {
+      "label": "DEFAULT_CB_PRESETS",
+      "file_type": "code",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L37",
+      "id": "lib_usesettingsconfig_default_cb_presets",
+      "community": 11,
+      "norm_label": "default_cb_presets"
+    },
+    {
+      "label": "DEFAULT_AI",
+      "file_type": "code",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L44",
+      "id": "lib_usesettingsconfig_default_ai",
+      "community": 11,
+      "norm_label": "default_ai"
+    },
+    {
+      "label": "readLS()",
+      "file_type": "code",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L47",
+      "id": "lib_usesettingsconfig_readls",
+      "community": 11,
+      "norm_label": "readls()"
+    },
+    {
+      "label": "useSettingsConfig()",
+      "file_type": "code",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L57",
+      "id": "lib_usesettingsconfig_usesettingsconfig",
+      "community": 0,
+      "norm_label": "usesettingsconfig()"
+    },
+    {
+      "label": "DashboardTab.jsx",
+      "file_type": "code",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L1",
+      "community": 3,
+      "norm_label": "dashboardtab.jsx",
+      "id": "src_components_dashboardtab_jsx"
+    },
+    {
+      "label": "DashboardTab()",
+      "file_type": "code",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L7",
+      "community": 4,
+      "norm_label": "dashboardtab()",
+      "id": "components_dashboardtab_dashboardtab"
+    },
+    {
+      "label": "MessagesView.jsx",
+      "file_type": "code",
+      "source_file": "src/components/MessagesView.jsx",
+      "source_location": "L1",
+      "community": 4,
+      "norm_label": "messagesview.jsx",
+      "id": "src_components_messagesview_jsx"
+    },
+    {
+      "label": "MessagesView()",
+      "file_type": "code",
+      "source_file": "src/components/MessagesView.jsx",
+      "source_location": "L9",
+      "community": 4,
+      "norm_label": "messagesview()",
+      "id": "components_messagesview_messagesview"
+    },
+    {
+      "label": "NavSidebar.jsx",
+      "file_type": "code",
+      "source_file": "src/components/NavSidebar.jsx",
+      "source_location": "L1",
+      "community": 16,
+      "norm_label": "navsidebar.jsx",
+      "id": "src_components_navsidebar_jsx"
+    },
+    {
+      "label": "GROUPS",
+      "file_type": "code",
+      "source_file": "src/components/NavSidebar.jsx",
+      "source_location": "L4",
+      "community": 16,
+      "norm_label": "groups",
+      "id": "components_navsidebar_groups"
+    },
+    {
+      "label": "VIEW_GROUP",
+      "file_type": "code",
+      "source_file": "src/components/NavSidebar.jsx",
+      "source_location": "L47",
+      "community": 16,
+      "norm_label": "view_group",
+      "id": "components_navsidebar_view_group"
+    },
+    {
+      "label": "NavBtn()",
+      "file_type": "code",
+      "source_file": "src/components/NavSidebar.jsx",
+      "source_location": "L51",
+      "community": 16,
+      "norm_label": "navbtn()",
+      "id": "components_navsidebar_navbtn"
+    },
+    {
+      "label": "NavSidebar()",
+      "file_type": "code",
+      "source_file": "src/components/NavSidebar.jsx",
+      "source_location": "L73",
+      "community": 16,
+      "norm_label": "navsidebar()",
+      "id": "components_navsidebar_navsidebar"
+    },
+    {
+      "label": "SmsThread.jsx",
+      "file_type": "code",
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L1",
+      "community": 4,
+      "norm_label": "smsthread.jsx",
+      "id": "src_components_smsthread_jsx"
+    },
+    {
+      "label": "SmsThread()",
+      "file_type": "code",
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L15",
+      "community": 4,
+      "norm_label": "smsthread()",
+      "id": "components_smsthread_smsthread"
+    },
+    {
+      "label": "index.ts",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L1",
+      "community": 8,
+      "norm_label": "index.ts",
+      "id": "supabase_functions_receive_sms_index_ts"
+    },
+    {
+      "label": "validateTwilioSignature()",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L22",
+      "community": 8,
+      "norm_label": "validatetwiliosignature()",
+      "id": "receive_sms_index_validatetwiliosignature"
+    },
+    {
+      "label": "params",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L56",
+      "community": 8,
+      "norm_label": "params",
+      "id": "receive_sms_index_params"
+    },
+    {
+      "label": "numMedia",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L62",
+      "community": 8,
+      "norm_label": "nummedia",
+      "id": "receive_sms_index_nummedia"
+    },
+    {
+      "label": "from10",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L81",
+      "community": 8,
+      "norm_label": "from10",
+      "id": "receive_sms_index_from10"
+    },
+    {
+      "label": "bodyTrimmed",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L84",
+      "community": 8,
+      "norm_label": "bodytrimmed",
+      "id": "receive_sms_index_bodytrimmed"
+    },
+    {
+      "label": "isOptOut",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L85",
+      "community": 8,
+      "norm_label": "isoptout",
+      "id": "receive_sms_index_isoptout"
+    },
+    {
+      "label": "isOptIn",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L86",
+      "community": 8,
+      "norm_label": "isoptin",
+      "id": "receive_sms_index_isoptin"
+    },
+    {
+      "label": "supabase",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L88",
+      "community": 8,
+      "norm_label": "supabase",
+      "id": "receive_sms_index_supabase"
+    },
+    {
+      "label": "matchedData",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L94",
+      "community": 8,
+      "norm_label": "matcheddata",
+      "id": "receive_sms_index_matcheddata"
+    },
+    {
+      "label": "match",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L103",
+      "community": 8,
+      "norm_label": "match",
+      "id": "receive_sms_index_match"
+    },
+    {
+      "label": "ts",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L117",
+      "community": 8,
+      "norm_label": "ts",
+      "id": "receive_sms_index_ts"
+    },
+    {
+      "label": "inboundNote",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L124",
+      "community": 8,
+      "norm_label": "inboundnote",
+      "id": "receive_sms_index_inboundnote"
+    },
+    {
+      "label": "patch",
+      "file_type": "code",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L133",
+      "community": 8,
+      "norm_label": "patch",
+      "id": "receive_sms_index_patch"
+    },
+    {
+      "label": "ContactDetail.jsx",
+      "file_type": "code",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L1",
+      "community": 1,
+      "norm_label": "contactdetail.jsx",
+      "id": "src_components_contactdetail_jsx"
+    },
+    {
+      "label": "StageStepper()",
+      "file_type": "code",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L24",
+      "community": 1,
+      "norm_label": "stagestepper()",
+      "id": "components_contactdetail_stagestepper"
+    },
+    {
+      "label": "UnderwritingCard()",
+      "file_type": "code",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L54",
+      "community": 1,
+      "norm_label": "underwritingcard()",
+      "id": "components_contactdetail_underwritingcard"
+    },
+    {
+      "label": "SmsThreadTab()",
+      "file_type": "code",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L181",
+      "community": 1,
+      "norm_label": "smsthreadtab()",
+      "id": "components_contactdetail_smsthreadtab"
+    },
+    {
+      "label": "ContactDetail()",
+      "file_type": "code",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L451",
+      "community": 1,
+      "norm_label": "contactdetail()",
+      "id": "components_contactdetail_contactdetail"
+    },
+    {
+      "label": "DialRightPanel.jsx",
+      "file_type": "code",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L1",
+      "community": 1,
+      "norm_label": "dialrightpanel.jsx",
+      "id": "src_components_dialrightpanel_jsx"
+    },
+    {
+      "label": "TOKEN_FIELDS",
+      "file_type": "code",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L5",
+      "community": 1,
+      "norm_label": "token_fields",
+      "id": "components_dialrightpanel_token_fields"
+    },
+    {
+      "label": "renderLiveTokens()",
+      "file_type": "code",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L11",
+      "community": 1,
+      "norm_label": "renderlivetokens()",
+      "id": "components_dialrightpanel_renderlivetokens"
+    },
+    {
+      "label": "SmsTab()",
+      "file_type": "code",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L41",
+      "community": 1,
+      "norm_label": "smstab()",
+      "id": "components_dialrightpanel_smstab"
+    },
+    {
+      "label": "DialRightPanel()",
+      "file_type": "code",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L152",
+      "community": 1,
+      "norm_label": "dialrightpanel()",
+      "id": "components_dialrightpanel_dialrightpanel"
+    },
+    {
+      "label": "DialView.jsx",
+      "file_type": "code",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L1",
+      "community": 1,
+      "norm_label": "dialview.jsx",
+      "id": "src_components_dialview_jsx"
+    },
+    {
+      "label": "DialView()",
+      "file_type": "code",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L13",
+      "community": 1,
+      "norm_label": "dialview()",
+      "id": "components_dialview_dialview"
+    },
+    {
+      "label": "activityLog.js",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L1",
+      "community": 0,
+      "norm_label": "activitylog.js",
+      "id": "src_lib_activitylog_js"
+    },
+    {
+      "label": "DEFAULT_GOALS",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L10",
+      "community": 0,
+      "norm_label": "default_goals",
+      "id": "lib_activitylog_default_goals"
+    },
+    {
+      "label": "CONTACT_DISPS",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L13",
+      "community": 0,
+      "norm_label": "contact_disps",
+      "id": "lib_activitylog_contact_disps"
+    },
+    {
+      "label": "ACTIVITY_TYPES",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L18",
+      "community": 0,
+      "norm_label": "activity_types",
+      "id": "lib_activitylog_activity_types"
+    },
+    {
+      "label": "dayKey()",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L26",
+      "community": 0,
+      "norm_label": "daykey()",
+      "id": "lib_activitylog_daykey"
+    },
+    {
+      "label": "TODAY_KEY()",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L35",
+      "community": 0,
+      "norm_label": "today_key()",
+      "id": "lib_activitylog_today_key"
+    },
+    {
+      "label": "lastNDays()",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L38",
+      "community": 0,
+      "norm_label": "lastndays()",
+      "id": "lib_activitylog_lastndays"
+    },
+    {
+      "label": "weekKeys()",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L56",
+      "community": 0,
+      "norm_label": "weekkeys()",
+      "id": "lib_activitylog_weekkeys"
+    },
+    {
+      "label": "monthKeys()",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L72",
+      "community": 0,
+      "norm_label": "monthkeys()",
+      "id": "lib_activitylog_monthkeys"
+    },
+    {
+      "label": "aggregateActivity()",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L83",
+      "community": 0,
+      "norm_label": "aggregateactivity()",
+      "id": "lib_activitylog_aggregateactivity"
+    },
+    {
+      "label": "fmtTime()",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L100",
+      "community": 0,
+      "norm_label": "fmttime()",
+      "id": "lib_activitylog_fmttime"
+    },
+    {
+      "label": "goalTone()",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L104",
+      "community": 0,
+      "norm_label": "goaltone()",
+      "id": "lib_activitylog_goaltone"
+    },
+    {
+      "label": "makeActivityManager()",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L118",
+      "community": 0,
+      "norm_label": "makeactivitymanager()",
+      "id": "lib_activitylog_makeactivitymanager"
+    },
+    {
+      "label": "computeActivityQueue()",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L159",
+      "community": 0,
+      "norm_label": "computeactivityqueue()",
+      "id": "lib_activitylog_computeactivityqueue"
+    },
+    {
+      "label": "makeActivityEvent()",
+      "file_type": "code",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L182",
+      "community": 0,
+      "norm_label": "makeactivityevent()",
+      "id": "lib_activitylog_makeactivityevent"
+    },
+    {
+      "label": "CHANGELOG.md",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1",
+      "community": 15,
+      "norm_label": "changelog.md",
+      "id": "changelog_md"
+    },
+    {
+      "label": "Changelog \u2014 Metka Field Ops CRM",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1",
+      "community": 15,
+      "norm_label": "changelog \u2014 metka field ops crm",
+      "id": "metka_crm_changelog_changelog_metka_field_ops_crm"
+    },
+    {
+      "label": "[2026-05-13] v3.6 \u2014 Modular Architecture Refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L202",
+      "community": 15,
+      "norm_label": "[2026-05-13] v3.6 \u2014 modular architecture refactor",
+      "id": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor"
+    },
+    {
+      "label": "Added",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L204",
+      "community": 15,
+      "norm_label": "added",
+      "id": "metka_crm_changelog_added"
+    },
+    {
+      "label": "Changed",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L212",
+      "community": 15,
+      "norm_label": "changed",
+      "id": "metka_crm_changelog_changed"
+    },
+    {
+      "label": "Fixed",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L218",
+      "community": 15,
+      "norm_label": "fixed",
+      "id": "metka_crm_changelog_fixed"
+    },
+    {
+      "label": "Dependencies",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L222",
+      "community": 15,
+      "norm_label": "dependencies",
+      "id": "metka_crm_changelog_dependencies"
+    },
+    {
+      "label": "Notes",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L226",
+      "community": 15,
+      "norm_label": "notes",
+      "id": "metka_crm_changelog_notes"
+    },
+    {
+      "label": "[2026-05-01] v2.0.0 \u2014 Ministry Lead Operating System",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L234",
+      "community": 15,
+      "norm_label": "[2026-05-01] v2.0.0 \u2014 ministry lead operating system",
+      "id": "metka_crm_changelog_2026_05_01_v2_0_0_ministry_lead_operating_system"
+    },
+    {
+      "label": "Added",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L236",
+      "community": 15,
+      "norm_label": "added",
+      "id": "metka_crm_changelog_added_236"
+    },
+    {
+      "label": "Fixed",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L247",
+      "community": 15,
+      "norm_label": "fixed",
+      "id": "metka_crm_changelog_fixed_247"
+    },
+    {
+      "label": "[2026-04-01] v1.0.0 \u2014 Initial Build",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L252",
+      "community": 15,
+      "norm_label": "[2026-04-01] v1.0.0 \u2014 initial build",
+      "id": "metka_crm_changelog_2026_04_01_v1_0_0_initial_build"
+    },
+    {
+      "label": "Added",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L254",
+      "community": 15,
+      "norm_label": "added",
+      "id": "metka_crm_changelog_added_254"
+    },
+    {
+      "label": "[2026-05-14] v3.6.1 \u2014 Power Dialer + Audit Fixes",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L263",
+      "community": 15,
+      "norm_label": "[2026-05-14] v3.6.1 \u2014 power dialer + audit fixes",
+      "id": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes"
+    },
+    {
+      "label": "Added",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L265",
+      "community": 15,
+      "norm_label": "added",
+      "id": "metka_crm_changelog_added_265"
+    },
+    {
+      "label": "Changed",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L270",
+      "community": 15,
+      "norm_label": "changed",
+      "id": "metka_crm_changelog_changed_270"
+    },
+    {
+      "label": "Fixed",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L279",
+      "community": 15,
+      "norm_label": "fixed",
+      "id": "metka_crm_changelog_fixed_279"
+    },
+    {
+      "label": "Build",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L286",
+      "community": 15,
+      "norm_label": "build",
+      "id": "metka_crm_changelog_build"
     },
     {
       "label": "leads.js",
       "file_type": "code",
       "source_file": "src/lib/leads.js",
       "source_location": "L1",
-      "id": "src_lib_leads_js",
       "community": 0,
-      "norm_label": "leads.js"
+      "norm_label": "leads.js",
+      "id": "src_lib_leads_js"
     },
     {
       "label": "_contactDedup",
       "file_type": "code",
       "source_file": "src/lib/leads.js",
       "source_location": "L15",
-      "id": "lib_leads_contactdedup",
       "community": 0,
-      "norm_label": "_contactdedup"
+      "norm_label": "_contactdedup",
+      "id": "lib_leads_contactdedup"
     },
     {
       "label": "makeLeadManager()",
       "file_type": "code",
       "source_file": "src/lib/leads.js",
       "source_location": "L21",
-      "id": "lib_leads_makeleadmanager",
       "community": 0,
-      "norm_label": "makeleadmanager()"
+      "norm_label": "makeleadmanager()",
+      "id": "lib_leads_makeleadmanager"
     },
     {
       "label": "package.json",
@@ -701,7 +1331,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L1",
-      "community": 1,
+      "community": 27,
       "norm_label": "appointmentsview.jsx",
       "id": "src_components_appointmentsview_jsx"
     },
@@ -710,7 +1340,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L11",
-      "community": 1,
+      "community": 27,
       "norm_label": "appt_type_labels",
       "id": "components_appointmentsview_appt_type_labels"
     },
@@ -719,7 +1349,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L19",
-      "community": 1,
+      "community": 27,
       "norm_label": "btn()",
       "id": "components_appointmentsview_btn"
     },
@@ -728,7 +1358,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L26",
-      "community": 1,
+      "community": 27,
       "norm_label": "inputst",
       "id": "components_appointmentsview_inputst"
     },
@@ -737,7 +1367,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L32",
-      "community": 1,
+      "community": 27,
       "norm_label": "appointmentsview()",
       "id": "components_appointmentsview_appointmentsview"
     },
@@ -823,42 +1453,6 @@
       "id": "components_cctab_cctab"
     },
     {
-      "label": "ContactDetail.jsx",
-      "file_type": "code",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L1",
-      "community": 1,
-      "norm_label": "contactdetail.jsx",
-      "id": "src_components_contactdetail_jsx"
-    },
-    {
-      "label": "StageStepper()",
-      "file_type": "code",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L23",
-      "community": 1,
-      "norm_label": "stagestepper()",
-      "id": "components_contactdetail_stagestepper"
-    },
-    {
-      "label": "UnderwritingCard()",
-      "file_type": "code",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L53",
-      "community": 1,
-      "norm_label": "underwritingcard()",
-      "id": "components_contactdetail_underwritingcard"
-    },
-    {
-      "label": "ContactDetail()",
-      "file_type": "code",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L177",
-      "community": 1,
-      "norm_label": "contactdetail()",
-      "id": "components_contactdetail_contactdetail"
-    },
-    {
       "label": "ContactsView.jsx",
       "file_type": "code",
       "source_file": "src/components/ContactsView.jsx",
@@ -877,29 +1471,11 @@
       "id": "components_contactsview_contactsview"
     },
     {
-      "label": "DashboardTab.jsx",
-      "file_type": "code",
-      "source_file": "src/components/DashboardTab.jsx",
-      "source_location": "L1",
-      "community": 3,
-      "norm_label": "dashboardtab.jsx",
-      "id": "src_components_dashboardtab_jsx"
-    },
-    {
-      "label": "DashboardTab()",
-      "file_type": "code",
-      "source_file": "src/components/DashboardTab.jsx",
-      "source_location": "L6",
-      "community": 4,
-      "norm_label": "dashboardtab()",
-      "id": "components_dashboardtab_dashboardtab"
-    },
-    {
       "label": "DialQueuePanel.jsx",
       "file_type": "code",
       "source_file": "src/components/DialQueuePanel.jsx",
       "source_location": "L1",
-      "community": 1,
+      "community": 4,
       "norm_label": "dialqueuepanel.jsx",
       "id": "src_components_dialqueuepanel_jsx"
     },
@@ -908,63 +1484,9 @@
       "file_type": "code",
       "source_file": "src/components/DialQueuePanel.jsx",
       "source_location": "L9",
-      "community": 1,
+      "community": 4,
       "norm_label": "dialqueuepanel()",
       "id": "components_dialqueuepanel_dialqueuepanel"
-    },
-    {
-      "label": "DialRightPanel.jsx",
-      "file_type": "code",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L1",
-      "community": 1,
-      "norm_label": "dialrightpanel.jsx",
-      "id": "src_components_dialrightpanel_jsx"
-    },
-    {
-      "label": "TOKEN_FIELDS",
-      "file_type": "code",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L5",
-      "community": 1,
-      "norm_label": "token_fields",
-      "id": "components_dialrightpanel_token_fields"
-    },
-    {
-      "label": "renderLiveTokens()",
-      "file_type": "code",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L11",
-      "community": 1,
-      "norm_label": "renderlivetokens()",
-      "id": "components_dialrightpanel_renderlivetokens"
-    },
-    {
-      "label": "DialRightPanel()",
-      "file_type": "code",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L37",
-      "community": 1,
-      "norm_label": "dialrightpanel()",
-      "id": "components_dialrightpanel_dialrightpanel"
-    },
-    {
-      "label": "DialView.jsx",
-      "file_type": "code",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L1",
-      "community": 1,
-      "norm_label": "dialview.jsx",
-      "id": "src_components_dialview_jsx"
-    },
-    {
-      "label": "DialView()",
-      "file_type": "code",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L10",
-      "community": 1,
-      "norm_label": "dialview()",
-      "id": "components_dialview_dialview"
     },
     {
       "label": "FieldMapModal.jsx",
@@ -1073,51 +1595,6 @@
       "community": 0,
       "norm_label": "logingate()",
       "id": "components_logingate_logingate"
-    },
-    {
-      "label": "NavSidebar.jsx",
-      "file_type": "code",
-      "source_file": "src/components/NavSidebar.jsx",
-      "source_location": "L1",
-      "community": 16,
-      "norm_label": "navsidebar.jsx",
-      "id": "src_components_navsidebar_jsx"
-    },
-    {
-      "label": "GROUPS",
-      "file_type": "code",
-      "source_file": "src/components/NavSidebar.jsx",
-      "source_location": "L4",
-      "community": 16,
-      "norm_label": "groups",
-      "id": "components_navsidebar_groups"
-    },
-    {
-      "label": "VIEW_GROUP",
-      "file_type": "code",
-      "source_file": "src/components/NavSidebar.jsx",
-      "source_location": "L46",
-      "community": 16,
-      "norm_label": "view_group",
-      "id": "components_navsidebar_view_group"
-    },
-    {
-      "label": "NavBtn()",
-      "file_type": "code",
-      "source_file": "src/components/NavSidebar.jsx",
-      "source_location": "L50",
-      "community": 16,
-      "norm_label": "navbtn()",
-      "id": "components_navsidebar_navbtn"
-    },
-    {
-      "label": "NavSidebar()",
-      "file_type": "code",
-      "source_file": "src/components/NavSidebar.jsx",
-      "source_location": "L68",
-      "community": 16,
-      "norm_label": "navsidebar()",
-      "id": "components_navsidebar_navsidebar"
     },
     {
       "label": "PipelineView.jsx",
@@ -1291,24 +1768,6 @@
       "id": "components_sequencetab_sequencetab"
     },
     {
-      "label": "SettingsView.jsx",
-      "file_type": "code",
-      "source_file": "src/components/SettingsView.jsx",
-      "source_location": "L1",
-      "community": 6,
-      "norm_label": "settingsview.jsx",
-      "id": "src_components_settingsview_jsx"
-    },
-    {
-      "label": "SettingsView()",
-      "file_type": "code",
-      "source_file": "src/components/SettingsView.jsx",
-      "source_location": "L5",
-      "community": 6,
-      "norm_label": "settingsview()",
-      "id": "components_settingsview_settingsview"
-    },
-    {
       "label": "TemplatesView.jsx",
       "file_type": "code",
       "source_file": "src/components/TemplatesView.jsx",
@@ -1388,141 +1847,6 @@
       "community": 4,
       "norm_label": "todaysblock()",
       "id": "components_todaysblock_todaysblock"
-    },
-    {
-      "label": "activityLog.js",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L1",
-      "community": 0,
-      "norm_label": "activitylog.js",
-      "id": "src_lib_activitylog_js"
-    },
-    {
-      "label": "DEFAULT_GOALS",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L10",
-      "community": 0,
-      "norm_label": "default_goals",
-      "id": "lib_activitylog_default_goals"
-    },
-    {
-      "label": "CONTACT_DISPS",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L13",
-      "community": 0,
-      "norm_label": "contact_disps",
-      "id": "lib_activitylog_contact_disps"
-    },
-    {
-      "label": "ACTIVITY_TYPES",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L18",
-      "community": 0,
-      "norm_label": "activity_types",
-      "id": "lib_activitylog_activity_types"
-    },
-    {
-      "label": "dayKey()",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L26",
-      "community": 0,
-      "norm_label": "daykey()",
-      "id": "lib_activitylog_daykey"
-    },
-    {
-      "label": "TODAY_KEY()",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L35",
-      "community": 0,
-      "norm_label": "today_key()",
-      "id": "lib_activitylog_today_key"
-    },
-    {
-      "label": "lastNDays()",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L38",
-      "community": 0,
-      "norm_label": "lastndays()",
-      "id": "lib_activitylog_lastndays"
-    },
-    {
-      "label": "weekKeys()",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L55",
-      "community": 0,
-      "norm_label": "weekkeys()",
-      "id": "lib_activitylog_weekkeys"
-    },
-    {
-      "label": "monthKeys()",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L71",
-      "community": 0,
-      "norm_label": "monthkeys()",
-      "id": "lib_activitylog_monthkeys"
-    },
-    {
-      "label": "aggregateActivity()",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L82",
-      "community": 0,
-      "norm_label": "aggregateactivity()",
-      "id": "lib_activitylog_aggregateactivity"
-    },
-    {
-      "label": "fmtTime()",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L99",
-      "community": 0,
-      "norm_label": "fmttime()",
-      "id": "lib_activitylog_fmttime"
-    },
-    {
-      "label": "goalTone()",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L103",
-      "community": 0,
-      "norm_label": "goaltone()",
-      "id": "lib_activitylog_goaltone"
-    },
-    {
-      "label": "makeActivityManager()",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L117",
-      "community": 0,
-      "norm_label": "makeactivitymanager()",
-      "id": "lib_activitylog_makeactivitymanager"
-    },
-    {
-      "label": "computeActivityQueue()",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L158",
-      "community": 0,
-      "norm_label": "computeactivityqueue()",
-      "id": "lib_activitylog_computeactivityqueue"
-    },
-    {
-      "label": "makeActivityEvent()",
-      "file_type": "code",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L181",
-      "community": 0,
-      "norm_label": "makeactivityevent()",
-      "id": "lib_activitylog_makeactivityevent"
     },
     {
       "label": "ccIntegration.js",
@@ -1700,7 +2024,7 @@
       "file_type": "code",
       "source_file": "src/lib/leadScoring.js",
       "source_location": "L1",
-      "community": 0,
+      "community": 28,
       "norm_label": "leadscoring.js",
       "id": "src_lib_leadscoring_js"
     },
@@ -1709,7 +2033,7 @@
       "file_type": "code",
       "source_file": "src/lib/leadScoring.js",
       "source_location": "L12",
-      "community": 0,
+      "community": 28,
       "norm_label": "priority()",
       "id": "lib_leadscoring_priority"
     },
@@ -1718,7 +2042,7 @@
       "file_type": "code",
       "source_file": "src/lib/leadScoring.js",
       "source_location": "L67",
-      "community": 0,
+      "community": 28,
       "norm_label": "autofollowup()",
       "id": "lib_leadscoring_autofollowup"
     },
@@ -1727,7 +2051,7 @@
       "file_type": "code",
       "source_file": "src/lib/leadScoring.js",
       "source_location": "L90",
-      "community": 0,
+      "community": 28,
       "norm_label": "opencalendlypopup()",
       "id": "lib_leadscoring_opencalendlypopup"
     },
@@ -1745,7 +2069,7 @@
       "file_type": "code",
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L16",
-      "community": 4,
+      "community": 1,
       "norm_label": "phase_defs",
       "id": "lib_phaseengine_phase_defs"
     },
@@ -1826,7 +2150,7 @@
       "file_type": "code",
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L189",
-      "community": 0,
+      "community": 4,
       "norm_label": "backfilllead()",
       "id": "lib_phaseengine_backfilllead"
     },
@@ -1907,7 +2231,7 @@
       "file_type": "code",
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L406",
-      "community": 0,
+      "community": 4,
       "norm_label": "normalizephaseschedule()",
       "id": "lib_phaseengine_normalizephaseschedule"
     },
@@ -2317,78 +2641,6 @@
       "id": "lib_usepowerdialer_usepowerdialer"
     },
     {
-      "label": "useSettingsConfig.js",
-      "file_type": "code",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L1",
-      "community": 11,
-      "norm_label": "usesettingsconfig.js",
-      "id": "src_lib_usesettingsconfig_js"
-    },
-    {
-      "label": "DEFAULT_FINANCIAL",
-      "file_type": "code",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L24",
-      "community": 11,
-      "norm_label": "default_financial",
-      "id": "lib_usesettingsconfig_default_financial"
-    },
-    {
-      "label": "DEFAULT_GMAIL",
-      "file_type": "code",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L33",
-      "community": 11,
-      "norm_label": "default_gmail",
-      "id": "lib_usesettingsconfig_default_gmail"
-    },
-    {
-      "label": "DEFAULT_SEQ",
-      "file_type": "code",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L34",
-      "community": 11,
-      "norm_label": "default_seq",
-      "id": "lib_usesettingsconfig_default_seq"
-    },
-    {
-      "label": "DEFAULT_TWILIO",
-      "file_type": "code",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L35",
-      "community": 11,
-      "norm_label": "default_twilio",
-      "id": "lib_usesettingsconfig_default_twilio"
-    },
-    {
-      "label": "DEFAULT_CB_PRESETS",
-      "file_type": "code",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L36",
-      "community": 11,
-      "norm_label": "default_cb_presets",
-      "id": "lib_usesettingsconfig_default_cb_presets"
-    },
-    {
-      "label": "readLS()",
-      "file_type": "code",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L44",
-      "community": 11,
-      "norm_label": "readls()",
-      "id": "lib_usesettingsconfig_readls"
-    },
-    {
-      "label": "useSettingsConfig()",
-      "file_type": "code",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L54",
-      "community": 0,
-      "norm_label": "usesettingsconfig()",
-      "id": "lib_usesettingsconfig_usesettingsconfig"
-    },
-    {
       "label": "useSupabaseHydration.js",
       "file_type": "code",
       "source_file": "src/lib/useSupabaseHydration.js",
@@ -2474,7 +2726,7 @@
       "file_type": "code",
       "source_file": "src/__tests__/leadScoring.test.js",
       "source_location": "L1",
-      "community": 8,
+      "community": 28,
       "norm_label": "leadscoring.test.js",
       "id": "src_tests_leadscoring_test_js"
     },
@@ -2483,7 +2735,7 @@
       "file_type": "code",
       "source_file": "src/__tests__/leadScoring.test.js",
       "source_location": "L28",
-      "community": 8,
+      "community": 28,
       "norm_label": "yesterday",
       "id": "tests_leadscoring_test_yesterday"
     },
@@ -2492,7 +2744,7 @@
       "file_type": "code",
       "source_file": "src/__tests__/leadScoring.test.js",
       "source_location": "L29",
-      "community": 8,
+      "community": 28,
       "norm_label": "lead",
       "id": "tests_leadscoring_test_lead"
     },
@@ -2501,7 +2753,7 @@
       "file_type": "code",
       "source_file": "src/__tests__/leadScoring.test.js",
       "source_location": "L34",
-      "community": 8,
+      "community": 28,
       "norm_label": "assigndate",
       "id": "tests_leadscoring_test_assigndate"
     },
@@ -2510,7 +2762,7 @@
       "file_type": "code",
       "source_file": "src/__tests__/leadScoring.test.js",
       "source_location": "L35",
-      "community": 8,
+      "community": 28,
       "norm_label": "a",
       "id": "tests_leadscoring_test_a"
     },
@@ -2519,7 +2771,7 @@
       "file_type": "code",
       "source_file": "src/__tests__/leadScoring.test.js",
       "source_location": "L36",
-      "community": 8,
+      "community": 28,
       "norm_label": "b",
       "id": "tests_leadscoring_test_b"
     },
@@ -2528,7 +2780,7 @@
       "file_type": "code",
       "source_file": "src/__tests__/leadScoring.test.js",
       "source_location": "L59",
-      "community": 8,
+      "community": 28,
       "norm_label": "result",
       "id": "tests_leadscoring_test_result"
     },
@@ -3449,176 +3701,6 @@
   ],
   "links": [
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "changelog_md",
-      "target": "metka_crm_changelog_changelog_metka_field_ops_crm",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L252",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_changelog_metka_field_ops_crm",
-      "target": "metka_crm_changelog_2026_04_01_v1_0_0_initial_build",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L234",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_changelog_metka_field_ops_crm",
-      "target": "metka_crm_changelog_2026_05_01_v2_0_0_ministry_lead_operating_system",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L202",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_changelog_metka_field_ops_crm",
-      "target": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L263",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_changelog_metka_field_ops_crm",
-      "target": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L204",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
-      "target": "metka_crm_changelog_added",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L212",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
-      "target": "metka_crm_changelog_changed",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L222",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
-      "target": "metka_crm_changelog_dependencies",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L218",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
-      "target": "metka_crm_changelog_fixed",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L226",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
-      "target": "metka_crm_changelog_notes",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L236",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_2026_05_01_v2_0_0_ministry_lead_operating_system",
-      "target": "metka_crm_changelog_added_236",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L247",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_2026_05_01_v2_0_0_ministry_lead_operating_system",
-      "target": "metka_crm_changelog_fixed_247",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L254",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_2026_04_01_v1_0_0_initial_build",
-      "target": "metka_crm_changelog_added_254",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L265",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
-      "target": "metka_crm_changelog_added_265",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L286",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
-      "target": "metka_crm_changelog_build",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L270",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
-      "target": "metka_crm_changelog_changed_270",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L279",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
-      "target": "metka_crm_changelog_fixed_279",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -4214,6 +4296,17 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/App.jsx",
+      "source_location": "L101",
+      "weight": 1.0,
+      "source": "src_app_jsx",
+      "target": "src_components_aipanel_jsx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
       "source_location": "L89",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -4362,6 +4455,17 @@
       "confidence_score": 1.0,
       "source": "src_app_jsx",
       "target": "src_components_logingate_jsx"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L62",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_jsx",
+      "target": "src_components_messagesview_jsx"
     },
     {
       "relation": "imports_from",
@@ -5123,6 +5227,1730 @@
       "target": "src_constants_isuwstuck"
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L97",
+      "weight": 1.0,
+      "source": "src_components_aipanel_jsx",
+      "target": "components_aipanel_aipanel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "src_components_aipanel_jsx",
+      "target": "components_aipanel_draft_opts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "src_components_aipanel_jsx",
+      "target": "components_aipanel_draftprompt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "src_components_aipanel_jsx",
+      "target": "components_aipanel_gemini_url",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "src_components_aipanel_jsx",
+      "target": "components_aipanel_geminicall",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "src_components_aipanel_jsx",
+      "target": "components_aipanel_leadctx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "components_aipanel_geminicall",
+      "target": "components_aipanel_gemini_url",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AIPanel.jsx",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "components_aipanel_draftprompt",
+      "target": "components_aipanel_leadctx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SettingsView.jsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_settingsview_jsx",
+      "target": "components_settingsview_settingsview"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SettingsView.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_settingsview_jsx",
+      "target": "lib_ccintegration_ccauthorize"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SettingsView.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_settingsview_jsx",
+      "target": "lib_ccintegration_cccleartokens"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SettingsView.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_settingsview_jsx",
+      "target": "lib_ccintegration_ccgetlists"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SettingsView.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_settingsview_jsx",
+      "target": "lib_ccintegration_ccisconnected"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SettingsView.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_settingsview_jsx",
+      "target": "lib_ccintegration_ccsyncleads"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SettingsView.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_settingsview_jsx",
+      "target": "src_lib_ccintegration_js"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "src_lib_usesettingsconfig_js",
+      "target": "lib_usesettingsconfig_default_ai",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_usesettingsconfig_js",
+      "target": "lib_usesettingsconfig_default_cb_presets"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_usesettingsconfig_js",
+      "target": "lib_usesettingsconfig_default_financial"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L33",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_usesettingsconfig_js",
+      "target": "lib_usesettingsconfig_default_gmail"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L34",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_usesettingsconfig_js",
+      "target": "lib_usesettingsconfig_default_seq"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L35",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_usesettingsconfig_js",
+      "target": "lib_usesettingsconfig_default_twilio"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L44",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_usesettingsconfig_js",
+      "target": "lib_usesettingsconfig_readls"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useSettingsConfig.js",
+      "source_location": "L54",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_usesettingsconfig_js",
+      "target": "lib_usesettingsconfig_usesettingsconfig"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dashboardtab_jsx",
+      "target": "components_dashboardtab_dashboardtab"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dashboardtab_jsx",
+      "target": "lib_activitylog_daykey"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dashboardtab_jsx",
+      "target": "lib_leadscoring_priority"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dashboardtab_jsx",
+      "target": "lib_phaseengine_isduetoday"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dashboardtab_jsx",
+      "target": "lib_sequenceengine_getsequencebadgecolor"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dashboardtab_jsx",
+      "target": "lib_sequenceengine_getsequencestatus"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dashboardtab_jsx",
+      "target": "src_lib_activitylog_js"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dashboardtab_jsx",
+      "target": "src_lib_leadscoring_js"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dashboardtab_jsx",
+      "target": "src_lib_phaseengine_js"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dashboardtab_jsx",
+      "target": "src_lib_sequenceengine_js"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L123",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_dashboardtab_dashboardtab",
+      "target": "lib_activitylog_daykey"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DashboardTab.jsx",
+      "source_location": "L69",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_dashboardtab_dashboardtab",
+      "target": "lib_phaseengine_isduetoday"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/MessagesView.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_messagesview_jsx",
+      "target": "components_messagesview_messagesview"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/MessagesView.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_messagesview_jsx",
+      "target": "src_components_smsthread_jsx"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/NavSidebar.jsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_navsidebar_jsx",
+      "target": "components_navsidebar_groups"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/NavSidebar.jsx",
+      "source_location": "L50",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_navsidebar_jsx",
+      "target": "components_navsidebar_navbtn"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/NavSidebar.jsx",
+      "source_location": "L68",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_navsidebar_jsx",
+      "target": "components_navsidebar_navsidebar"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/NavSidebar.jsx",
+      "source_location": "L46",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_navsidebar_jsx",
+      "target": "components_navsidebar_view_group"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_smsthread_jsx",
+      "target": "components_smsthread_smsthread"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_smsthread_jsx",
+      "target": "lib_phaseengine_sms_sequences"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_smsthread_jsx",
+      "target": "lib_phaseengine_suggestseqcat"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L84",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "supabase_functions_receive_sms_index_ts",
+      "target": "receive_sms_index_bodytrimmed"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L81",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "supabase_functions_receive_sms_index_ts",
+      "target": "receive_sms_index_from10"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L124",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "supabase_functions_receive_sms_index_ts",
+      "target": "receive_sms_index_inboundnote"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L86",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "supabase_functions_receive_sms_index_ts",
+      "target": "receive_sms_index_isoptin"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L85",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "supabase_functions_receive_sms_index_ts",
+      "target": "receive_sms_index_isoptout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L103",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "supabase_functions_receive_sms_index_ts",
+      "target": "receive_sms_index_match"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L94",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "supabase_functions_receive_sms_index_ts",
+      "target": "receive_sms_index_matcheddata"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L62",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "supabase_functions_receive_sms_index_ts",
+      "target": "receive_sms_index_nummedia"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L56",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "supabase_functions_receive_sms_index_ts",
+      "target": "receive_sms_index_params"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L133",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "supabase_functions_receive_sms_index_ts",
+      "target": "receive_sms_index_patch"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L88",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "supabase_functions_receive_sms_index_ts",
+      "target": "receive_sms_index_supabase"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L117",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "supabase_functions_receive_sms_index_ts",
+      "target": "receive_sms_index_ts"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "supabase/functions/receive-sms/index.ts",
+      "source_location": "L22",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "supabase_functions_receive_sms_index_ts",
+      "target": "receive_sms_index_validatetwiliosignature"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L177",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "components_contactdetail_contactdetail"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L181",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "components_contactdetail_smsthreadtab"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "components_contactdetail_stagestepper"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L53",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "components_contactdetail_underwritingcard"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "lib_phaseengine_sms_sequences"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "lib_phaseengine_suggestseqcat"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "lib_sequenceengine_advancesequence"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "lib_sequenceengine_getnexttouchdate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "lib_sequenceengine_getsequencebadgecolor"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "lib_sequenceengine_getsequencestatus"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "lib_sequenceengine_pausesequence"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "lib_sequenceengine_resumesequence"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "lib_sequencetemplates_getlblday1opener"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_bc"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_bl"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_chip"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_currency"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_daysinuw"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_default_reqs"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_disps"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_fmt"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_fmtdate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_inp"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_isuwstuck"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_js"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_nc"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_reqstats"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_stages"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_uw_active_stages"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_constants_uw_visible_stages"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_lib_sequenceengine_js"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_contactdetail_jsx",
+      "target": "src_lib_sequencetemplates_js"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L115",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_contactdetail_underwritingcard",
+      "target": "src_constants_currency"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L55",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_contactdetail_underwritingcard",
+      "target": "src_constants_daysinuw"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L88",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_contactdetail_underwritingcard",
+      "target": "src_constants_fmtdate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L95",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_contactdetail_underwritingcard",
+      "target": "src_constants_inp"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L56",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_contactdetail_underwritingcard",
+      "target": "src_constants_isuwstuck"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L58",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_contactdetail_underwritingcard",
+      "target": "src_constants_reqstats"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L395",
+      "weight": 1.0,
+      "source": "components_contactdetail_contactdetail",
+      "target": "src_constants_fmt"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L219",
+      "weight": 1.0,
+      "source": "components_contactdetail_contactdetail",
+      "target": "src_constants_fmtdate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/ContactDetail.jsx",
+      "source_location": "L250",
+      "weight": 1.0,
+      "source": "components_contactdetail_contactdetail",
+      "target": "src_constants_inp"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L37",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialrightpanel_jsx",
+      "target": "components_dialrightpanel_dialrightpanel"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialrightpanel_jsx",
+      "target": "components_dialrightpanel_renderlivetokens"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L41",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialrightpanel_jsx",
+      "target": "components_dialrightpanel_smstab"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialrightpanel_jsx",
+      "target": "components_dialrightpanel_token_fields"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialrightpanel_jsx",
+      "target": "src_constants_chip"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialrightpanel_jsx",
+      "target": "src_constants_fmt"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialrightpanel_jsx",
+      "target": "src_constants_inp"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialrightpanel_jsx",
+      "target": "src_constants_js"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialrightpanel_jsx",
+      "target": "src_constants_nc"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "src_components_dialrightpanel_jsx"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L101",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_dialrightpanel_dialrightpanel",
+      "target": "components_dialrightpanel_renderlivetokens"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L88",
+      "weight": 1.0,
+      "source": "components_dialrightpanel_dialrightpanel",
+      "target": "src_constants_inp"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "components_dialview_dialview"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "lib_phaseengine_phase_defs"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "lib_sequenceengine_getnexttouchdate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "lib_sequencetemplates_gettracklength"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "lib_usepowerdialer_usepowerdialer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "src_components_dialqueuepanel_jsx"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "src_constants_bc"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "src_constants_bl"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "src_constants_daysinuw"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "src_constants_fmt"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "src_constants_inp"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "src_constants_isuwstuck"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "src_constants_js"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "src_constants_nc"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "src_lib_usepowerdialer_js"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "components_dialview_dialview",
+      "target": "lib_usepowerdialer_usepowerdialer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L148",
+      "weight": 1.0,
+      "source": "components_dialview_dialview",
+      "target": "src_constants_daysinuw"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L160",
+      "weight": 1.0,
+      "source": "components_dialview_dialview",
+      "target": "src_constants_fmt"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L167",
+      "weight": 1.0,
+      "source": "components_dialview_dialview",
+      "target": "src_constants_inp"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L148",
+      "weight": 1.0,
+      "source": "components_dialview_dialview",
+      "target": "src_constants_isuwstuck"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ActivityDashboard.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_activitydashboard_jsx",
+      "target": "src_lib_activitylog_js"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AppHeader.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_appheader_jsx",
+      "target": "src_lib_activitylog_js"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_activity_types"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L82",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_aggregateactivity"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L158",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_computeactivityqueue"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_contact_disps"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L26",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_daykey"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_default_goals"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L99",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_fmttime"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L103",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_goaltone"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L38",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_lastndays"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L181",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_makeactivityevent"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L117",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_makeactivitymanager"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L71",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_monthkeys"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L35",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_today_key"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L55",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_activitylog_weekkeys"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "lib_supabasesync_sbappendactivity"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_activitylog_js",
+      "target": "src_lib_supabasesync_js"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/leads.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_leads_js",
+      "target": "src_lib_activitylog_js"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ActivityDashboard.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_activitydashboard_jsx",
+      "target": "lib_activitylog_default_goals"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/leads.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_leads_js",
+      "target": "lib_activitylog_contact_disps"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ActivityDashboard.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_activitydashboard_jsx",
+      "target": "lib_activitylog_activity_types"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L46",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "lib_activitylog_lastndays",
+      "target": "lib_activitylog_daykey"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L187",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "lib_activitylog_makeactivityevent",
+      "target": "lib_activitylog_daykey"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L77",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "lib_activitylog_monthkeys",
+      "target": "lib_activitylog_daykey"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L35",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "lib_activitylog_today_key",
+      "target": "lib_activitylog_daykey"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/activityLog.js",
+      "source_location": "L66",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "lib_activitylog_weekkeys",
+      "target": "lib_activitylog_daykey"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/leads.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_leads_js",
+      "target": "lib_activitylog_daykey"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ActivityDashboard.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_activitydashboard_jsx",
+      "target": "lib_activitylog_today_key"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ActivityDashboard.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_activitydashboard_jsx",
+      "target": "lib_activitylog_fmttime"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ActivityDashboard.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_activitydashboard_jsx",
+      "target": "lib_activitylog_goaltone"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AppHeader.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_appheader_jsx",
+      "target": "lib_activitylog_goaltone"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -5142,29 +6970,177 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_lib_leads_js",
-      "target": "lib_activitylog_contact_disps"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/leads.js",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_leads_js",
-      "target": "lib_activitylog_daykey"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/leads.js",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_leads_js",
       "target": "lib_activitylog_makeactivityevent"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "changelog_md",
+      "target": "metka_crm_changelog_changelog_metka_field_ops_crm"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L252",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_changelog_metka_field_ops_crm",
+      "target": "metka_crm_changelog_2026_04_01_v1_0_0_initial_build"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L234",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_changelog_metka_field_ops_crm",
+      "target": "metka_crm_changelog_2026_05_01_v2_0_0_ministry_lead_operating_system"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L202",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_changelog_metka_field_ops_crm",
+      "target": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L263",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_changelog_metka_field_ops_crm",
+      "target": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L204",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
+      "target": "metka_crm_changelog_added"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L212",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
+      "target": "metka_crm_changelog_changed"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L222",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
+      "target": "metka_crm_changelog_dependencies"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L218",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
+      "target": "metka_crm_changelog_fixed"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L226",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
+      "target": "metka_crm_changelog_notes"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L236",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_2026_05_01_v2_0_0_ministry_lead_operating_system",
+      "target": "metka_crm_changelog_added_236"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L247",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_2026_05_01_v2_0_0_ministry_lead_operating_system",
+      "target": "metka_crm_changelog_fixed_247"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L254",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_2026_04_01_v1_0_0_initial_build",
+      "target": "metka_crm_changelog_added_254"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L265",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
+      "target": "metka_crm_changelog_added_265"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L286",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
+      "target": "metka_crm_changelog_build"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L270",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
+      "target": "metka_crm_changelog_changed_270"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L279",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
+      "target": "metka_crm_changelog_fixed_279"
     },
     {
       "relation": "contains",
@@ -5172,9 +7148,9 @@
       "source_file": "src/lib/leads.js",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_leads_js",
-      "target": "lib_leads_contactdedup",
-      "confidence_score": 1.0
+      "target": "lib_leads_contactdedup"
     },
     {
       "relation": "contains",
@@ -5262,17 +7238,6 @@
       "confidence_score": 1.0,
       "source": "src_lib_leads_js",
       "target": "lib_supabasesync_sbupsertlead"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/leads.js",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_leads_js",
-      "target": "src_lib_activitylog_js"
     },
     {
       "relation": "imports_from",
@@ -5543,17 +7508,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/ContactsView.jsx",
       "source_location": "L3",
       "weight": 1.0,
@@ -5570,28 +7524,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_components_dialqueuepanel_jsx",
-      "target": "src_constants_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialrightpanel_jsx",
-      "target": "src_constants_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialview_jsx",
       "target": "src_constants_js"
     },
     {
@@ -5877,17 +7809,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_stages"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/ContactsView.jsx",
       "source_location": "L3",
       "weight": 1.0,
@@ -5921,17 +7842,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_disps"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/ContactsView.jsx",
       "source_location": "L3",
       "weight": 1.0,
@@ -5954,17 +7864,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_bc"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/ContactsView.jsx",
       "source_location": "L3",
       "weight": 1.0,
@@ -5981,17 +7880,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_components_dialqueuepanel_jsx",
-      "target": "src_constants_bc"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialview_jsx",
       "target": "src_constants_bc"
     },
     {
@@ -6020,33 +7908,11 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_bl"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/ContactsView.jsx",
       "source_location": "L3",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_components_contactsview_jsx",
-      "target": "src_constants_bl"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialview_jsx",
       "target": "src_constants_bl"
     },
     {
@@ -6059,50 +7925,6 @@
       "confidence_score": 1.0,
       "source": "src_components_pipelineview_jsx",
       "target": "src_constants_bl"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_nc"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialrightpanel_jsx",
-      "target": "src_constants_nc"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialview_jsx",
-      "target": "src_constants_nc"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_uw_active_stages"
     },
     {
       "relation": "imports",
@@ -6119,17 +7941,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_uw_visible_stages"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/PipelineView.jsx",
       "source_location": "L3",
       "weight": 1.0,
@@ -6141,66 +7952,11 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_default_reqs"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L55",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_contactdetail_underwritingcard",
-      "target": "src_constants_daysinuw"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L148",
-      "weight": 1.0,
-      "source": "components_dialview_dialview",
-      "target": "src_constants_daysinuw"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_daysinuw"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/ContactsView.jsx",
       "source_location": "L3",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_components_contactsview_jsx",
-      "target": "src_constants_daysinuw"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialview_jsx",
       "target": "src_constants_daysinuw"
     },
     {
@@ -6229,44 +7985,11 @@
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L56",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_contactdetail_underwritingcard",
-      "target": "src_constants_isuwstuck"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L148",
-      "weight": 1.0,
-      "source": "components_dialview_dialview",
-      "target": "src_constants_isuwstuck"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/leadScoring.js",
       "source_location": "L40",
       "weight": 1.0,
       "source": "lib_leadscoring_priority",
-      "target": "src_constants_isuwstuck"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
       "target": "src_constants_isuwstuck"
     },
     {
@@ -6295,17 +8018,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialview_jsx",
-      "target": "src_constants_isuwstuck"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/PipelineView.jsx",
       "source_location": "L3",
       "weight": 1.0,
@@ -6323,28 +8035,6 @@
       "confidence_score": 1.0,
       "source": "src_lib_leadscoring_js",
       "target": "src_constants_isuwstuck"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L58",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_contactdetail_underwritingcard",
-      "target": "src_constants_reqstats"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_reqstats"
     },
     {
       "relation": "imports",
@@ -6369,28 +8059,6 @@
       "target": "src_constants_fmt"
     },
     {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L395",
-      "weight": 1.0,
-      "source": "components_contactdetail_contactdetail",
-      "target": "src_constants_fmt"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L160",
-      "weight": 1.0,
-      "source": "components_dialview_dialview",
-      "target": "src_constants_fmt"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -6405,122 +8073,12 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_fmt"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialrightpanel_jsx",
-      "target": "src_constants_fmt"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialview_jsx",
-      "target": "src_constants_fmt"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L219",
-      "weight": 1.0,
-      "source": "components_contactdetail_contactdetail",
-      "target": "src_constants_fmtdate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L88",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_contactdetail_underwritingcard",
-      "target": "src_constants_fmtdate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_fmtdate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L115",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_contactdetail_underwritingcard",
-      "target": "src_constants_currency"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_currency"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/PipelineView.jsx",
       "source_location": "L3",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_components_pipelineview_jsx",
       "target": "src_constants_currency"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_chip"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialrightpanel_jsx",
-      "target": "src_constants_chip"
     },
     {
       "relation": "imports",
@@ -6549,54 +8107,10 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L250",
-      "weight": 1.0,
-      "source": "components_contactdetail_contactdetail",
-      "target": "src_constants_inp"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L95",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_contactdetail_underwritingcard",
-      "target": "src_constants_inp"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
       "source_file": "src/components/ContactsView.jsx",
       "source_location": "L36",
       "weight": 1.0,
       "source": "components_contactsview_contactsview",
-      "target": "src_constants_inp"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L88",
-      "weight": 1.0,
-      "source": "components_dialrightpanel_dialrightpanel",
-      "target": "src_constants_inp"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L167",
-      "weight": 1.0,
-      "source": "components_dialview_dialview",
       "target": "src_constants_inp"
     },
     {
@@ -6658,44 +8172,11 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_constants_inp"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/ContactsView.jsx",
       "source_location": "L3",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_components_contactsview_jsx",
-      "target": "src_constants_inp"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialrightpanel_jsx",
-      "target": "src_constants_inp"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialview_jsx",
       "target": "src_constants_inp"
     },
     {
@@ -6786,61 +8267,6 @@
       "target": "components_activitydashboard_activitydashboard"
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ActivityDashboard.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_activitydashboard_jsx",
-      "target": "lib_activitylog_activity_types"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ActivityDashboard.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_activitydashboard_jsx",
-      "target": "lib_activitylog_default_goals"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ActivityDashboard.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_activitydashboard_jsx",
-      "target": "lib_activitylog_fmttime"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ActivityDashboard.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_activitydashboard_jsx",
-      "target": "lib_activitylog_goaltone"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ActivityDashboard.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_activitydashboard_jsx",
-      "target": "lib_activitylog_today_key"
-    },
-    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -6850,17 +8276,6 @@
       "confidence_score": 1.0,
       "source": "src_components_activitydashboard_jsx",
       "target": "src_components_hourlystats_jsx"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ActivityDashboard.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_activitydashboard_jsx",
-      "target": "src_lib_activitylog_js"
     },
     {
       "relation": "contains",
@@ -6881,28 +8296,6 @@
       "confidence_score": 1.0,
       "source": "src_components_appheader_jsx",
       "target": "components_appheader_appheader"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/AppHeader.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_appheader_jsx",
-      "target": "lib_activitylog_goaltone"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/AppHeader.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_appheader_jsx",
-      "target": "src_lib_activitylog_js"
     },
     {
       "relation": "contains",
@@ -7116,135 +8509,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L177",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "components_contactdetail_contactdetail"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "components_contactdetail_stagestepper"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L53",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "components_contactdetail_underwritingcard"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "lib_sequenceengine_advancesequence"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "lib_sequenceengine_getnexttouchdate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "lib_sequenceengine_getsequencebadgecolor"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "lib_sequenceengine_getsequencestatus"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "lib_sequenceengine_pausesequence"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "lib_sequenceengine_resumesequence"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "lib_sequencetemplates_getlblday1opener"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_lib_sequenceengine_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ContactDetail.jsx",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_contactdetail_jsx",
-      "target": "src_lib_sequencetemplates_js"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/ContactsView.jsx",
       "source_location": "L6",
       "weight": 1.0,
@@ -7295,104 +8559,6 @@
       "confidence_score": 1.0,
       "source": "src_components_contactsview_jsx",
       "target": "src_lib_sequenceengine_js"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DashboardTab.jsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dashboardtab_jsx",
-      "target": "components_dashboardtab_dashboardtab"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DashboardTab.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dashboardtab_jsx",
-      "target": "lib_leadscoring_priority"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DashboardTab.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dashboardtab_jsx",
-      "target": "lib_phaseengine_isduetoday"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DashboardTab.jsx",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dashboardtab_jsx",
-      "target": "lib_sequenceengine_getsequencebadgecolor"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DashboardTab.jsx",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dashboardtab_jsx",
-      "target": "lib_sequenceengine_getsequencestatus"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DashboardTab.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dashboardtab_jsx",
-      "target": "src_lib_leadscoring_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DashboardTab.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dashboardtab_jsx",
-      "target": "src_lib_phaseengine_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DashboardTab.jsx",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dashboardtab_jsx",
-      "target": "src_lib_sequenceengine_js"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DashboardTab.jsx",
-      "source_location": "L69",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_dashboardtab_dashboardtab",
-      "target": "lib_phaseengine_isduetoday"
     },
     {
       "relation": "contains",
@@ -7480,112 +8646,6 @@
       "confidence_score": 1.0,
       "source": "src_components_dialqueuepanel_jsx",
       "target": "src_lib_phaseengine_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialview_jsx",
-      "target": "src_components_dialqueuepanel_jsx"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L37",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialrightpanel_jsx",
-      "target": "components_dialrightpanel_dialrightpanel"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialrightpanel_jsx",
-      "target": "components_dialrightpanel_renderlivetokens"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialrightpanel_jsx",
-      "target": "components_dialrightpanel_token_fields"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialview_jsx",
-      "target": "src_components_dialrightpanel_jsx"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L101",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_dialrightpanel_dialrightpanel",
-      "target": "components_dialrightpanel_renderlivetokens"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialview_jsx",
-      "target": "components_dialview_dialview"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialview_jsx",
-      "target": "lib_usepowerdialer_usepowerdialer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialview_jsx",
-      "target": "src_lib_usepowerdialer_js"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L56",
-      "weight": 1.0,
-      "source": "components_dialview_dialview",
-      "target": "lib_usepowerdialer_usepowerdialer"
     },
     {
       "relation": "contains",
@@ -7710,46 +8770,6 @@
       "confidence_score": 1.0,
       "source": "src_components_logingate_jsx",
       "target": "components_logingate_useauth"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/NavSidebar.jsx",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_navsidebar_jsx",
-      "target": "components_navsidebar_groups"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/NavSidebar.jsx",
-      "source_location": "L50",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_navsidebar_jsx",
-      "target": "components_navsidebar_navbtn"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/NavSidebar.jsx",
-      "source_location": "L68",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_navsidebar_jsx",
-      "target": "components_navsidebar_navsidebar"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/NavSidebar.jsx",
-      "source_location": "L46",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_navsidebar_jsx",
-      "target": "components_navsidebar_view_group"
     },
     {
       "relation": "contains",
@@ -8004,82 +9024,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/SettingsView.jsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_settingsview_jsx",
-      "target": "components_settingsview_settingsview"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SettingsView.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_settingsview_jsx",
-      "target": "lib_ccintegration_ccauthorize"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SettingsView.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_settingsview_jsx",
-      "target": "lib_ccintegration_cccleartokens"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SettingsView.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_settingsview_jsx",
-      "target": "lib_ccintegration_ccgetlists"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SettingsView.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_settingsview_jsx",
-      "target": "lib_ccintegration_ccisconnected"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SettingsView.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_settingsview_jsx",
-      "target": "lib_ccintegration_ccsyncleads"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SettingsView.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_settingsview_jsx",
-      "target": "src_lib_ccintegration_js"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/TemplatesView.jsx",
       "source_location": "L5",
       "weight": 1.0,
@@ -8267,223 +9211,6 @@
       "confidence_score": 1.0,
       "source": "src_components_todaysblock_jsx",
       "target": "src_lib_phaseengine_js"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_activity_types"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L82",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_aggregateactivity"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L158",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_computeactivityqueue"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_contact_disps"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L26",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_daykey"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_default_goals"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L99",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_fmttime"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L103",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_goaltone"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L38",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_lastndays"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L181",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_makeactivityevent"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L117",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_makeactivitymanager"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L71",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_monthkeys"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L35",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_today_key"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L55",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_activitylog_weekkeys"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "lib_supabasesync_sbappendactivity"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_activitylog_js",
-      "target": "src_lib_supabasesync_js"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L46",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "lib_activitylog_lastndays",
-      "target": "lib_activitylog_daykey"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L187",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "lib_activitylog_makeactivityevent",
-      "target": "lib_activitylog_daykey"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L77",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "lib_activitylog_monthkeys",
-      "target": "lib_activitylog_daykey"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L35",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "lib_activitylog_today_key",
-      "target": "lib_activitylog_daykey"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/activityLog.js",
-      "source_location": "L66",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "lib_activitylog_weekkeys",
-      "target": "lib_activitylog_daykey"
     },
     {
       "relation": "contains",
@@ -9863,76 +10590,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_usesettingsconfig_js",
-      "target": "lib_usesettingsconfig_default_cb_presets"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_usesettingsconfig_js",
-      "target": "lib_usesettingsconfig_default_financial"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L33",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_usesettingsconfig_js",
-      "target": "lib_usesettingsconfig_default_gmail"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L34",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_usesettingsconfig_js",
-      "target": "lib_usesettingsconfig_default_seq"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L35",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_usesettingsconfig_js",
-      "target": "lib_usesettingsconfig_default_twilio"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L44",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_usesettingsconfig_js",
-      "target": "lib_usesettingsconfig_readls"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/useSettingsConfig.js",
-      "source_location": "L54",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_usesettingsconfig_js",
-      "target": "lib_usesettingsconfig_usesettingsconfig"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "src/lib/useSupabaseHydration.js",
       "source_location": "L43",
       "weight": 1.0,
@@ -10893,5 +11550,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "0de99bd914c56e5ccd94b3adb3f7b08f076b8351"
+  "built_at_commit": "0f8fbe8460cb943a5ccbd952e8fbc4b24438e76f"
 }

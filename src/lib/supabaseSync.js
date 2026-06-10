@@ -178,3 +178,13 @@ export const sbBeaconFlush = (leads) => {
 };
 
 export { supabase };
+
+// ── SEND SMS via Edge Function ─────────────────────────────────────────────
+// Calls the send-sms Supabase Edge Function. Non-blocking from UI perspective.
+export const sbSendSms = async (to, body, leadId) => {
+  const { data, error } = await supabase.functions.invoke('send-sms', {
+    body: { to, body, leadId: leadId || null }
+  });
+  if (error) throw new Error(error.message || 'SMS send failed');
+  return data;
+};

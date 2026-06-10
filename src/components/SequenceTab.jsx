@@ -39,6 +39,7 @@ const fmtTs = (ts) => {
 // ── LEAD STATUS HELPERS ───────────────────────────────────────────────────────
 const isActive    = (l) => !!l.seqTrack && !l.seqPaused;
 const isExhausted = (l) => l.seqPaused && l.seqExitReason === 'exhausted';
+const isPaused    = (l) => !!l.seqTrack && l.seqPaused && l.seqExitReason !== 'exhausted';
 const hasEmail    = (l) => (l.seqStep ?? 0) >= 1 && !!l.seqTrack;
 
 // ── INNER TAB DEFINITIONS ─────────────────────────────────────────────────────
@@ -46,6 +47,7 @@ const INNER_TABS = [
   { id:'duetoday',  label:'📞 Due Today'     },
   { id:'opens',     label:'📬 Opens'        },
   { id:'active',    label:'⚡ Active'        },
+  { id:'paused',    label:'⏸ Paused'         },
   { id:'dormant',   label:'👻 Never Opened'  },
   { id:'exhausted', label:'📭 Exhausted'     },
   { id:'analytics', label:'📊 By Step'       },
@@ -183,6 +185,16 @@ export default function SequenceTab({ leads, upd, setOpenId, setView, setPrevVie
 
   const exhaustedLeads = useMemo(() =>
     leads.filter(isExhausted).sort((a, b) => (b.emailOpenCount || 0) - (a.emailOpenCount || 0))
+  , [leads]);
+
+  const pausedLeads = useMemo(() =>
+    leads.filter(isPaused).sort((a, b) => {
+      // Sort booked/sold first, then by name
+      const exitOrder = { booked:0, sold:1, not_interested:2, dnc:3, credit_denied:4, manual:5, replied:6, bad_email:7, removed:8 };
+      const aO = exitOrder[a.seqExitReason] ?? 9;
+      const bO = exitOrder[b.seqExitReason] ?? 9;
+      return aO !== bO ? aO - bO : (a.name || '').localeCompare(b.name || '');
+    })
   , [leads]);
 
   // Parse per-step open counts from lead notes
@@ -441,6 +453,59 @@ export default function SequenceTab({ leads, upd, setOpenId, setView, setPrevVie
     );
   };
 
+  const renderPaused = () => {
+    if (!pausedLeads.length) return emptyState('⏸', 'No paused sequences — all enrolled leads are active.');
+
+    const REASON_LABEL = {
+      booked:         '📅 Booked',
+      sold:           '✅ Sold',
+      not_interested: '🚫 Not Interested',
+      dnc:            '⛔ DNC',
+      credit_denied:  '❌ Credit Denied',
+      manual:         '⏸ Manually Paused',
+      replied:        '✉️ Replied',
+      bad_email:      '📭 Bad Email',
+      removed:        '🗑 Removed',
+    };
+
+    return React.createElement('div', null,
+      React.createElement('div', {
+        style:{
+          padding:'10px 16px', fontSize:'11px', color:'#6D28D9',
+          background:'#F5F3FF', borderBottom:'1px solid #DDD6FE', fontWeight:'600',
+        }
+      }, `⏸ ${pausedLeads.length} paused sequence${pausedLeads.length !== 1 ? 's' : ''} — re-enroll to resume outreach.`),
+      React.createElement('table', { style:{ width:'100%', borderCollapse:'collapse' } },
+        tHead('FAMILY', 'TRACK', 'PAUSED REASON', 'STEPS SENT', ''),
+        React.createElement('tbody', null,
+          ...pausedLeads.map(l =>
+            React.createElement('tr', {
+              key: l.id,
+              style:{ borderBottom:'1px solid var(--border)' },
+              onMouseEnter: e => e.currentTarget.style.background = 'var(--bg)',
+              onMouseLeave: e => e.currentTarget.style.background = '',
+            },
+              nameCell(l),
+              React.createElement('td', { style:TD_STYLE }, trackBadge(l.seqTrack || 'new')),
+              React.createElement('td', { style:TD_STYLE },
+                React.createElement('span', {
+                  style:{
+                    fontSize:'10px', fontWeight:'700', padding:'2px 8px', borderRadius:'4px',
+                    background:'#F5F3FF', border:'1px solid #DDD6FE', color:'#6D28D9',
+                  }
+                }, REASON_LABEL[l.seqExitReason] || (l.seqExitReason ? l.seqExitReason : '⏸ Paused'))
+              ),
+              React.createElement('td', { style:{ ...TD_STYLE, color:'var(--t2)' } },
+                `${l.seqStep ?? 0} of ${getTrackLength(l.seqTrack)} sent`
+              ),
+              React.createElement('td', { style:TD_STYLE }, enrollControls(l)),
+            )
+          )
+        )
+      )
+    );
+  };
+
   const renderExhausted = () => {
     if (!exhaustedLeads.length) return emptyState('📭', 'No exhausted leads yet.');
 
@@ -627,6 +692,7 @@ export default function SequenceTab({ leads, upd, setOpenId, setView, setPrevVie
       innerTab === 'opens'     && renderOpens(),
       innerTab === 'active'    && renderActive(),
       innerTab === 'dormant'   && renderDormant(),
+      innerTab === 'paused'    && renderPaused(),
       innerTab === 'exhausted' && renderExhausted(),
       innerTab === 'analytics' && renderAnalytics(),
       innerTab === 'engine'    && React.createElement(SequenceRunsTab, { leads, seqStats }),

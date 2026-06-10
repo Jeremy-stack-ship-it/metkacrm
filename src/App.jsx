@@ -71,7 +71,8 @@ import { STATE_TZ, STAGES, DISPS, BC, BL, NC, FIELD_MAP_DEFS,
   fmt, fmtDate, currency, chip, inp } from './constants.js';
 // ── Library Modules (v3.6) ───────────────────────────────────────
 import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity, sbLoadSeqStats, sbBeaconFlush, sbSendSms } from './lib/supabaseSync.js';
-import { backfillLead, applyPhaseTransition, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, spreadOverdueLeads } from './lib/phaseEngine.js';
+import { backfillLead, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, spreadOverdueLeads } from './lib/phaseEngine.js';
+import { buildDispositionPatch } from './lib/dispositionEngine.js'; // v3.43 — F3 unified disposition logic
 import { DEFAULT_GOALS, CONTACT_DISPS, ACTIVITY_TYPES, dayKey, TODAY_KEY, lastNDays, weekKeys, monthKeys, aggregateActivity, fmtTime, goalTone, makeActivityManager } from './lib/activityLog.js';
 import { makeLeadManager } from './lib/leads.js';
 import LoginGate, { useAuth } from './components/LoginGate.jsx';
@@ -90,7 +91,7 @@ import NavSidebar from './components/NavSidebar.jsx';
 import AppHeader from './components/AppHeader.jsx';
 import AddLeadForm from './components/AddLeadForm.jsx';
 import ScriptPanel from './components/ScriptPanel.jsx';
-import { priority, autoFollowUp, openCalendlyPopup } from './lib/leadScoring.js';
+import { priority, openCalendlyPopup } from './lib/leadScoring.js'; // v3.43 — autoFollowUp moved into dispositionEngine
 import { masterQueueSort } from './lib/phaseEngine';
 import { useContactFilters } from './lib/useContactFilters.js';
 import { useTwilioDevice } from './lib/useTwilioDevice.js';
@@ -746,98 +747,11 @@ const saveLeads = useCallback((next, opts = {}) => {
       }
     }
 
-    // v3.15 — Phase Engine scheduling authority.
-    // autoFollowUp() only returns a value for EXIT dispositions (null) and appointment_booked (undefined).
-    // No-contact dispositions (vm_left, no_answer, hung_up, etc.) return undefined → nextCallback untouched.
-    // 'callback' is always handled upstream via lockCB — skip autoFollowUp entirely.
-    const followUpDate = dispId !== 'callback' ? autoFollowUp(dispId) : undefined;
-    const cbPatch = followUpDate !== undefined ? { nextCallback: followUpDate } : {};
-
-    // v3.38 — Disposition auto-scheduling: override nextCallback with timed follow-up windows.
-    // These always win — disposition intent is authoritative over any prior manual callback.
-    const AUTO_CALLBACKS = {
-      follow_up_needed: 96,  // 4 days — "I gotta think about it" window
-      no_show:          24,  // 24 hrs — recovery window after missed appointment
-    };
-    const autoHours = AUTO_CALLBACKS[dispId];
-    const autoCallbackPatch = autoHours
-      ? { nextCallback: new Date(Date.now() + autoHours * 3_600_000).toISOString() }
-      : {};
-    // v3.38 — no-show: flag SMS needed (actual send stays manual — TCPA compliance)
-    const noShowSmsPatch = dispId === 'no_show'
-      ? { noShowSmsQueued: true }
-      : {};
-
-    // Save the disposition — full stage map wired to every disposition
-    const DISP_STAGE_MAP = {
-      vm_left:            "contacted",
-      direct_vm:          "contacted",
-      callback:           "contacted",
-      hung_up:            "contacted",
-      no_show:            "contacted",
-      no_sale:            "contacted",
-      appointment_booked: "appointment_set",
-      follow_up_needed:   "follow_up",
-      not_interested:     "removed",
-      dnc:                "removed",
-      withdrawn:          "removed",
-      chargeback:         "removed",
-    };
-    const stagePatch = DISP_STAGE_MAP[dispId] ? { stage: DISP_STAGE_MAP[dispId] } : {};
-    // v3.7 — disposition note text (read inside functional updater — phasePatch moved inside too)
-    const DISP_NOTE_TEXT = {
-      no_answer:      "📵 No Answer — dialed, no response",
-      vm_left:        "📬 Voicemail Left",
-      follow_up:      "🔄 Follow Up flagged",
-      not_interested: "🚫 Not Interested",
-      hung_up:        "📴 Hung Up",
-      dnc:            "⛔ Do Not Call — file closed",
-      no_show:        "❌ No-Show — appointment missed",
-      no_sale:        "📋 Household Protection Audit held — no application",
-    };
-    const noteText = DISP_NOTE_TEXT[dispId];
-    // notePatch removed — notes computed inside functional updater from freshestLead.notes (v3.39)
-    // phasePatch moved inside functional updater — reads fresh lead state, not stale open snapshot
-
-    // v3.35 — Direct VM counter: auto-retire lead after 5 direct-to-VM hits
-    let directVmPatch = {};
-    if (dispId === 'direct_vm') {
-      const prevCount = open.directVmCount || 0;
-      const newCount = prevCount + 1;
-      if (newCount >= 5) {
-        // Auto-advance bucket: A→B, B→C, C stays C
-        const bucketMap = { A: 'B', B: 'C', C: 'C' };
-        const newBucket = bucketMap[open.bucket] || open.bucket;
-        directVmPatch = { directVmCount: newCount, bucket: newBucket };
-      } else {
-        directVmPatch = { directVmCount: newCount };
-      }
-    }
-
-    // v3.36/v3.39 — fully functional updater: reads freshest lead state for both notes AND phase calc.
-    // phasePatch moved inside — applyPhaseTransition now reads live phase slots, not stale open snapshot.
-    upd(open.id, (freshestLead) => {
-      const ts = new Date().toISOString();
-      // v3.39 — phase transition computed from freshest lead state
-      const phasePatch = applyPhaseTransition(freshestLead, dispId);
-      const autoNotes = [];
-      if (autoHours === 96) autoNotes.push({ ts, type: "note", text: `🔄 Follow-Up — next call in 4 days (${new Date(Date.now() + 96*3600000).toLocaleDateString('en-US',{month:'short',day:'numeric'})})` });
-      if (autoHours === 24) autoNotes.push({ ts, type: "note", text: `❌ No-Show — recovery call set for 24hrs. Text family to reschedule.` });
-      const baseNotes = noteText
-        ? [{ ts, type: "call", text: noteText }, ...autoNotes, ...(freshestLead.notes || [])]
-        : [...autoNotes, ...(freshestLead.notes || [])];
-      return {
-        disposition: dispId,
-        lastContact: new Date().toLocaleDateString('en-CA'),
-        ...stagePatch,
-        ...phasePatch,
-        ...cbPatch,
-        ...autoCallbackPatch,
-        ...directVmPatch,
-        ...noShowSmsPatch,
-        notes: baseNotes,
-      };
-    });
+    // v3.43 — F3: unified disposition logic. buildDispositionPatch is the single
+    // source of truth (stage map, phase transition, auto-callbacks, disposition
+    // notes, direct-VM counter). Computed inside the functional updater from the
+    // FRESHEST lead state — also fixes the stale `open` read on directVmCount.
+    upd(open.id, (freshestLead) => buildDispositionPatch(freshestLead, dispId));
 
     // v3.4 — advance to next lead (nextId captured pre-upd, no index-jump risk)
     if (inDialer) {
@@ -858,18 +772,10 @@ const saveLeads = useCallback((next, opts = {}) => {
   // TodaysBlock — phase-aware disposition handler
   // v3.39 — functional updater: phasePatch computed from freshest lead state inside setLeads(prev=>)
   const handleTodayDispose = useCallback((id, dispId) => {
-    const DISP_STAGE_MAP = {
-      vm_left: 'contacted', callback: 'contacted', hung_up: 'contacted', no_show: 'contacted',
-      appointment_booked: 'appointment_set', follow_up_needed: 'follow_up', no_sale: 'contacted',
-      not_interested: 'removed', dnc: 'removed', withdrawn: 'removed', chargeback: 'removed',
-    };
-    const stagePatch = DISP_STAGE_MAP[dispId] ? { stage: DISP_STAGE_MAP[dispId] } : {};
-    upd(id, (freshLead) => ({
-      disposition: dispId,
-      lastContact: new Date().toLocaleDateString('en-CA'),
-      ...stagePatch,
-      ...applyPhaseTransition(freshLead, dispId),
-    }));
+    // v3.43 — F3: identical patch to the dial view. TodaysBlock dispositions now
+    // get auto-callbacks (no_show 24h, follow-up 96h), disposition notes, and
+    // direct-VM handling they previously silently lost.
+    upd(id, (freshLead) => buildDispositionPatch(freshLead, dispId));
   }, [upd]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // DashboardTab — start a locked dial session from the priority queue widget

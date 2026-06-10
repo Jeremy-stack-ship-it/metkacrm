@@ -5,8 +5,7 @@
 
 import React from 'react';
 
-const GEMINI_URL = key =>
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 const SYS = `You are the AI assistant embedded in the Metka Field Ops CRM, used exclusively by Jeremy Metka — Senior Household Protection Advisor, Ministry of Protection, SFG/Quility. NPN #21425108.
 
@@ -32,9 +31,9 @@ COMPLIANCE: Manual dial only 8AM-9PM local. A2P approved June 2026. STOP opt-out
 Be direct, tactical, zero fluff. No "I hope this helps." Give the actual script, the actual strategy.`;
 
 async function geminiCall(apiKey, msgs) {
-  const r = await fetch(GEMINI_URL(apiKey), {
+  const r = await fetch(GEMINI_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: SYS }] },
       contents: msgs.map(m => ({

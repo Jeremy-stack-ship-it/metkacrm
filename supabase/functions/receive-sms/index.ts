@@ -144,7 +144,7 @@ serve(async (req) => {
 
     await supabase
       .from("leads")
-      .update({ data: patch, updated_at: ts })
+      .update({ data: patch, updated_at: ts, _ts: Date.now() })
       .eq("id", matchedId);
 
     console.log(`[receive-sms] Logged inbound from ${fromRaw} → lead ${matchedId}${isOptOut ? " [OPT-OUT]" : isOptIn ? " [OPT-IN]" : ""}`);

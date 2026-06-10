@@ -19,6 +19,7 @@ export const ACTIVITY_TYPES = [
   { id: "dial",        label: "Dial",         icon: "📞", color: "var(--blue)",  bg: "var(--blue-dim)",  border: "var(--blue-mid)" },
   { id: "contact",     label: "Contact",      icon: "☎",  color: "var(--sky)",   bg: "var(--sky-dim)",   border: "#BAE6FD" },
   { id: "appointment", label: "Appointment",  icon: "📅", color: "var(--green)", bg: "var(--green-dim)", border: "#6EE7B7" },
+  { id: "audit_ran",   label: "Audit Held",   icon: "✅", color: "var(--green)", bg: "var(--green-dim)", border: "#6EE7B7" },
 ];
 
 // ── DAY & TIME HELPERS ───────────────────────────────────────────────

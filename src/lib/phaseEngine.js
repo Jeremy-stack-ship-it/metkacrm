@@ -96,12 +96,19 @@ export const applyPhaseTransition = (lead, dispId) => {
     SCHED_COLS.forEach(k => { patch[k] = null; });
   } else if (dispId === 'appointment_booked') {
     patch.phase = lead.phase || 'P1';
-  } else if (dispId === 'no_show' || dispId === 'no_sale') {
+  } else if (dispId === 'no_show') {
     const sched = buildSchedule(new Date());
     Object.assign(patch, sched);
     patch.phase = 'P1';
     patch.phase_start = now;
     patch.next_dial = sched.p1_1;
+  } else if (dispId === 'no_sale') {
+    // Post-audit: sequence track owns days 1-30, phase engine picks up at P3 (day 31, weekly)
+    const sched = buildSchedule(new Date());
+    Object.assign(patch, sched);
+    patch.phase = 'P3';
+    patch.phase_start = now;
+    patch.next_dial = sched.p3_1;
   } else if (['no_answer', 'vm_left', 'callback', 'follow_up_needed', 'hung_up'].includes(dispId)) {
     const earliest = SCHED_COLS
       .filter(k => lead[k])
@@ -361,9 +368,11 @@ export const assignSlot = (lead) => {
 export const masterQueueSort = (a, b) => {
   const pDiff = getPhasePriority(b) - getPhasePriority(a);
   if (pDiff !== 0) return pDiff;
-  const aTs = a.next_dial ? new Date(a.next_dial).getTime() : 0;
-  const bTs = b.next_dial ? new Date(b.next_dial).getTime() : 0;
-  return bTs - aTs; // more recent due date first within same phase
+  // v3.43 — F5: earliest due first (docs: next_dial ascending) — most-overdue
+  // leads dial first within a phase. No-schedule leads (no next_dial) sort last.
+  const aTs = a.next_dial ? new Date(a.next_dial).getTime() : Infinity;
+  const bTs = b.next_dial ? new Date(b.next_dial).getTime() : Infinity;
+  return aTs - bTs;
 };
 
 // Builds the session queue for a given session.
@@ -394,6 +403,45 @@ export const buildSessionQueue = (leads, session) => {
 
   // Priority order: fresh first (P1→P2→P3), callbacks after (cap enforced)
   return [...cappedFresh, ...cappedCb];
+};
+
+
+// ── OVERDUE SPREAD (v3.42) ────────────────────────────────────────────────────
+// Runs on startup. Takes leads overdue by >1 day and reschedules them forward
+// so today's queue stays manageable. Priority-sorted: P1/no_show/no_sale first.
+// 80 leads/day cap. Idempotent — safe to run every startup.
+// No leads are lost — they're just given a realistic future dial date.
+export const spreadOverdueLeads = (leads) => {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setHours(0, 0, 0, 0);
+
+  const current = [];
+  const overdue  = [];
+
+  (leads || []).forEach(l => {
+    if (!l || !l.next_dial || l.phase === 'EXIT') { current.push(l); return; }
+    if (['dnc','not_interested','withdrawn','chargeback','appointment_booked'].includes(l.disposition)) { current.push(l); return; }
+    const due = new Date(l.next_dial);
+    if (due >= yesterday) { current.push(l); return; }
+    overdue.push(l);
+  });
+
+  if (overdue.length === 0) return leads;
+
+  // Sort highest priority first
+  overdue.sort((a, b) => getPhasePriority(b) - getPhasePriority(a));
+
+  const DAILY_CAP = 80;
+  const updated = overdue.map((l, i) => {
+    const dayOffset = Math.floor(i / DAILY_CAP) + 1; // 1 = tomorrow
+    const target = new Date();
+    target.setDate(target.getDate() + dayOffset);
+    target.setHours(9, 0, 0, 0);
+    return { ...l, next_dial: target.toISOString() };
+  });
+
+  return [...current, ...updated];
 };
 
 // ── PHASE DATE NORMALIZATION (v3.15) ─────────────────────────────────────────

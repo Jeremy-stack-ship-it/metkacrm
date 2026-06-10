@@ -97,7 +97,15 @@ export const useImportHandlers = ({ leads, saveLeads, backfillLead, setBackupExi
       setSavedMapping(toSave);
       try { localStorage.setItem(LS_MAPPING, JSON.stringify(toSave)); } catch {}
     }
-    const parsed = parseCSV(csvRawText, fieldMapDraft);
+    const _rawParsed = parseCSV(csvRawText, fieldMapDraft);
+    // v3.38 — dedup within the imported batch by phone (last occurrence wins)
+    // Prevents same-CSV duplicate rows from creating duplicate CRM entries.
+    const _batchPhoneMap = new Map();
+    _rawParsed.forEach(l => { const p = l.phone.replace(/\D/g, ''); if (p) _batchPhoneMap.set(p, l); });
+    const parsed = Array.from(_batchPhoneMap.values());
+    if (_rawParsed.length !== parsed.length) {
+      console.log(`[Import] Removed ${_rawParsed.length - parsed.length} duplicate phones within batch`);
+    }
     const existing = new Set(leads.map(l => l.phone.replace(/\D/g, '')));
     setImportPreview({
       all: parsed,

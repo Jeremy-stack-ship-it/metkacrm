@@ -34,6 +34,7 @@ export default function DialView({
   refreshQueueOrder,
   openCalendlyPopup,
   logActivity,
+  sendSms,
   todayCount,
   setView,
   setPrevView,
@@ -210,7 +211,7 @@ export default function DialView({
             var label;
             if (open.seqPaused) {
               var exitMap = { booked:"📅 Booked", sold:"✅ Sold", dnc:"⛔ DNC",
-                not_interested:"🚫 Not Interested", exhausted:"📬 Exhausted", manual:"⏸ Paused" };
+                not_interested:"🚫 Not Interested", exhausted:"📬 Exhausted", manual:"⏸ Paused", replied:"✉️ Replied", bad_email:"📭 Bad Email" };
               label = exitMap[open.seqExitReason] || "⏸ Paused";
             } else {
               var nt = getNextTouchDate(open);
@@ -400,7 +401,29 @@ export default function DialView({
                         border: "1.5px solid " + (manualApptOpen ? "#7C3AED" : "#C4B5FD"),
                         borderRadius: "8px", fontSize: "12px", fontWeight: "800", cursor: "pointer", whiteSpace: "nowrap"
                       }
-                    }, "📋 MANUAL")
+                    }, "📋 MANUAL"),
+                  // ── Audit Held: only visible after Family confirmed showed (apptConfirmed=true) ──
+                  open.apptConfirmed && open.disposition === "appointment_booked" &&
+                    React.createElement("button", {
+                      title: "Household Protection Audit was held — log outcome and enroll in no-sale follow-up",
+                      onClick: () => {
+                        logActivity("audit_ran", open.id, "manual");
+                        upd(open.id, function(fresh) {
+                          return {
+                            disposition: "no_sale",
+                            stage: "contacted",
+                            notes: [{ ts: new Date().toISOString(), type: "appointment", text: "✅ Household Protection Audit held — no application" }, ...(fresh.notes || [])]
+                          };
+                        });
+                      },
+                      style: {
+                        flexShrink: 0, minHeight: "44px", padding: "10px 12px",
+                        background: "#059669", color: "#fff",
+                        border: "1.5px solid #059669",
+                        borderRadius: "8px", fontSize: "11px", fontWeight: "800", cursor: "pointer", whiteSpace: "nowrap",
+                        letterSpacing: "0.03em"
+                      }
+                    }, "✅ AUDIT HELD")
                   )
                 ),
 
@@ -649,6 +672,7 @@ export default function DialView({
       addNote,
       scripts, scriptType, setScriptType, scriptSection, setScriptSection,
       templates,
+      sendSms,
     })
   );
 }

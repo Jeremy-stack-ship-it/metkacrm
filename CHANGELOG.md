@@ -291,3 +291,14 @@ COMMIT: 2db7fcc
 **Last Updated**: 2026-05-14
 **Current Version**: v3.6.1
 **Status**: ✅ Production ready. Power Dialer functional end-to-end. GitHub live.
+
+## v3.43 — 2026-06-10 — Session 1: Correctness Fixes (audit-driven)
+**Source:** tasks/AUDIT-2026-06-10.md + tasks/SPEC-M1-M2-M3-BUILD.md (Session 1). All five fixes verified by 16 automated behavior checks + clean vite build.
+
+- **F1 — lastContact UTC/local split (HIGH).** leads.js addNote/logDial wrote UTC dates (`toISOString`) while every reader compares local. After ~7PM CT a dial stamped *tomorrow* — lead could resurface same evening, then was wrongly suppressed all next day. Both call sites now use `dayKey()` (local). Wednesday Late session no longer corrupts Thursday's queue.
+- **F3 — Unified disposition logic.** New `src/lib/dispositionEngine.js` — `buildDispositionPatch()` is the single source of truth (stage map, phase transition, auto-callbacks, disposition notes, direct-VM counter). Both handleDisposition (dial view) and handleTodayDispose (TodaysBlock) consume it. TodaysBlock dispositions now get the no-show 24-hr recovery callback, SMS flag, follow-up 96-hr window, notes, and direct-VM handling they silently lost. Also fixes stale `open` read on directVmCount.
+- **F5 — Queue tiebreaker inverted.** masterQueueSort sorted later-due first within a phase; most-overdue leads dialed LAST. Now next_dial ascending per the Lead Strategy docs; leads with no schedule sort last (Infinity sentinel).
+- **F6 — deleteLead/addLead stale closures.** Both converted to functional updaters + persistLeads (single-row upsert for adds). Deleting/adding mid-dial-burst can no longer persist a pre-disposition snapshot of the whole database.
+- **F9 — Plain notes stamped contacted-today.** addNote now stamps lastContact only for call/appointment note types — journaling a note no longer hides the lead from today's queue.
+
+Files: src/lib/leads.js, src/lib/phaseEngine.js, src/lib/dispositionEngine.js (new), src/App.jsx (handlers + imports).

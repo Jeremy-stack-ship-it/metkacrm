@@ -1,4 +1,5 @@
 import React from 'react';
+import SmsThread from './SmsThread.jsx';
 import { inp, chip, NC, fmt } from '../constants.js';
 
 // ── Script token renderer ─────────────────────────────────────────────────
@@ -256,10 +257,10 @@ export default function DialRightPanel({
           : React.createElement('div', { style: { textAlign: 'center', padding: '32px 0', color: 'var(--t4)', fontSize: '12px' } }, 'No notes yet.')
       ),
 
-      // SMS tab — live send via Twilio (A2P approved 2026-06-01)
-      dialRightTab === 'sms' && React.createElement(SmsTab, {
+      // SMS tab — full thread (A2P approved 2026-06-01)
+      dialRightTab === 'sms' && React.createElement(SmsThread, {
         key: open ? open.id : 'no-lead',
-        open, upd, sendSms, templates
+        open, upd, sendSms, height: '100%'
       }),
 
       // ACTIVITY tab

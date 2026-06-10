@@ -123,6 +123,16 @@ export const seqPatchForDisposition = (disposition) => {
   if (PAUSE_DISPS.has(disposition)) {
     return pauseSequence('booked');    // appointment booked / app submitted
   }
+  if (disposition === 'no_sale') {
+    // Auto-enroll in no_sale sequence track — sequence owns days 1-30 follow-up
+    return {
+      seqTrack: 'no_sale',
+      seqStep: 0,
+      seqStartDate: new Date().toISOString(),
+      seqPaused: false,
+      seqExitReason: null,
+    };
+  }
   return {};
 };
 

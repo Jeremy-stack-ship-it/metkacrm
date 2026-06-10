@@ -37,6 +37,18 @@ export const TRACK_SCHEDULES = {
     { step:1,  day:3,  channels:["sms"]                  }, // Day 3 final SMS
     { step:2,  day:7,  channels:["archive"]              }, // Day 7 auto-archive
   ],
+  // ── NO_SALE: auto-enrolled after Audit Held fires. Sequence owns days 1-30.
+  // Phase engine (P3) picks up at day 31+ with weekly dials.
+  no_sale: [
+    { step:0, day:1,  channels:["sms","email"]         }, // Day 1  warm follow-up
+    { step:1, day:3,  channels:["sms","dial_reminder"]  }, // Day 3  questions surface + dial
+    { step:2, day:7,  channels:["sms","email"]          }, // Day 7  living benefits re-anchor
+    { step:3, day:14, channels:["sms","dial_reminder"]  }, // Day 14 rate clock + dial
+    { step:4, day:21, channels:["sms","email"]          }, // Day 21 home equity / urgency
+    { step:5, day:30, channels:["sms"]                  }, // Day 30 ghost protocol
+    { step:6, day:45, channels:["archive"]              }, // Day 45 auto-archive
+  ],
+
   // ── NURTURE: auto-enrolled after any track exhausts. Email-only.
   // Day offsets are from original assignDate — leads archive at 2yr mark.
   nurture: [
@@ -117,6 +129,34 @@ export const SMS = {
     1: {
       mp: (n,c)=>`${n} — last message from me. If protecting your home and family with Mortgage Protection ever moves back up the list, I'm still here. — Jeremy, Metka Solutions`,
       li: (n,c)=>`${n} — last message. If life insurance ever moves back up the list, I'm still here. Wishing you well. — Jeremy, Metka Solutions`,
+    },
+  },
+
+  // ── NO_SALE: sat through Household Protection Audit, didn't buy ──
+  no_sale: {
+    0: {
+      mp: (n,c)=>`Hey ${n}, Jeremy here — thanks for making time today. I know we didn't land on a decision yet, and that's completely fine. Whenever the timing feels right, I'm still here. The options we looked at aren't going anywhere.`,
+      li: (n,c)=>`Hey ${n}, Jeremy here — thanks for taking the time today. No pressure on a decision. The coverage we reviewed is still available whenever you're ready.`,
+    },
+    1: {
+      mp: (n,c)=>`${n} — just checking in. Sometimes questions come up after sitting with things. Anything I can answer? Happy to jump on a quick call.`,
+      li: (n,c)=>`${n} — Jeremy here. Questions sometimes surface after a conversation like ours. I'm a quick call away whenever you need clarity.`,
+    },
+    2: {
+      mp: (n,c)=>`${n}, Jeremy here. The part most families keep thinking about after we talk: Living Benefits. That's the money that pays while you're still alive — cancer, heart attack, stroke. Most plans out there don't have it. The ones we reviewed do. Worth keeping in mind. ${c||'[CALENDLY]'}`,
+      li: (n,c)=>`${n} — Jeremy. Quick reminder: the plans we reviewed include Living Benefits — cash paid out while you're alive for a critical illness. That's not standard. Most people don't realize how rare it is. ${c||'[CALENDLY]'}`,
+    },
+    3: {
+      mp: (n,c)=>`${n} — one thing worth knowing: the rate I quoted you was based on your age and health today. Every month that passes is a month older. Still here when you're ready.`,
+      li: (n,c)=>`${n}, Jeremy here. The rate from our conversation was locked to your current age and health. That window doesn't stay open forever. Still here when you're ready.`,
+    },
+    4: {
+      mp: (n,c)=>`${n} — something I mentioned in passing I want to make sure lands: the right Mortgage Protection plan doesn't just pay at death. It can help build equity faster while you're alive and healthy. Most families never put those two things together until it's too late to qualify. ${c||'[CALENDLY]'}`,
+      li: (n,c)=>`${n} — Jeremy. Beyond the death benefit, these plans have a living component most people aren't aware of — accelerated payouts for critical illness. Not complicated. Just worth locking in before rates change. ${c||'[CALENDLY]'}`,
+    },
+    5: {
+      mp: (n,c)=>`${n} — I'm wrapping up household files in your area this week. Do I need to archive yours or would you like to revisit what we talked about? No pressure either way. ${c||'[CALENDLY]'}`,
+      li: (n,c)=>`${n} — closing out regional files this week. Before I archive yours — is protecting your family still something you want to handle? ${c||'[CALENDLY]'}`,
     },
   },
 };
@@ -317,6 +357,122 @@ ${c||'[CALENDLY LINK]'}
 
 Jeremy Metka
 Senior Field Underwriter | Metka Solutions
+${ph||''}`,
+      },
+    },
+  },
+
+  // ── NO_SALE emails (steps 0, 2, 4) ─────────────────────────────────────────
+  no_sale: {
+    0: {
+      mp: {
+        subject: (n)=>`${n} — thanks for your time today`,
+        body: (n,ph,c)=>`Hi ${n},
+
+Thanks for carving out time to go through everything today. I know these conversations involve a real decision, and I don't take it lightly that you showed up.
+
+I also know you didn't lock anything in, and that's completely fine. These decisions deserve time.
+
+What I want you to hold onto from our conversation: the plans I work with aren't just death benefits. The Living Benefits component means if you're ever diagnosed with a critical illness — cancer, stroke, heart attack — the plan pays you cash while you're still alive to use it. That's the part most people have never heard before they talk to me.
+
+When you're ready to pick it back up, I'm here: ${c||'[CALENDLY LINK]'}
+
+Jeremy Metka
+Senior Field Underwriter | Metka Solutions
+NPN #21425108
+${ph||''}`,
+      },
+      li: {
+        subject: (n)=>`${n} — thanks for your time today`,
+        body: (n,ph,c)=>`Hi ${n},
+
+Thanks for making the time today. I know this kind of conversation asks something of you, and I appreciate that you showed up.
+
+I also know you didn't make a decision, and that's okay. What I want you to remember: the plans I work with include Living Benefits — meaning if you're diagnosed with a critical illness, the policy pays you cash while you're still alive to use it. That's not standard. Most families have never heard of it until they talk to me.
+
+When you're ready: ${c||'[CALENDLY LINK]'}
+
+Jeremy Metka
+Senior Field Underwriter | Metka Solutions
+NPN #21425108
+${ph||''}`,
+      },
+    },
+    2: {
+      mp: {
+        subject: (n)=>`The part most families keep thinking about`,
+        body: (n,ph,c)=>`Hi ${n},
+
+A week out from our conversation — I wanted to share something I find sticks with people once they really hear it.
+
+Most life insurance only pays when you die. The plans I work with are different. They include Living Benefits — meaning if you're diagnosed with cancer, suffer a heart attack, or have a stroke, the policy pays you cash you can use right now. Cover medical bills. Replace lost income. Keep the mortgage paid.
+
+You don't have to die for it to pay out.
+
+That's not a sales line. That's genuinely how these plans work, and most families never find out until they're sitting across from me.
+
+If that's worth 15 minutes to revisit: ${c||'[CALENDLY LINK]'}
+
+Jeremy Metka
+Senior Field Underwriter | Metka Solutions
+NPN #21425108
+${ph||''}`,
+      },
+      li: {
+        subject: (n)=>`Something from our conversation worth sitting with`,
+        body: (n,ph,c)=>`Hi ${n},
+
+A week out — one thing I want to make sure really lands.
+
+Most life insurance only pays when you die. The plans I work with include Living Benefits — meaning if you're diagnosed with cancer, suffer a heart attack, or have a stroke, the policy pays you cash while you're still alive to use it.
+
+That's the part most people haven't heard. And it changes the entire conversation.
+
+If it's worth 15 minutes to revisit: ${c||'[CALENDLY LINK]'}
+
+Jeremy Metka
+Senior Field Underwriter | Metka Solutions
+NPN #21425108
+${ph||''}`,
+      },
+    },
+    4: {
+      mp: {
+        subject: (n)=>`One thing I want to make sure lands — ${n}`,
+        body: (n,ph,c)=>`Hi ${n},
+
+Three weeks out now. I'm not going to pretend I'm not thinking about your file — because I am.
+
+Here's the thing about life insurance most people don't understand until it's too late: the rate you qualify for today is based on your age and health today. Not next month. Not next year. Today.
+
+Every month that passes is a month older. And health can change in ways none of us expect.
+
+I'm not saying this to scare you. I'm saying it because I'd rather have you hear it from me now than wish you had acted sooner.
+
+If you're ready to lock something in: ${c||'[CALENDLY LINK]'}
+
+If you're not, that's okay too. I'm still here.
+
+Jeremy Metka
+Senior Field Underwriter | Metka Solutions
+NPN #21425108
+${ph||''}`,
+      },
+      li: {
+        subject: (n)=>`The window doesn't stay open forever — ${n}`,
+        body: (n,ph,c)=>`Hi ${n},
+
+Three weeks since we talked. I'm still thinking about your file.
+
+The rate you qualify for is based on your age and health today — not next month, not next year. Every month that passes is a month older, and health can change when we least expect it.
+
+I'm not saying this to pressure you. I'm saying it because I'd rather you hear it from me now.
+
+When you're ready: ${c||'[CALENDLY LINK]'}
+
+Jeremy Metka
+Senior Field Underwriter | Metka Solutions
+NPN #21425108
 ${ph||''}`,
       },
     },

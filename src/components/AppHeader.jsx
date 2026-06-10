@@ -8,7 +8,7 @@ export default function AppHeader({
   setAddForm, fileRef, handleFile,
 }) {
   const todayDials = activityStats?.today?.dials || 0;
-  const dialGoal   = goals?.dials || 100;
+  const dialGoal   = goals?.dials || 30; // v3.40 — matches DEFAULT_GOALS and DashboardTab
   const dialPct    = Math.min(todayDials / dialGoal, 1);
   const barColor   = dialPct < 0.5 ? '#DC2626' : dialPct < 0.8 ? '#F59E0B' : '#10B981';
 

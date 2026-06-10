@@ -54,6 +54,17 @@ const TRACK_SCHEDULES: Record<string, SchedEntry[]> = {
     { step: 1, day: 3, channels: ["sms"]          },
     { step: 2, day: 7, channels: ["archive"]      },
   ],
+  // no_sale: sat through audit, didn't buy. Sequence owns days 1-30; P3 phase picks up at day 31+.
+  "no_sale": [
+    { step: 0, day: 1,  channels: ["sms", "email"]         },
+    { step: 1, day: 3,  channels: ["sms", "dial_reminder"] },
+    { step: 2, day: 7,  channels: ["sms", "email"]         },
+    { step: 3, day: 14, channels: ["sms", "dial_reminder"] },
+    { step: 4, day: 21, channels: ["sms", "email"]         },
+    { step: 5, day: 30, channels: ["sms"]                  },
+    { step: 6, day: 45, channels: ["archive"]              },
+  ],
+
   // Email-only. Day offsets from original assignDate. Archives at 2yr mark.
   nurture: [
     { step: 0, day: 60,  channels: ["email"]                 },
@@ -133,6 +144,32 @@ const SMS: Record<string, { mp: SmsFn; li: SmsFn }> = {
     mp: n => `Hi ${n}, going ahead and archiving your household file. Reach out anytime if things change. Reply STOP to opt out.`,
     li: n => `Hi ${n}, archiving your file. Reach out anytime if things change. Reply STOP to opt out.`,
   },
+
+  // ── NO_SALE: sat through audit, didn't buy ──
+  "no_sale:0": {
+    mp: n => `Hey ${n}, Jeremy here — thanks for making time today. I know we didn't land on a decision yet, and that's completely fine. Whenever the timing feels right, I'm still here. The options we looked at aren't going anywhere. Reply STOP to opt out.`,
+    li: n => `Hey ${n}, Jeremy here — thanks for taking the time today. No pressure on a decision. The coverage we reviewed is still available whenever you're ready. Reply STOP to opt out.`,
+  },
+  "no_sale:1": {
+    mp: n => `${n} — just checking in. Sometimes questions come up after sitting with things. Anything I can answer? Happy to jump on a quick call. Reply STOP to opt out.`,
+    li: n => `${n} — Jeremy here. Questions sometimes surface after a conversation like ours. I'm a quick call away whenever you need clarity. Reply STOP to opt out.`,
+  },
+  "no_sale:2": {
+    mp: n => `${n}, Jeremy here. The part most families keep thinking about after we talk: Living Benefits — money that pays while you're still alive for cancer, heart attack, stroke. Most plans don't have it. The ones we reviewed do. Reply STOP to opt out.`,
+    li: n => `${n} — the plans we reviewed include Living Benefits — cash paid while you're alive for a critical illness. That's not standard. Most people don't realize how rare it is. Reply STOP to opt out.`,
+  },
+  "no_sale:3": {
+    mp: n => `${n} — the rate I quoted was based on your age and health today. Every month that passes is a month older. Still here when you're ready. Reply STOP to opt out.`,
+    li: n => `${n}, Jeremy here. The rate from our conversation was locked to your current age and health. That window doesn't stay open forever. Still here. Reply STOP to opt out.`,
+  },
+  "no_sale:4": {
+    mp: n => `${n} — the right Mortgage Protection plan doesn't just pay at death. It can help build equity faster while you're alive and healthy. Most families never put those two things together. Reply STOP to opt out.`,
+    li: n => `${n} — Jeremy. Beyond the death benefit, these plans have a living component most people aren't aware of — accelerated payouts for critical illness. Worth locking in before rates change. Reply STOP to opt out.`,
+  },
+  "no_sale:5": {
+    mp: n => `${n} — I'm wrapping up household files in your area this week. Do I need to archive yours or would you like to revisit what we talked about? No pressure either way. Reply STOP to opt out.`,
+    li: n => `${n} — closing out regional files this week. Before I archive yours — is protecting your family still something you want to handle? Reply STOP to opt out.`,
+  },
 };
 
 function getSmsBody(track: string, step: number, cat: string, firstName: string): string | null {
@@ -170,6 +207,7 @@ const TRACK_LABEL: Record<string, string> = {
   "new":        "New Lead",
   "re-engage":  "Re-Engage",
   "ghost":      "Ghost Protocol",
+  "no_sale":    "Sat — No Sale",
 };
 
 // ── GMAIL API ─────────────────────────────────────────────────────────────────
@@ -327,6 +365,46 @@ function getEmailContent(
           : `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I'm closing out regional files this week. Before I archive yours, I want to send one last note.</p>
              <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If life insurance — especially the kind that pays cash for a critical illness diagnosis while you're still alive — is still on your list, I'm here.</p>
              <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">If the timing isn't right, that's completely okay. Reach out anytime and I'll pick your file right back up. Take care, ${firstName}.</p>`,
+      };
+    }
+  }
+
+  // ── NO_SALE TRACK ─────────────────────────────────────────────────────────
+  if (track === "no_sale") {
+    if (step === 0) {
+      return {
+        subject: isMp ? `${firstName} — thanks for your time today` : `${firstName} — thanks for your time today`,
+        bodyHtml: isMp
+          ? `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Thanks for carving out time to go through everything today. I know these conversations involve a real decision, and I don't take it lightly that you showed up.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">What I want you to hold onto: the plans I work with include <strong>Living Benefits</strong> — if you're ever diagnosed with cancer, have a heart attack, or suffer a stroke, the plan pays cash while you're still alive to use it. That's the part most people have never heard before they talk to me.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">When you're ready to pick it back up, I'm here.</p>`
+          : `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Thanks for making the time today. I know this kind of conversation asks something of you, and I appreciate that you showed up.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">What I want you to remember: the plans I work with include <strong>Living Benefits</strong> — if you're diagnosed with a critical illness, the policy pays you cash while you're still alive to use it. That's not standard. Most families have never heard of it until they talk to me.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">When you're ready: I'm here.</p>`,
+      };
+    }
+    if (step === 2) {
+      return {
+        subject: isMp ? `The part most families keep thinking about` : `Something from our conversation worth sitting with`,
+        bodyHtml: isMp
+          ? `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">A week out from our conversation — one thing I want to make sure really lands.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Most life insurance only pays when you die. The plans I work with include <strong>Living Benefits</strong> — if you're diagnosed with cancer, suffer a heart attack, or have a stroke, the policy pays you cash while you're still alive. Cover medical bills. Replace lost income. Keep the mortgage paid.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">You don't have to die for it to pay out. That's the part most families never find out until they're sitting across from me.</p>`
+          : `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">A week out — one thing I want to make sure really lands.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Most life insurance only pays when you die. The plans I work with include <strong>Living Benefits</strong> — meaning if you're diagnosed with cancer, suffer a heart attack, or have a stroke, the policy pays you cash while you're still alive to use it.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">That changes the entire conversation. And it's not standard. Most people have never heard of it.</p>`,
+      };
+    }
+    if (step === 4) {
+      return {
+        subject: isMp ? `One thing I want to make sure lands — ${firstName}` : `The window doesn't stay open forever — ${firstName}`,
+        bodyHtml: isMp
+          ? `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Three weeks out now. I'm not going to pretend I'm not thinking about your file.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">The rate you qualify for today is based on your age and health today. Not next month. Not next year. Today. Every month that passes is a month older, and health can change in ways none of us expect.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I'm not saying this to scare you. I'm saying it because I'd rather you hear it from me now than wish you had acted sooner. Still here whenever you're ready.</p>`
+          : `<p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">Three weeks since we talked. Still thinking about your file.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">The rate you qualify for is based on your age and health today — not next month, not next year. Every month that passes is a month older, and health can change when we least expect it.</p>
+             <p style="margin:0 0 16px;font-size:15px;color:#222;line-height:1.7;">I'm not saying this to pressure you. I'm saying it because I'd rather you hear it from me now. Still here.</p>`,
       };
     }
   }

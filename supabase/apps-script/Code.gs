@@ -14,14 +14,22 @@
  *    AND into Supabase secret: APPS_SCRIPT_EMAIL_URL
  *
  * To update: edit here → Deploy → Manage deployments → New version
+ *
+ * SCRUBBER SETUP (one-time):
+ * 1. Add Script Properties (Project Settings → Script Properties):
+ *    SUPABASE_URL  → https://brskbcdaefmkcgctlhlb.supabase.co
+ *    SUPABASE_KEY  → your service_role key (NOT anon key)
+ * 2. Run installTriggers() once from the editor to activate auto-scrubbing
+ * 3. Gmail labels "Metka/Sequence", "Metka/Replied", "Metka/Bounced"
+ *    are created automatically on first send
  */
 
 // ── CONFIG ───────────────────────────────────────────────────────────────────
 var AGENT_NAME       = "Jeremy Metka";
-var AGENT_TITLE      = "Senior Field Underwriter | Metka Solutions";
+var AGENT_TITLE      = "Senior Household Protection Advisor | Metka Solutions";
 var AGENT_NPN        = "NPN #21425108";
 var AGENT_PHONE      = "(580) 775-7564";
-var CALENDLY         = "https://calendly.com/YOUR_LINK";         // ← UPDATE
+var CALENDLY         = "https://calendly.com/metkasolutions/20min";
 var UNSUBSCRIBE_URL  = "https://YOUR-PROJECT.supabase.co/functions/v1/unsubscribe?email="; // ← UPDATE (or remove until endpoint is built)
 var BUSINESS_ADDRESS = "Metka Solutions, Durant, OK 74701";      // ← UPDATE if needed
 
@@ -75,6 +83,9 @@ function sendSequenceEmail(payload) {
     htmlBody: html,
   });
 
+  // Tag the sent thread so the reply scrubber knows to watch it
+  labelSequenceThread(email);
+
   return { success: true, to: email, subject: subject, track: track, step: step };
 }
 
@@ -106,7 +117,8 @@ function wrapHtml(plainBody, firstName, email) {
 
     // Footer
     "<div style='margin-top:32px;padding-top:20px;border-top:1px solid #e8e8e8;font-size:13px;color:#666;'>",
-    "Metka Solutions &bull; " + BUSINESS_ADDRESS + "<br>",
+    "Metka Solutions &bull; " + BUSINESS_ADDRESS + "<br>" +
+    "Licensed in OK, TX, VA, OH, NC, IL, MO, NJ, PA, AZ, NY, WA, AL, FL, GA, CA | NPN #21425108<br>",
     "<a href='" + unsubscribeLink + "' style='color:#666;text-decoration:underline;'>Unsubscribe</a>",
     "</div>",
 
@@ -131,7 +143,7 @@ function getTemplate(track, step, cat) {
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
-          "My name is Jeremy Metka — I'm a Senior Field Underwriter, and I received your request for a Mortgage Protection review.",
+          "My name is Jeremy Metka — I'm a Senior Household Protection Advisor, and I received your request for a Mortgage Protection review.",
           "",
           "I want to make sure a real person follows up with you, so I'm reaching out both by phone and here.",
           "",
@@ -152,7 +164,7 @@ function getTemplate(track, step, cat) {
         body: function(n,ph,c){ return [
           "Hi " + n + ",",
           "",
-          "My name is Jeremy Metka — Senior Field Underwriter, and I received your life insurance inquiry.",
+          "My name is Jeremy Metka — Senior Household Protection Advisor, and I received your life insurance inquiry.",
           "",
           "I want to make sure a real person reaches out, so here I am.",
           "",
@@ -523,4 +535,193 @@ function getTemplate(track, step, cat) {
   var tmpl = templates[key];
   if (!tmpl) return null;
   return tmpl[cat] || tmpl.li || null;
+}
+
+// ── LABEL HELPERS ─────────────────────────────────────────────────────────────
+
+function getOrCreateLabel(name) {
+  var label = GmailApp.getUserLabelByName(name);
+  if (!label) label = GmailApp.createLabel(name);
+  return label;
+}
+
+// Apply "Metka/Sequence" label to a thread after sending.
+// Call this inside sendSequenceEmail after GmailApp.sendEmail.
+function labelSequenceThread(toEmail) {
+  var threads = GmailApp.search('to:' + toEmail + ' in:sent', 0, 5);
+  if (!threads.length) return;
+  getOrCreateLabel("Metka/Sequence").addToThread(threads[0]);
+}
+
+// ── REPLY SCRUBBER ────────────────────────────────────────────────────────────
+/**
+ * Scans all threads labeled "Metka/Sequence" for inbound replies.
+ * When a reply is found from the lead (not from Jeremy):
+ *   - Pauses the lead's sequence in Supabase (seqPaused = true, exitReason = "replied")
+ *   - Moves thread label from Metka/Sequence → Metka/Replied
+ * Run on a time trigger every 2–4 hours.
+ */
+function scanForReplies() {
+  var seqLabel     = getOrCreateLabel("Metka/Sequence");
+  var repliedLabel = getOrCreateLabel("Metka/Replied");
+  var myEmail      = Session.getActiveUser().getEmail().toLowerCase();
+
+  var threads = seqLabel.getThreads(0, 100);
+
+  threads.forEach(function(thread) {
+    var messages = thread.getMessages();
+    // Look for any message NOT sent by Jeremy (i.e., a real reply)
+    var hasReply = messages.some(function(msg) {
+      return msg.getFrom().toLowerCase().indexOf(myEmail) === -1;
+    });
+
+    if (hasReply) {
+      // Extract lead email from the first outbound message
+      var firstMsg = messages[0];
+      var leadEmail = extractEmail(firstMsg.getTo());
+
+      if (leadEmail) {
+        pauseLeadInSupabase(leadEmail, "replied");
+        Logger.log("Reply detected — paused sequence for: " + leadEmail);
+      }
+
+      // Relabel thread
+      seqLabel.removeFromThread(thread);
+      repliedLabel.addToThread(thread);
+    }
+  });
+}
+
+// ── BOUNCE SCRUBBER ───────────────────────────────────────────────────────────
+/**
+ * Scans inbox for Gmail delivery failure notifications (bounces).
+ * When a bounce is found:
+ *   - Marks the lead's email as bad in Supabase (badEmail = true, seqPaused = true)
+ *   - Labels the bounce thread "Metka/Bounced" and marks it read
+ * Run on a time trigger every 2–4 hours.
+ */
+function scanForBounces() {
+  var bouncedLabel = getOrCreateLabel("Metka/Bounced");
+
+  // Gmail delivery failures come from mailer-daemon or postmaster
+  var query = 'from:(mailer-daemon@googlemail.com OR postmaster@) subject:(delivery OR undeliverable OR failed) -label:Metka/Bounced newer_than:30d';
+  var threads = GmailApp.search(query, 0, 50);
+
+  threads.forEach(function(thread) {
+    var body = thread.getMessages()[0].getPlainBody();
+    var bounced = parseBounceEmail(body);
+
+    if (bounced) {
+      pauseLeadInSupabase(bounced, "bad_email");
+      Logger.log("Bounce detected — marked bad email for: " + bounced);
+    }
+
+    bouncedLabel.addToThread(thread);
+    thread.markRead();
+  });
+}
+
+// ── SUPABASE PAUSE CALL ───────────────────────────────────────────────────────
+/**
+ * Updates the lead record in Supabase:
+ *   seqPaused = true
+ *   exitReason = reason ("replied" | "bad_email")
+ * Uses the REST API with service_role key from Script Properties.
+ */
+function pauseLeadInSupabase(email, reason) {
+  var props   = PropertiesService.getScriptProperties();
+  var baseUrl = props.getProperty("SUPABASE_URL");
+  var apiKey  = props.getProperty("SUPABASE_KEY");
+
+  if (!baseUrl || !apiKey) {
+    Logger.log("ERROR: SUPABASE_URL or SUPABASE_KEY not set in Script Properties");
+    return;
+  }
+
+  var url = baseUrl + "/rest/v1/leads?email=eq." + encodeURIComponent(email);
+
+  var payload = {
+    seqPaused:     true,
+    seqExitReason: reason,
+    updatedAt:     new Date().toISOString()
+  };
+
+  var options = {
+    method:      "PATCH",
+    contentType: "application/json",
+    headers: {
+      "apikey":        apiKey,
+      "Authorization": "Bearer " + apiKey,
+      "Prefer":        "return=minimal"
+    },
+    payload:          JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+
+  var response = UrlFetchApp.fetch(url, options);
+  var code     = response.getResponseCode();
+
+  if (code !== 200 && code !== 204) {
+    Logger.log("Supabase PATCH failed (" + code + ") for " + email + ": " + response.getContentText());
+  }
+}
+
+// ── UTILITY ───────────────────────────────────────────────────────────────────
+
+// Extracts the raw email address from a "Name <email>" or plain "email" string.
+function extractEmail(str) {
+  if (!str) return null;
+  var match = str.match(/<([^>]+)>/);
+  if (match) return match[1].trim().toLowerCase();
+  return str.trim().toLowerCase();
+}
+
+// Parses a bounce notification body and returns the failed delivery address.
+// Handles the two most common Gmail bounce formats.
+function parseBounceEmail(body) {
+  if (!body) return null;
+
+  // Format 1: "Final-Recipient: rfc822; user@example.com"
+  var m1 = body.match(/Final-Recipient[^;]*;\s*([^\s\r\n]+)/i);
+  if (m1) return m1[1].replace(/^mailto:/i, "").toLowerCase();
+
+  // Format 2: "The email account ... <user@example.com> ... does not exist"
+  var m2 = body.match(/[Tt]he email account[^<]*<([^>]+)>/);
+  if (m2) return m2[1].toLowerCase();
+
+  // Format 3: bare email in "failed permanently for user@example.com"
+  var m3 = body.match(/failed permanently[^a-z0-9.]*([a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,})/i);
+  if (m3) return m3[1].toLowerCase();
+
+  return null;
+}
+
+// ── TRIGGER INSTALLER ─────────────────────────────────────────────────────────
+/**
+ * Run this ONCE from the Apps Script editor (not via trigger).
+ * Sets up two time-driven triggers:
+ *   - scanForReplies  → every 2 hours
+ *   - scanForBounces  → every 2 hours
+ * Safe to re-run — deletes old Metka triggers first to avoid duplicates.
+ */
+function installTriggers() {
+  // Remove any existing Metka scrubber triggers
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    var fn = t.getHandlerFunction();
+    if (fn === "scanForReplies" || fn === "scanForBounces") {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+
+  ScriptApp.newTrigger("scanForReplies")
+    .timeBased()
+    .everyHours(2)
+    .create();
+
+  ScriptApp.newTrigger("scanForBounces")
+    .timeBased()
+    .everyHours(2)
+    .create();
+
+  Logger.log("Triggers installed: scanForReplies + scanForBounces (every 2 hours)");
 }
