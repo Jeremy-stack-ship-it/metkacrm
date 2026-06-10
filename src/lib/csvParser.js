@@ -55,7 +55,50 @@ export function autoDetectMapping(lowerHeaders) {
     pdfUrl:      fi(["pdf_url","pdfurl","pdf"]),
     importStage: fi(["stage","lead_stage"]),
     emailOpener: fi(["emailopener","email_opener","email_openers"]),
+    // v3.45 — Funnel sync fields (CSV-SYNC-ANALYSIS-2026-06-10)
+    leadCode:         fi(["leadcode","lead_code"]),
+    leadAssignmentId: fi(["leadassignmentid","lead_assignment_id"]),
+    sex:              fi(["sex","gender"]),
+    street:           fi(["street","address","street_address"]),
+    leadSource:       fi(["leadsource","lead_source","source"]),
+    leadSubSource:    fi(["leadsubsource","lead_sub_source","subsource"]),
+    exclusivityEnd:   fi(["exclusivityenddate","exclusivity_end_date"]),
+    purchaseAmount:   fi(["purchaseamount","purchase_amount","lead_cost","cost"]),
+    birthday:         fi(["birthday","dob","date_of_birth","birthdate"]),
   };
+}
+
+// v3.45 — EXPORTED full Funnel/Lighthouse status map. Returns disposition + seq
+// fields, plus `stage` where the status implies one (sold/issued). Used by both
+// parseCSV (import) and funnelSync (status-diff sync).
+export function mapFunnelStatus(s) {
+  const l = (s || "").toLowerCase();
+  if (l.includes("issue paid") || l.includes("issued"))
+    return { disposition:"submitted",     stage:"issued",        seqTrack:"closed",    seqStep:0, seqPaused:true,  seqExitReason:"sold" };
+  if (l.includes("sold") || l.includes("application taken") || l.includes("application submitted") || (l.includes("submitted") && !l.includes("contact")))
+    return { disposition:"submitted",     stage:"app_submitted", seqTrack:"closed",    seqStep:0, seqPaused:true,  seqExitReason:"sold" };
+  if (l.includes("credit approved"))
+    return { disposition:"interested",    seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"booked" };
+  if (l.includes("appointment set") || l.includes("appointment"))
+    return { disposition:"interested",    seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"booked" };
+  if (l.includes("not taken"))
+    return { disposition:"no_sale",       seqTrack:"re-engage",  seqStep:0, seqPaused:false, seqExitReason:null };
+  if (l.includes("no interest") || l.includes("not interested"))
+    return { disposition:"not_interested",seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"not_interested" };
+  if (l.includes("dnc") || l.includes("do not call"))
+    return { disposition:"dnc",           seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"dnc" };
+  if (l.includes("credit denied") || l.includes("declined"))
+    return { disposition:"not_interested",seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"credit_denied" };
+  if (l.includes("no contact") || l.includes("unreachable"))
+    return { disposition:"no_answer",     seqTrack:"ghost",      seqStep:0, seqPaused:false, seqExitReason:null };
+  if (l.includes("call again"))
+    return { disposition:"callback",      seqTrack:"re-engage",  seqStep:0, seqPaused:false, seqExitReason:null };
+  if (l.includes("contact attempted"))
+    return { disposition:"callback",      seqTrack:"re-engage",  seqStep:0, seqPaused:false, seqExitReason:null };
+  if (l.includes("active") || l.includes("contacting"))
+    return { disposition:"callback",      seqTrack:"re-engage",  seqStep:1, seqPaused:false, seqExitReason:null };
+  // "New Lead" and anything unrecognised → fresh, never touched
+  return { disposition:"not_called",      seqTrack:"new",        seqStep:0, seqPaused:false, seqExitReason:null };
 }
 
 export function parseCSV(txt, customIdxMap = null) {
@@ -64,30 +107,10 @@ export function parseCSV(txt, customIdxMap = null) {
   const headers = lines[0].split(",").map(h => h.replace(/^"|"$/g, "").trim().toLowerCase());
   const idxMap = customIdxMap || autoDetectMapping(headers);
 
-  // Full status map — returns disposition + sequence fields from raw Lighthouse LeadStatus
-  const mapStatus = s => {
-    const l = (s || "").toLowerCase();
-    if (l.includes("sold") || l.includes("application taken") || l.includes("application submitted") || (l.includes("submitted") && !l.includes("contact")))
-      return { disposition:"submitted",     seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"sold"           };
-    if (l.includes("credit approved"))
-      return { disposition:"interested",    seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"booked"         };
-    if (l.includes("appointment set") || l.includes("appointment"))
-      return { disposition:"interested",    seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"booked"         };
-    if (l.includes("no interest") || l.includes("not interested"))
-      return { disposition:"not_interested",seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"not_interested" };
-    if (l.includes("dnc") || l.includes("do not call"))
-      return { disposition:"dnc",           seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"dnc"            };
-    if (l.includes("credit denied") || l.includes("declined"))
-      return { disposition:"not_interested",seqTrack:"closed",     seqStep:0, seqPaused:true,  seqExitReason:"credit_denied"  };
-    if (l.includes("no contact") || l.includes("unreachable"))
-      return { disposition:"no_answer",     seqTrack:"ghost",      seqStep:0, seqPaused:false, seqExitReason:null             };
-    if (l.includes("contact attempted"))
-      return { disposition:"callback",      seqTrack:"re-engage",  seqStep:0, seqPaused:false, seqExitReason:null             };
-    if (l.includes("active") || l.includes("contacting"))
-      return { disposition:"callback",      seqTrack:"re-engage",  seqStep:1, seqPaused:false, seqExitReason:null             };
-    // "New Lead" and anything unrecognised → fresh, never touched
-    return { disposition:"not_called",      seqTrack:"new",        seqStep:0, seqPaused:false, seqExitReason:null             };
-  };
+  // Full status map — returns disposition + stage + sequence fields from raw Funnel/Lighthouse LeadStatus
+  // v3.45 — exported (Funnel sync reuses it); fixed: Issue Paid, Call Again, Not Taken;
+  // sold statuses now carry a stage so paying clients stop importing as stage "new".
+  const mapStatus = mapFunnelStatus;
 
   const mapDisp = s => mapStatus(s).disposition;
 
@@ -130,7 +153,7 @@ export function parseCSV(txt, customIdxMap = null) {
     const rationale    = get(idxMap.rationale);
     const statusRaw    = get(idxMap.status);
     const statusFields = mapStatus(statusRaw);
-    const { disposition, seqTrack, seqStep, seqPaused, seqExitReason } = statusFields;
+    const { disposition, seqTrack, seqStep, seqPaused, seqExitReason, stage: statusStage } = statusFields;
     const notes = [];
     const commentsTxt = get(idxMap.comments);
     if (commentsTxt) notes.push({ ts: new Date().toISOString(), type: "note", text: commentsTxt });
@@ -151,11 +174,25 @@ export function parseCSV(txt, customIdxMap = null) {
       leadLevel: get(idxMap.leadLevel),
       pdfUrl: get(idxMap.pdfUrl),
       bucket, aiScore, tier, flags,
-      stage: (get(idxMap.importStage) && STAGES.find(s => s.id === get(idxMap.importStage))) ? get(idxMap.importStage) : (disposition === "interested" ? "audit_set" : "new"),
+      stage: (get(idxMap.importStage) && STAGES.find(s => s.id === get(idxMap.importStage))) ? get(idxMap.importStage) : (statusStage || (disposition === "interested" ? "audit_set" : "new")),
       emailOpener: get(idxMap.emailOpener).toUpperCase() === "YES",
       disposition, notes, assignDate,
       seqTrack, seqStep, seqStartDate: assignDate, seqPaused, seqExitReason,
       lastContact: null, nextCallback: null,
+      // v3.45 — Funnel sync fields. funnelAssignDate = TRUE lead age from Funnel,
+      // stored for the post-Session-3 age re-base. assignDate/phase_start untouched.
+      leadCode: get(idxMap.leadCode ?? -1) || null,
+      leadAssignmentId: get(idxMap.leadAssignmentId ?? -1) || null,
+      sex: get(idxMap.sex ?? -1) || null,
+      street: get(idxMap.street ?? -1) || null,
+      leadSource: get(idxMap.leadSource ?? -1) || null,
+      leadSubSource: get(idxMap.leadSubSource ?? -1) || null,
+      exclusivityEndDate: get(idxMap.exclusivityEnd ?? -1) || null,
+      purchaseAmount: parseFloat(get(idxMap.purchaseAmount ?? -1)) || null,
+      birthday: get(idxMap.birthday ?? -1) || null,
+      funnelAssignDate: assignDateRaw || null,
+      funnelStatusRaw: statusRaw || null,
+      inFunnel: true,
     };
   }).filter(l => l && l.phone);
 }

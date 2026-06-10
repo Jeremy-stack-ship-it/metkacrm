@@ -15,8 +15,8 @@
     "semantic_hash": "cf2c74ef32bde44e46ec9f929f2ca283"
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\App.jsx": {
-    "mtime": 1780618280.0637248,
-    "ast_hash": "322082ad33670f3e790431a05dfe433b",
+    "mtime": 1781123079.6653664,
+    "ast_hash": "92e6ea3985f183b3ab9a9434a6488334",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\constants.js": {
@@ -160,9 +160,9 @@
     "semantic_hash": "81b4ed52a2a81bee3a31a0748aec2668"
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\TodaysBlock.jsx": {
-    "mtime": 1779759428.6658332,
-    "ast_hash": "1c90b183c242f3eb8a43635487a73213",
-    "semantic_hash": "1c90b183c242f3eb8a43635487a73213"
+    "mtime": 1781123031.1632688,
+    "ast_hash": "b6ddfafac5349ef3e5412692dba4bcdc",
+    "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\lib\\activityLog.js": {
     "mtime": 1780346302.1091561,
@@ -185,8 +185,8 @@
     "semantic_hash": "d68086fbe0571d363d043e05abb285f7"
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\lib\\leads.js": {
-    "mtime": 1780500052.1866777,
-    "ast_hash": "f9f355b2503c0daab444852113d3d626",
+    "mtime": 1781122092.0062735,
+    "ast_hash": "982929500a489c6175becba5c35261b7",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\lib\\leadScoring.js": {
@@ -195,8 +195,8 @@
     "semantic_hash": "07226ae8dd518f728e5ce3307c70a485"
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\lib\\phaseEngine.js": {
-    "mtime": 1780346900.6488907,
-    "ast_hash": "98be7b64dabf0f9217ca1f5c7389ac68",
+    "mtime": 1781123052.903308,
+    "ast_hash": "93799cd1a6fa88101753e08a82fce29b",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\lib\\sequenceEngine.js": {
@@ -285,8 +285,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\CHANGELOG.md": {
-    "mtime": 1779917394.3708277,
-    "ast_hash": "c64f79d8114a551a8e54ef2fca959fb9",
+    "mtime": 1781123159.027244,
+    "ast_hash": "0ffd33758669a72daf905b10da8bb088",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\CRM-MAP.md": {
@@ -350,8 +350,38 @@
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\AIPanel.jsx": {
-    "mtime": 1780618235.2173555,
-    "ast_hash": "b1baf392bbb88d22911a5d7c639ec641",
+    "mtime": 1780673600.4081514,
+    "ast_hash": "6d94f547da7bb1e10b57d9650f9def9d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\lib\\dispositionEngine.js": {
+    "mtime": 1781122120.879312,
+    "ast_hash": "7035a5c995206e6b8f064b1bd9c91d4d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\tasks\\AUDIT-2026-06-10.md": {
+    "mtime": 1781114993.6083772,
+    "ast_hash": "51ba3b70c24463f352e12ab925fb0033",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\tasks\\CSV-SYNC-ANALYSIS-2026-06-10.md": {
+    "mtime": 1781116833.8885677,
+    "ast_hash": "a5be89fd6f58eac0fdf09b6ca1d09b1c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\tasks\\DESIGN-RECONCILIATION-2026-06-10.md": {
+    "mtime": 1781116250.6093826,
+    "ast_hash": "c9fb79210f098f8ad0258495dd6ca873",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\tasks\\SPEC-M1-M2-M3-BUILD.md": {
+    "mtime": 1781117280.5614672,
+    "ast_hash": "ee2d8ccc0af70f9c897ad5d13623b213",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\tasks\\todo.md": {
+    "mtime": 1781123159.0342674,
+    "ast_hash": "ac3ee6591f08bc468ca207b2ba8a8415",
     "semantic_hash": ""
   }
 }

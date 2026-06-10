@@ -1,16 +1,16 @@
-# Graph Report - metka-crm  (2026-06-04)
+# Graph Report - metka-crm  (2026-06-10)
 
 ## Corpus Check
-- 70 files · ~98,471 words
+- 76 files · ~103,642 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 403 nodes · 744 edges · 30 communities (21 shown, 9 thin omitted)
+- 417 nodes · 768 edges · 30 communities (22 shown, 8 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0f8fbe84`
+- Built from commit: `9f0cb6c9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -46,16 +46,16 @@
 - [[_COMMUNITY_Community 29|Community 29]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `MetkaCRM()` - 28 edges
+1. `MetkaCRM()` - 30 edges
 2. `inp()` - 22 edges
 3. `isUWStuck()` - 13 edges
 4. `dayKey()` - 10 edges
-5. `daysInUW()` - 9 edges
-6. `fmt()` - 9 edges
-7. `UnderwritingCard()` - 8 edges
-8. `isDueToday()` - 8 edges
-9. `BC` - 7 edges
-10. `BL` - 7 edges
+5. `isDueToday()` - 9 edges
+6. `daysInUW()` - 9 edges
+7. `fmt()` - 9 edges
+8. `getPhasePriority()` - 8 edges
+9. `backfillLead()` - 8 edges
+10. `UnderwritingCard()` - 8 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `AppointmentConfirmModal()` --calls--> `fmt()`  [INFERRED]
@@ -69,15 +69,15 @@
 - `MetkaCRM()` --calls--> `applyPhaseTransition()`  [EXTRACTED]
   src/App.jsx → src/lib/phaseEngine.js
 
-## Communities (30 total, 9 thin omitted)
+## Communities (30 total, 8 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.08
-Nodes (37): useAuth(), ACTIVITY_TYPES, aggregateActivity(), computeActivityQueue(), CONTACT_DISPS, dayKey(), DEFAULT_GOALS, fmtTime() (+29 more)
+Nodes (39): StageStepper(), useAuth(), ACTIVITY_TYPES, aggregateActivity(), computeActivityQueue(), CONTACT_DISPS, dayKey(), DEFAULT_GOALS (+31 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.11
-Nodes (33): AddLeadForm(), AppointmentConfirmModal(), ContactDetail(), StageStepper(), UnderwritingCard(), ContactsView(), DialRightPanel(), renderLiveTokens() (+25 more)
+Cohesion: 0.10
+Nodes (36): AddLeadForm(), AppointmentConfirmModal(), APPT_TYPE_LABELS, inputSt, ContactDetail(), UnderwritingCard(), ContactsView(), DialRightPanel() (+28 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.05
@@ -85,11 +85,11 @@ Nodes (35): active, activityNotes, allRows, archived, archiveNote, base64urlEnco
 
 ### Community 3 - "Community 3"
 Cohesion: 0.08
-Nodes (27): INNER_TABS, SequenceTab(), TC, TD_STYLE, TH_STYLE, advanceSequence(), getNextTouchDate(), getSequenceBadgeColor() (+19 more)
+Nodes (22): INNER_TABS, SequenceTab(), TC, TD_STYLE, TH_STYLE, advanceSequence(), getTodayCallList(), PAUSE_DISPS (+14 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.09
-Nodes (25): DashboardTab(), PHASE_DEFS, QUICK_DISPS, SMS_SEQUENCES, addDaysISO(), applyPhaseTransition(), backfillLead(), buildSchedule() (+17 more)
+Cohesion: 0.08
+Nodes (31): PHASE_DEFS, QUICK_DISPS, SMS_SEQUENCES, addDaysISO(), applyPhaseTransition(), backfillLead(), buildSchedule(), computeNextDial() (+23 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.10
@@ -100,8 +100,8 @@ Cohesion: 0.24
 Nodes (14): btn(), card(), CCTab(), sectionLabel(), ccAuthorize(), ccClearTokens(), ccExchangeCode(), ccFetch() (+6 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.20
-Nodes (10): autoDetectMapping(), parseBucket(), parseCSV(), parseDisp(), parseStage(), FIELD_MAP_DEFS, headers, leads (+2 more)
+Cohesion: 0.18
+Nodes (11): autoDetectMapping(), parseBucket(), parseCSV(), parseDisp(), parseStage(), useImportHandlers(), FIELD_MAP_DEFS, headers (+3 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.14
@@ -116,8 +116,8 @@ Cohesion: 0.25
 Nodes (7): accountSid, authToken, CORS, credentials, digits, form, fromNumber
 
 ### Community 11 - "Community 11"
-Cohesion: 0.25
-Nodes (6): DEFAULT_AI, DEFAULT_CB_PRESETS, DEFAULT_FINANCIAL, DEFAULT_GMAIL, DEFAULT_SEQ, DEFAULT_TWILIO
+Cohesion: 0.22
+Nodes (7): DEFAULT_AI, DEFAULT_CB_PRESETS, DEFAULT_FINANCIAL, DEFAULT_GMAIL, DEFAULT_SEQ, DEFAULT_TWILIO, useSettingsConfig()
 
 ### Community 12 - "Community 12"
 Cohesion: 0.33
@@ -132,8 +132,8 @@ Cohesion: 0.60
 Nodes (4): BUSINESS_HOURS, dayKey(), fmtHour(), HourlyStats()
 
 ### Community 15 - "Community 15"
-Cohesion: 0.11
-Nodes (17): [2026-04-01] v1.0.0 — Initial Build, [2026-05-01] v2.0.0 — Ministry Lead Operating System, [2026-05-13] v3.6 — Modular Architecture Refactor, [2026-05-14] v3.6.1 — Power Dialer + Audit Fixes, Added, Added, Added, Added (+9 more)
+Cohesion: 0.10
+Nodes (19): [2026-04-01] v1.0.0 — Initial Build, [2026-05-01] v2.0.0 — Ministry Lead Operating System, [2026-05-13] v3.6 — Modular Architecture Refactor, [2026-05-14] v3.6.1 — Power Dialer + Audit Fixes, Added, Added, Added, Added (+11 more)
 
 ### Community 17 - "Community 17"
 Cohesion: 0.40
@@ -143,33 +143,37 @@ Nodes (4): name, organization_id, organization_slug, ref
 Cohesion: 1.00
 Nodes (4): Dashboard Tab, Queue Tab, Settings Tab, Today's Block Tab
 
+### Community 27 - "Community 27"
+Cohesion: 0.40
+Nodes (4): Review, Review S2, Session 1 — Correctness Fixes (2026-06-10), Session 2 — Calendar Phase Engine (2026-06-10)
+
 ### Community 28 - "Community 28"
-Cohesion: 0.22
-Nodes (9): autoFollowUp(), openCalendlyPopup(), priority(), a, assignDate, b, lead, result (+1 more)
+Cohesion: 0.19
+Nodes (10): DashboardTab(), autoFollowUp(), openCalendlyPopup(), priority(), a, assignDate, b, lead (+2 more)
 
 ### Community 29 - "Community 29"
 Cohesion: 0.38
 Nodes (5): DRAFT_OPTS, draftPrompt(), GEMINI_URL(), geminiCall(), leadCtx()
 
 ## Knowledge Gaps
-- **154 isolated node(s):** `SEEDS`, `DRAFT_OPTS`, `DEFAULT_FINANCIAL`, `DEFAULT_GMAIL`, `DEFAULT_SEQ` (+149 more)
+- **159 isolated node(s):** `Added`, `Changed`, `Fixed`, `Dependencies`, `Notes` (+154 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `inp()` connect `Community 1` to `Community 0`, `Community 7`?**
-  _High betweenness centrality (0.018) - this node is a cross-community bridge._
-- **Why does `priority()` connect `Community 28` to `Community 0`, `Community 1`, `Community 3`?**
+  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+- **Why does `priority()` connect `Community 28` to `Community 0`, `Community 1`?**
   _High betweenness centrality (0.007) - this node is a cross-community bridge._
-- **Why does `isDueToday()` connect `Community 4` to `Community 0`, `Community 3`?**
+- **Why does `isDueToday()` connect `Community 4` to `Community 0`, `Community 28`?**
   _High betweenness centrality (0.006) - this node is a cross-community bridge._
-- **What connects `SEEDS`, `DRAFT_OPTS`, `DEFAULT_FINANCIAL` to the rest of the system?**
-  _154 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `Added`, `Changed`, `Fixed` to the rest of the system?**
+  _159 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.08395989974937343 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07890122735242548 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.10904255319148937 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09503843466107617 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.047619047619047616 - nodes in this community are weakly interconnected._

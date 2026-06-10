@@ -23,6 +23,7 @@ import { useState, useCallback } from 'react';
 import LZString from 'lz-string';
 import { FIELD_MAP_DEFS } from '../constants.js';
 import { autoDetectMapping, parseCSV } from './csvParser.js';
+import { syncFromCsv, summarizeSyncReport } from './funnelSync.js'; // v3.45 — Funnel sync mode
 
 // ── localStorage keys (must match App.jsx — never rename) ────────────
 const LS_BACKUP  = 'metka-crm-backup-v1';
@@ -116,7 +117,7 @@ export const useImportHandlers = ({ leads, saveLeads, backfillLead, setBackupExi
     setImportModal(true);
   }, [saveMappingCb, fieldMapDraft, csvHeaders, csvRawText, leads]);
 
-  // ── confirmImport: auto-backup, phase-assign, merge/replace leads ──
+  // ── confirmImport: auto-backup, phase-assign, merge/replace/sync leads ──
   const confirmImport = useCallback(mode => {
     if (!importPreview) return;
     // Auto-backup before any destructive import
@@ -125,13 +126,26 @@ export const useImportHandlers = ({ leads, saveLeads, backfillLead, setBackupExi
       localStorage.setItem(LS_BACKUP, snap);
       setBackupExists(true);
     } catch {}
-    // Assign phase schedules to imported leads
     const withPhases = arr => arr.map(l => backfillLead(l));
-    saveLeads(
-      mode === 'append'
-        ? [...withPhases(importPreview.newLeads), ...leads]
-        : withPhases(importPreview.all)
-    );
+
+    if (mode === 'sync') {
+      // v3.45 — Funnel Sync (import mode 3). Status-diff against the CSV:
+      // never downgrades, DNC always wins, conflicts reported. New CSV-only
+      // leads come in through the normal backfill path.
+      const { leads: synced, report } = syncFromCsv(importPreview.all, leads);
+      const next = [...withPhases(report.newLeads), ...synced];
+      saveLeads(next);
+      console.log('[Funnel Sync] status updates:', report.statusUpdated);
+      console.log('[Funnel Sync] conflicts (CRM kept):', report.conflicts);
+      console.log('[Funnel Sync] CRM-only leads (untouched):', report.crmOnly);
+      alert(summarizeSyncReport(report));
+    } else {
+      saveLeads(
+        mode === 'append'
+          ? [...withPhases(importPreview.newLeads), ...leads]
+          : withPhases(importPreview.all)
+      );
+    }
     setImportModal(false);
     setImportPreview(null);
     setReplaceConfirm('');

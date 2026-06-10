@@ -318,3 +318,17 @@ Files: src/lib/leads.js, src/lib/phaseEngine.js, src/lib/dispositionEngine.js (n
 
 Files: src/lib/phaseEngine.js, src/App.jsx (startup), src/components/TodaysBlock.jsx (PHASE_DEFS).
 Expected on real data: most of the 2,440 migrate to M2/M3 with tiers on first launch — check console for `[CRM v3.44] Phase migration:` summary.
+
+## v3.45 — 2026-06-10 — Session 2.5: Funnel CSV Sync (import mode 3)
+**Source:** tasks/CSV-SYNC-ANALYSIS-2026-06-10.md. 30/30 behavior checks incl. dry-run on the real 2,589-row Funnel export.
+
+- **New import mode: "Sync from Funnel"** (green button in ImportModal when matches exist). Matches by LeadCode (Funnel's unique vendor ID) with phone fallback — permanently fixes spouse/shared-phone collisions.
+- **Conflict doctrine (locked with Jeremy):** the export has no status timestamps, so the sync NEVER DOWNGRADES — Funnel statuses only apply if they advance the lead on the progress ladder. DNC always wins (compliance). "Not Interested" is fenced — cannot kill live CRM work. All skipped conflicts reported (console + alert summary).
+- **mapFunnelStatus exported + fixed:** Issue Paid → submitted/stage issued (4 PAYING CLIENTS no longer import as never-called), Call Again → callback, Not Taken → no_sale, sold statuses now carry stage app_submitted.
+- **9 new columns captured** at parse: leadCode, leadAssignmentId, sex, street, leadSource, leadSubSource, exclusivityEndDate, purchaseAmount (lead COST — feeds Session 5 economics), birthday. Plus funnelAssignDate (TRUE lead age, stored for the post-S3 re-base — assignDate/phase_start deliberately untouched), funnelStatusRaw, inFunnel:true (SMS deconfliction flag).
+- **Sync never touches:** existing notes (sync note prepends), schedule slots, phase (except terminal EXIT wipe), nextCallback, lastContact. No slot consumption — a sync is not a dial.
+- **Churn guard:** unchanged leads get no _ts bump — no pointless 2,400-row Supabase re-upserts.
+- Field backfill fills holes only, never overwrites CRM values. CSV-only leads (~150) import via the normal backfill path. CRM-only leads reported, untouched.
+
+Files: src/lib/csvParser.js, src/lib/funnelSync.js (new), src/lib/useImportHandlers.js, src/components/ImportModal.jsx.
+To run: Contacts → Import CSV → map fields → green "Sync from Funnel" button.

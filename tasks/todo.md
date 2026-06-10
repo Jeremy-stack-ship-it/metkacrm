@@ -33,3 +33,14 @@ No corrections this session — lessons.md untouched.
 Deviation from gate statement: silent first-run consumption logs a console summary, not an activity-log
 note event (avoids non-standard event type breaking aggregations). Flagged TodaysBlock PHASE_DEFS
 duplication for future dedup. lastSeen key: metka-last-seen-v1.
+
+
+# Session 2.5 — Funnel CSV Sync (2026-06-10)
+- [x] csvParser: 9 new columns, mapFunnelStatus exported + 3 status fixes + sold stages
+- [x] funnelSync.js: leadCode matching, never-downgrade ladder, DNC override, NI fence, churn guard
+- [x] useImportHandlers 'sync' mode + ImportModal green sync button
+- [x] 30/30 checks incl. real-export dry-run (2,589 rows, 4 Issue Paid correctly filed)
+
+## Review S2.5
+funnelAssignDate stored but age re-base deferred until after S3 (queue-safety decision).
+inFunnel flag = SMS deconfliction source of truth. Conflicts surface in console + alert.

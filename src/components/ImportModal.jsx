@@ -49,6 +49,15 @@ export default function ImportModal({
         style: { display:"block", width:"100%", padding:"13px", background:"var(--blue)", color:"#fff", border:"none", borderRadius:"9px", fontSize:"14px", fontWeight:"700", cursor:"pointer", marginBottom:"16px" }
       }, "✓ Add " + importPreview.newLeads.length + " New Leads  (" + leads.length + " → " + (leads.length + importPreview.newLeads.length) + ")"),
 
+      // v3.45 — Funnel Sync (mode 3): status-diff existing leads + add new.
+      // Never downgrades; DNC always wins; conflicts kept + reported.
+      importPreview.dupes.length > 0 && React.createElement("button", {
+        onClick: () => confirmImport("sync"),
+        style: { display:"block", width:"100%", padding:"13px", background:"var(--green)", color:"#fff", border:"none", borderRadius:"9px", fontSize:"14px", fontWeight:"700", cursor:"pointer", marginBottom:"6px" }
+      }, "🔁 Sync from Funnel — update " + importPreview.dupes.length + " existing + add " + importPreview.newLeads.length + " new"),
+      importPreview.dupes.length > 0 && React.createElement("div", { style:{ fontSize:"10px", color:"var(--t3)", marginBottom:"16px", lineHeight:"1.5" } },
+        "Promotes statuses only (never downgrades your work). DNC always applies. Conflicts kept + listed in console."),
+
       // Danger zone
       React.createElement("details", { style:{ borderRadius:"8px", border:"1px solid var(--red-dim)", overflow:"hidden" } },
         React.createElement("summary", { style:{ padding:"10px 14px", fontSize:"11px", fontWeight:"700", color:"var(--red)", cursor:"pointer", background:"var(--red-dim)", letterSpacing:"0.5px" } }, "⚠ Danger Zone — Replace All"),
