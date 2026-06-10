@@ -18,6 +18,7 @@ export const PHASE_DEFS = {
   P2:   { id:'P2',   label:'Phase 2',   color:'#8B5CF6' },
   P3:   { id:'P3',   label:'Phase 3',   color:'#F59E0B' },
   M2:   { id:'M2',   label:'Machine 2', color:'#64748B' },
+  M3:   { id:'M3',   label:'Machine 3', color:'#94A3B8' },
   EXIT: { id:'EXIT', label:'Exit',      color:'#DC2626' },
 };
 
@@ -86,6 +87,118 @@ export const phaseFromBucket = (lead) => {
   return 'EXIT';
 };
 
+// ── CALENDAR-DERIVED PHASE (v3.44 — audit F4 / gap G1) ──────────────────────
+// Doctrine: phase transitions are calendar-driven and automatic. Day 15→P2,
+// Day 31→P3, Day 61→M2 (≤180d), Day 181→M3. No lead ever goes silently dark.
+export const PHASE_ORDER = ['P1', 'P2', 'P3', 'M2', 'M3'];
+
+// Age in days from phase_start (reset by no-show/no-sale rebuilds) or assignDate.
+export const leadAgeDays = (lead, now = new Date()) => {
+  const base = lead.phase_start || lead.assignDate || lead.seqStartDate || null;
+  if (!base) return 0;
+  const d = new Date(base);
+  if (isNaN(d.getTime())) return 0;
+  return Math.max(0, Math.floor((now - d) / 86400000));
+};
+
+// Derived phase by age, with a FLOOR at the stored phase: a disposition that
+// deliberately placed a lead later (no_sale → P3 day-0, Jeremy's weekly-cadence
+// decision) is never walked back to P1 by the calendar. EXIT always wins.
+export const effectivePhase = (lead, now = new Date()) => {
+  if (!lead) return 'M3';
+  if (lead.phase === 'EXIT') return 'EXIT';
+  const days = leadAgeDays(lead, now);
+  const byAge = days <= 14 ? 'P1' : days <= 30 ? 'P2' : days <= 60 ? 'P3' : days <= 180 ? 'M2' : 'M3';
+  const stored = lead.phase;
+  if (stored && PHASE_ORDER.includes(stored) &&
+      PHASE_ORDER.indexOf(byAge) < PHASE_ORDER.indexOf(stored)) return stored;
+  return byAge;
+};
+
+// M2 priority tiers (docs: Machine 2 addendum).
+// T1 high (no_sale/no_show/positive) · T2 neutral engagement · T3 never engaged · T4 excluded
+export const deriveM2Tier = (lead) => {
+  const d = lead.disposition || '';
+  if (['dnc', 'not_interested', 'withdrawn', 'chargeback'].includes(d)) return 4;
+  if (['no_sale', 'no_show'].includes(d)) return 1;
+  if (['appointment_set', 'audit_set'].includes(lead.stage) || d === 'interested' || d === 'appointment_booked') return 1;
+  if (lead.lastContact || ['callback', 'follow_up_needed', 'hung_up'].includes(d)) return 2;
+  return 3;
+};
+
+const _nextEligibleIso = (lead, gapDays, now = new Date()) => {
+  if (lead.lastContact) {
+    const lc = new Date(lead.lastContact);
+    if (!isNaN(lc.getTime())) return new Date(lc.getTime() + gapDays * 86400000).toISOString();
+  }
+  return now.toISOString(); // never contacted — eligible immediately
+};
+
+// Startup migration (idempotent): day 61+ leads enter M2 (schedule wiped — M2 has
+// no structured cadence per docs), day 181+ enter M3 (forever until terminal
+// disposition — Jeremy's M3 decision, NO age-kill). Returns patch or null.
+export const migrateAgedPhases = (lead, now = new Date()) => {
+  if (!lead || lead.phase === 'EXIT' || lead.stage === 'removed') return null;
+  if (['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked'].includes(lead.disposition)) return null;
+  const days = leadAgeDays(lead, now);
+  if (days <= 60) return null;
+  const target = days <= 180 ? 'M2' : 'M3';
+  const already = lead.phase === target && lead.next_dial == null &&
+    (target === 'M2' ? lead.m2_tier != null : lead.m3_next_eligible != null);
+  if (already) return null;
+  const patch = { phase: target, next_dial: null };
+  SCHED_COLS.forEach(k => { if (lead[k]) patch[k] = null; });
+  if (lead.m2_tier == null) patch.m2_tier = deriveM2Tier(lead);
+  if (target === 'M2') {
+    patch.m2_next_eligible = lead.m2_next_eligible || _nextEligibleIso(lead, 14, now);
+  } else {
+    patch.m3_next_eligible = lead.m3_next_eligible || _nextEligibleIso(lead, 30, now);
+  }
+  return patch;
+};
+
+// Missed-slot processor (v3.44 — Jeremy's missed-block decision 2026-06-10:
+// auto-log as no-answer, schedule marches on; replaces spreadOverdueLeads).
+// Slots >24h past are consumed (nulled) and next_dial advances along the
+// PRE-MADE schedule. Slots missed since lastSeen produce auto-log dial events;
+// older slots (first run / long gaps) are consumed silently to avoid flooding
+// the activity log with thousands of back-dated events.
+export const processMissedSlots = (leads, lastSeenIso, now = new Date()) => {
+  const cutoff = new Date(now.getTime() - 24 * 3600 * 1000);
+  const lastSeen = lastSeenIso ? new Date(lastSeenIso) : null;
+  const changedIds = new Set();
+  const events = [];
+  let silent = 0;
+  const out = (leads || []).map(l => {
+    if (!l || l.phase === 'EXIT' || l.stage === 'removed') return l;
+    if (['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked'].includes(l.disposition)) return l;
+    const missed = SCHED_COLS.filter(k => l[k] && new Date(l[k]) < cutoff);
+    if (!missed.length) return l;
+    const patch = {};
+    missed.forEach(k => {
+      const slotIso = l[k];
+      patch[k] = null;
+      if (lastSeen && new Date(slotIso) >= lastSeen) {
+        events.push({
+          id: `a_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          ts: slotIso,
+          date: slotIso.slice(0, 10),
+          type: 'dial',
+          leadId: l.id,
+          leadName: l.name || null,
+          source: 'auto',
+          note: '[auto-logged: block missed]',
+        });
+      } else silent++;
+    });
+    const merged = { ...l, ...patch };
+    merged.next_dial = computeNextDial(merged);
+    changedIds.add(l.id);
+    return merged;
+  });
+  return { leads: out, changedIds, events, silentCount: silent };
+};
+
 export const applyPhaseTransition = (lead, dispId) => {
   const patch = {};
   const now = new Date().toISOString();
@@ -130,11 +243,14 @@ export const getPhasePriority = (lead) => {
   const disp = lead.disposition || '';
   if (disp === 'no_sale') return 100;
   if (disp === 'no_show') return 90;
-  const phase = lead.phase;
+  // v3.44 — F4: rank on CALENDAR-derived phase, not the stored label.
+  // A day-50 lead can no longer hold P1 priority for its whole arc.
+  const phase = effectivePhase(lead);
   if (phase === 'P1') return 80;
   if (phase === 'P2') return 70;
   if (phase === 'P3') return 60;
   if (phase === 'M2') return 50;
+  if (phase === 'M3') return 45;
   if (lead.bucket === 'A') return 40;
   if (lead.bucket === 'B') return 30;
   return 10;
@@ -153,6 +269,17 @@ export const isDueToday = (lead) => {
       const cbDue = lead.nextCallback && new Date(lead.nextCallback) <= new Date();
       if (!cbDue) return false;
     }
+  }
+
+  // v3.44 — M2/M3 leads stay out of the Today queue (Session 3 wires their
+  // spillover fill) EXCEPT a due callback always surfaces — agreement-based
+  // callbacks ("call me Thursday") are never buried by phase.
+  const _eff = effectivePhase(lead);
+  if (_eff === 'M2' || _eff === 'M3') {
+    if (!lead.nextCallback) return false;
+    const _eod = new Date();
+    _eod.setHours(23, 59, 59, 999);
+    return new Date(lead.nextCallback) <= _eod;
   }
 
   if (lead.next_dial) {
@@ -204,6 +331,16 @@ export const backfillLead = (lead) => {
   if (lead.phase) return { ...lead, ...seqDefaults };
   const phase = phaseFromBucket(lead);
   if (phase === 'EXIT') return { ...lead, phase, next_dial: null, ...seqDefaults };
+  // v3.44 — M2 entries get tier + eligibility, NOT a fresh P1 schedule
+  // (old behavior contradicted the docs: M2 has no structured cadence).
+  if (phase === 'M2') {
+    return {
+      ...lead, phase, next_dial: null,
+      m2_tier: lead.m2_tier ?? deriveM2Tier(lead),
+      m2_next_eligible: lead.m2_next_eligible || new Date().toISOString(),
+      ...seqDefaults,
+    };
+  }
   const sched = buildSchedule(new Date());
   return { ...lead, phase, phase_start: new Date().toISOString(), next_dial: sched.p1_1, ...sched, ...seqDefaults };
 };
@@ -406,43 +543,9 @@ export const buildSessionQueue = (leads, session) => {
 };
 
 
-// ── OVERDUE SPREAD (v3.42) ────────────────────────────────────────────────────
-// Runs on startup. Takes leads overdue by >1 day and reschedules them forward
-// so today's queue stays manageable. Priority-sorted: P1/no_show/no_sale first.
-// 80 leads/day cap. Idempotent — safe to run every startup.
-// No leads are lost — they're just given a realistic future dial date.
-export const spreadOverdueLeads = (leads) => {
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  yesterday.setHours(0, 0, 0, 0);
-
-  const current = [];
-  const overdue  = [];
-
-  (leads || []).forEach(l => {
-    if (!l || !l.next_dial || l.phase === 'EXIT') { current.push(l); return; }
-    if (['dnc','not_interested','withdrawn','chargeback','appointment_booked'].includes(l.disposition)) { current.push(l); return; }
-    const due = new Date(l.next_dial);
-    if (due >= yesterday) { current.push(l); return; }
-    overdue.push(l);
-  });
-
-  if (overdue.length === 0) return leads;
-
-  // Sort highest priority first
-  overdue.sort((a, b) => getPhasePriority(b) - getPhasePriority(a));
-
-  const DAILY_CAP = 80;
-  const updated = overdue.map((l, i) => {
-    const dayOffset = Math.floor(i / DAILY_CAP) + 1; // 1 = tomorrow
-    const target = new Date();
-    target.setDate(target.getDate() + dayOffset);
-    target.setHours(9, 0, 0, 0);
-    return { ...l, next_dial: target.toISOString() };
-  });
-
-  return [...current, ...updated];
-};
+// ── (v3.42 spreadOverdueLeads DELETED v3.44 — invented dates without contact,
+//     violating schedule-rules-all doctrine. Replaced by processMissedSlots +
+//     session capacity caps. See tasks/SPEC-M1-M2-M3-BUILD.md Session 2.) ──────
 
 // ── PHASE DATE NORMALIZATION (v3.15) ─────────────────────────────────────────
 // Repairs leads whose next_dial is past-due — typically leads imported months ago

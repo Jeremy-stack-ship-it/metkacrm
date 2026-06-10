@@ -28,6 +28,7 @@ export const PHASE_DEFS = {
   P2:   { id:'P2',   label:'Phase 2',   color:'#8B5CF6' },
   P3:   { id:'P3',   label:'Phase 3',   color:'#F59E0B' },
   M2:   { id:'M2',   label:'Machine 2', color:'#64748B' },
+  M3:   { id:'M3',   label:'Machine 3', color:'#94A3B8' },
   EXIT: { id:'EXIT', label:'Exit',      color:'#DC2626' },
 };
 

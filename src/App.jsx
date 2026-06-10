@@ -71,7 +71,7 @@ import { STATE_TZ, STAGES, DISPS, BC, BL, NC, FIELD_MAP_DEFS,
   fmt, fmtDate, currency, chip, inp } from './constants.js';
 // ── Library Modules (v3.6) ───────────────────────────────────────
 import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity, sbLoadSeqStats, sbBeaconFlush, sbSendSms } from './lib/supabaseSync.js';
-import { backfillLead, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, spreadOverdueLeads } from './lib/phaseEngine.js';
+import { backfillLead, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, migrateAgedPhases, processMissedSlots } from './lib/phaseEngine.js'; // v3.44 — calendar phase engine
 import { buildDispositionPatch } from './lib/dispositionEngine.js'; // v3.43 — F3 unified disposition logic
 import { DEFAULT_GOALS, CONTACT_DISPS, ACTIVITY_TYPES, dayKey, TODAY_KEY, lastNDays, weekKeys, monthKeys, aggregateActivity, fmtTime, goalTone, makeActivityManager } from './lib/activityLog.js';
 import { makeLeadManager } from './lib/leads.js';
@@ -365,17 +365,49 @@ function MetkaCRM(){
         console.log(`[CRM v3.15] Normalized past-due phase schedules on ${normCount} leads`);
       }
 
-      // v3.42 — Spread overdue leads forward so today's queue stays manageable.
-      // Leads overdue >1 day get rescheduled into future days (80/day, priority-sorted).
-      // No leads are lost — they're given a realistic future next_dial date.
-      const spreadLeads = spreadOverdueLeads(initialLeads);
-      if (spreadLeads !== initialLeads) {
-        initialLeads = spreadLeads;
+      // v3.44 — CALENDAR PHASE ENGINE startup pass (replaces v3.42 spreadOverdueLeads).
+      // (a) Aged-phase migration: day 61+ → M2 (tiered, schedule wiped), day 181+ → M3.
+      //     No lead ever goes silently dark after p3_5 — Jeremy's "no age-kill" M3 decision.
+      // (b) Missed-slot auto-log: slots >24h past are consumed as no-answer and the
+      //     schedule marches on (missed-block philosophy locked 2026-06-10). Events
+      //     only for slots missed since last app open; older slots consume silently.
+      // Changed leads get a fresh _ts and push to Supabase below (audit F7 fix).
+      const LS_LAST_SEEN = 'metka-last-seen-v1';
+      const _lastSeenIso = localStorage.getItem(LS_LAST_SEEN);
+      const _changedIds = new Set();
+      const _tsNow = Date.now();
+      let _agedCount = 0;
+      initialLeads = initialLeads.map(l => {
+        const p = migrateAgedPhases(l);
+        if (!p) return l;
+        _agedCount++; _changedIds.add(l.id);
+        return { ...l, ...p, _ts: _tsNow };
+      });
+      const _ms = processMissedSlots(initialLeads, _lastSeenIso);
+      if (_ms.changedIds.size > 0) {
+        initialLeads = _ms.leads.map(l => _ms.changedIds.has(l.id) ? { ...l, _ts: _tsNow } : l);
+        _ms.changedIds.forEach(id => _changedIds.add(id));
+      }
+      if (_changedIds.size > 0) {
         try {
           localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
-        } catch(e) { console.warn('[CRM v3.42] Could not persist overdue spread:', e); }
-        console.log('[CRM v3.42] Spread overdue leads into future sessions');
+        } catch(e) { console.warn('[CRM v3.44] Could not persist phase migration:', e); }
+        // F7 — push migrated subset to Supabase so the cloud never drifts
+        const _changedLeads = initialLeads.filter(l => _changedIds.has(l.id));
+        sbUpsertAll(_changedLeads).catch(e => console.warn('[CRM v3.44] migration push failed:', e.message));
+        console.log(`[CRM v3.44] Phase migration: ${_agedCount} leads → M2/M3; ${_ms.changedIds.size} leads had missed slots consumed (${_ms.events.length} auto-logged, ${_ms.silentCount} silent)`);
       }
+      if (_ms.events.length > 0) {
+        // Auto-logged missed-block dials → activity log (localStorage + Supabase)
+        try {
+          const rawAct = localStorage.getItem(LS_ACTIVITY);
+          const curAct = rawAct ? JSON.parse(rawAct) : [];
+          const nextAct = [..._ms.events, ...curAct];
+          localStorage.setItem(LS_ACTIVITY, JSON.stringify(nextAct.slice(0, 2000)));
+        } catch {}
+        sbSaveActivity(_ms.events).catch(() => {});
+      }
+      localStorage.setItem(LS_LAST_SEEN, new Date().toISOString());
 
       // v3.38 — One-time phone dedup: removes duplicate leads sharing the same phone number.
       // Newest _ts wins. Tombstones removed IDs so Supabase hydration doesn't re-add them.

@@ -302,3 +302,19 @@ COMMIT: 2db7fcc
 - **F9 — Plain notes stamped contacted-today.** addNote now stamps lastContact only for call/appointment note types — journaling a note no longer hides the lead from today's queue.
 
 Files: src/lib/leads.js, src/lib/phaseEngine.js, src/lib/dispositionEngine.js (new), src/App.jsx (handlers + imports).
+
+## v3.44 — 2026-06-10 — Session 2: Calendar Phase Engine (M2/M3 machinery)
+**Source:** tasks/SPEC-M1-M2-M3-BUILD.md Session 2. Doctrine locked 2026-06-10. 40/40 behavior checks + clean build.
+
+- **effectivePhase() — phase is now CALENDAR-DERIVED** (audit F4 / gap G1): 0-14 P1, 15-30 P2, 31-60 P3, 61-180 M2, 181+ M3. Floor rule preserves deliberate placements (no_sale → P3 stays P3). getPhasePriority ranks on derived phase — a day-50 lead can no longer hold P1 priority. M3 priority = 45.
+- **M2 entry (day 61+):** startup migration wipes remaining schedule slots (docs: M2 has no structured cadence), derives m2_tier (T1 no_sale/no_show/positive · T2 engaged · T3 cold · T4 excluded), sets m2_next_eligible (lastContact+14d, or now if never reached).
+- **M3 entry (day 181+):** Jeremy's extension — NO age-kill, ever. m3_next_eligible = lastContact+30d. Leads stop going silently dark after p3_5; the 1,711-lead Bucket C inventory becomes phase-visible.
+- **Missed-block auto-log** (Jeremy's decision): slots >24h past are consumed as no-answer dials with `[auto-logged: block missed]`; schedule marches on. First run consumes historical slots silently (no activity-log flood); thereafter only blocks missed since last app open log events.
+- **spreadOverdueLeads DELETED** — invented future dial dates without contact, violating schedule-rules-all doctrine. Jobs replaced by missed-slot processor + session capacity caps.
+- **backfillLead:** M2-bound leads (old Bucket B) get tier + eligibility instead of a contradictory fresh P1 schedule.
+- **isDueToday:** M2/M3 leads excluded from Today queue (Session 3 wires spillover fill) — EXCEPT due callbacks always surface.
+- **F7 fix:** migration-changed leads get fresh _ts and push to Supabase immediately — cloud never drifts from local migrations.
+- PHASE_DEFS gains M3 (both copies — phaseEngine + TodaysBlock; dedup flagged for cleanup).
+
+Files: src/lib/phaseEngine.js, src/App.jsx (startup), src/components/TodaysBlock.jsx (PHASE_DEFS).
+Expected on real data: most of the 2,440 migrate to M2/M3 with tiers on first launch — check console for `[CRM v3.44] Phase migration:` summary.
