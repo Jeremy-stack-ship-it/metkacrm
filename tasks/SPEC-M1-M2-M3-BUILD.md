@@ -53,18 +53,12 @@ Flip leadAgeDays to prefer funnelAssignDate || assignDate (true age) over phase_
 - DRY-RUN FIRST: console-log projected phase distribution (P1/P2/P3/M2/M3 counts) WITHOUT applying — Jeremy approves the numbers, then the flip applies next startup. Expected: most of 2,440 → M2/M3 waves; Today queue unaffected (M1 due + spillover fill).
 Exit test: lead with funnelAssignDate 2025-03, backfill phase_start 2026-05, no reason flag → M3. Lead with no_sale reset 10 days ago → P3 (floor) regardless of 2025 funnelAssignDate.
 
-## SESSION 4 — Flags + metrics (G5)
-1. Lifetime flags `appointment_set`, `sat` (never revert, cap 1 per lead). "Audit Held" button fires sat + audit_ran event.
-2. Set Rate (ran ÷ set) on dashboard. Write-order: activity event BEFORE lead persist (G10, crash-safe).
-
-## DEFERRED (do not build yet)
-- SMS drip automation. REAL constraint (Jeremy, 2026-06-10): A2P is APPROVED and he CAN send — but SFG Switchboard Funnel already runs automated texts on his active leads. Two systems texting one family = spam perception + phone reputation damage. PRECONDITION before any Metka automated SMS: deconfliction rule — Metka sequences may only target leads NOT active in Funnel automations (i.e., the aged M2/M3 database, or leads confirmed exited from Funnel). Need from Jeremy: how long Funnel's automations run / which leads they cover, then scope Metka drips strictly outside that boundary. Content sources ready: 3×16 ladders in code + Quility campaign PDFs in uploads.
-- F2 RLS/auth — mandatory gate before ANY public deploy; not needed local-only.
-- Inbound SMS pipeline (separate diagnosis: Twilio webhook → receive-sms Edge Function). On backlog.
-- Email reply awareness (Gmail sweep brief — can ship as scheduled task anytime, zero CRM code).
-
-## CLOSEOUT EVERY SESSION
-Version bump + CHANGELOG.md + Google Doc change log + ARCHIVE.md + lessons.md if corrected.
+## SESSION 4-LITE — Flag Patch (REVISED 2026-06-11 after code verification)
+Jeremy was right: Audit Held button (DialView v3.42, gated on apptConfirmed+booked → fires audit_ran → no_sale enroll) and Set Rate (DashboardTab, auditsRan/appts weekly) ALREADY EXIST. Backlog entry was stale. Remaining gaps only:
+1. ContactDetail saveMeeting outcome 'Held' → also fire audit_ran (+ satEver). Today it writes a note only — Set Rate never hears about audits logged there.
+2. Lifetime flags: apptSetEver (first booking; gate the stage→appointment_set activity event on !apptSetEver — rebooks currently re-fire and inflate the Set Rate denominator), satEver (first audit held; Audit Held button + saveMeeting both stamp it).
+3. G10 write-order: appendActivity BEFORE persistLeads in leads.js upd()/logDial/addNote.
+Half-session. Files: ContactDetail.jsx, leads.js, DialView.jsx (satEver stamp), dispositionEngine.js (apptSetEver on appointment_booked).
 
 ## SESSION 5 — Lead Order Economics (added 2026-06-10, from Jeremy+Derick convo)
 Goal: per-lead-order P&L — never blended averages. "Razor Ridge numbers ≠ DLHA numbers ≠ aged analog."

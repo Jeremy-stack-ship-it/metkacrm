@@ -410,6 +410,7 @@ export default function DialView({
                         logActivity("audit_ran", open.id, "manual");
                         upd(open.id, function(fresh) {
                           return {
+                            satEver: true, // v3.50 — lifetime flag: audit held, never reverts
                             disposition: "no_sale",
                             stage: "contacted",
                             notes: [{ ts: new Date().toISOString(), type: "appointment", text: "✅ Household Protection Audit held — no application" }, ...(fresh.notes || [])]

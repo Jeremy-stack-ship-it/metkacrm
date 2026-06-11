@@ -71,3 +71,11 @@ Awaiting: Jeremy's projection numbers → flip approval.
 - [x] classifyExitLead / resurrectBucketC / dryRunResurrection behind RESURRECTION_ACTIVE=false
 - [x] startup wiring (apply path + dry-run log), 18/18 checks
 Awaiting: Jeremy's resurrection split numbers → flip approval.
+
+
+# Session 4-lite — Flags patch (2026-06-11)
+- [x] apptSetEver: disposition + stage + note paths, gated once-ever
+- [x] satEver: DialView button + saveMeeting Held
+- [x] saveMeeting Held → audit_ran (logActivity prop chain App→ContactDetail)
+- [x] G10 write order: activity before persist
+- [x] 6/6 checks, build clean

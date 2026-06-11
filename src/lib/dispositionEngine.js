@@ -123,6 +123,8 @@ export const buildDispositionPatch = (freshLead, dispId) => {
   return {
     disposition: dispId,
     lastContact: dayKey(),   // v3.43 — F1: LOCAL date key (was UTC in some paths)
+    // v3.50 — lifetime flag: first-ever booking, never reverts
+    ...(dispId === 'appointment_booked' && !freshLead.apptSetEver ? { apptSetEver: true } : {}),
     ...stagePatch,
     ...phasePatch,
     ...agedPatch,

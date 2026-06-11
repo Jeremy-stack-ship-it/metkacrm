@@ -77,7 +77,12 @@ export const makeLeadManager = (
           baseNotes.unshift({ ts: nowIso, type: "note", text: "\u2705 Policy Issued." });
         }
         if (patch.stage === "appointment_set" && cur.stage !== "appointment_set") {
-          queued.push({ type: "appointment", leadId: id });
+          // v3.50 — lifetime flag: appointment event fires ONCE per lead, ever.
+          // Rebooks/reschedules no longer inflate the Set Rate denominator.
+          if (!cur.apptSetEver) {
+            queued.push({ type: "appointment", leadId: id });
+            patch.apptSetEver = true;
+          }
         }
         patch.notes = baseNotes;
       }
@@ -127,10 +132,11 @@ export const makeLeadManager = (
     });
 
     // Side effects fire OUTSIDE the updater — exactly once regardless of StrictMode double-runs.
-    // v3.38 — persistLeads is now synchronous (no setTimeout) to prevent notes loss on quick refresh.
-    // StrictMode safety: sfLeads/sfUpdated are overwritten each updater run; final values used here.
+    // v3.38 — persistLeads synchronous (no setTimeout) to prevent notes loss on quick refresh.
+    // v3.50 — G10 write order (Derick handoff): ACTIVITY FIRST, then lead persist —
+    // if the lead write fails partway, the attempt record is already preserved.
+    if (sfEvents)  appendActivity(sfEvents);
     if (sfUpdated) persistLeads(sfLeads, sfUpdated);
-    if (sfEvents)  setTimeout(() => appendActivity(sfEvents), 0);
   };
 
   const addNote = (id) => {
@@ -150,7 +156,9 @@ export const makeLeadManager = (
       ...(noteType === "call" || noteType === "appointment" ? { lastContact: dayKey() } : {})
     }));
     // v2.3 — appointment notes also count as appointment activity
-    if (noteType === "appointment") {
+    // v3.50 — gated on lifetime flag: only the FIRST-ever appointment counts toward Set Rate denominator
+    if (noteType === "appointment" && !lead?.apptSetEver) {
+      upd(id, { apptSetEver: true });
       const ts = new Date().toISOString();
       const ev = {
         id: `a_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,

@@ -460,6 +460,7 @@ export default function ContactDetail({
   initUWReqs, toggleUWReq, removeUWReq, addUWReq,
   sendSms,
   selfApplyUrl,
+  logActivity, // v3.50 — saveMeeting 'Held' feeds Set Rate
 }) {
   if (!open) return null;
 
@@ -479,8 +480,14 @@ export default function ContactDetail({
       outcome: meetingOutcome,
       text: outcomeEmoji + ' ' + meetingOutcome + (noteText.trim() ? ' — ' + noteText.trim() : ''),
     };
+    // v3.50 — outcome 'Held' = an audit happened: fire audit_ran (Set Rate numerator)
+    // + stamp satEver lifetime flag. No Show / Reschedule stay note-only.
+    if (meetingOutcome === 'Held' && logActivity) logActivity('audit_ran', open.id, 'manual');
     // v3.37 — functional updater: reads fresh notes from React state, not stale open prop
-    upd(open.id, (fresh) => ({ notes: [richNote, ...(fresh.notes || [])] }));
+    upd(open.id, (fresh) => ({
+      notes: [richNote, ...(fresh.notes || [])],
+      ...(meetingOutcome === 'Held' ? { satEver: true } : {}),
+    }));
     setNoteText('');
     setMeetingTs('');
     setMeetingOutcome('Held');

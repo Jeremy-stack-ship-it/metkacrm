@@ -365,3 +365,13 @@ Files: src/lib/phaseEngine.js, src/App.jsx.
 
 ## v3.49 — Resurrection FLIPPED ON
 Jeremy approved the split (1,594 candidates → M3 · 91 true terminals stay EXIT · 16 clients → 5 R's track; sums to 1,701 exactly). RESURRECTION_ACTIVE = true. Next launch: non-terminal EXIT leads enter M3 with tier + 30-day eligibility + phase_start_reason='resurrection', _ts-bumped and pushed to Supabase. The graveyard becomes inventory.
+
+## v3.50 — Session 4-lite: Lifetime Flags + Set Rate wiring + Write Order
+6/6 behavior checks + clean build. (Session shrank after Jeremy caught that the Audit Held button + Set Rate already shipped in v3.42 — backlog entry was stale.)
+
+- **apptSetEver / satEver lifetime flags** — facts that never revert (per Derick's handoff: status = current state, flags = permanent facts). apptSetEver stamps on first booking (disposition path + stage-transition path + manual appointment note); satEver stamps on Audit Held (dialer button + meeting log).
+- **Set Rate denominator fixed:** the stage→appointment_set activity event is now gated on !apptSetEver — rebooks and reschedules no longer inflate appointments-set counts.
+- **Set Rate numerator unblocked from ContactDetail:** meeting log outcome "Held" now fires audit_ran + stamps satEver (was note-only — audits logged there never reached the metric). No Show / Reschedule stay note-only.
+- **G10 write order (Derick handoff):** activity events append BEFORE the lead row persists in upd() — a crash can no longer eat an attempt record the lead claims happened.
+
+Files: src/lib/leads.js, src/lib/dispositionEngine.js, src/components/ContactDetail.jsx, src/components/DialView.jsx, src/App.jsx (prop).

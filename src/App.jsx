@@ -1259,6 +1259,7 @@ const queue = useMemo(() => {
 
         // ── CONTACT DETAIL PAGE VIEW ──
         view==="contact" && open && React.createElement(ContactDetail, {
+          logActivity, // v3.50 — saveMeeting 'Held' → audit_ran
           open, prevView, setView,
           upd, logDial, dialLead, deleteLead,
           tcpaInfo,
