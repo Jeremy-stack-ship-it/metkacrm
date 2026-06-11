@@ -97,7 +97,7 @@ export const PHASE_ORDER = ['P1', 'P2', 'P3', 'M2', 'M3'];
 // TRUE lead age (funnelAssignDate from the Funnel sync, else assignDate) —
 // EXCEPT leads whose phase_start came from a dispositional event (reason flag,
 // or inferred for legacy no_sale/no_show), which keep event-date aging per docs.
-export const AGE_REBASE_ACTIVE = false;
+export const AGE_REBASE_ACTIVE = true; // FLIPPED 2026-06-11 — Jeremy approved projection: {P1:57,P2:39,P3:62,M2:521,M3:66}, 726 shifted
 
 const _eventAged = (lead) =>
   !!lead.phase_start && (
@@ -593,6 +593,47 @@ export const buildSessionQueue = (leads, session) => {
 // ── (v3.42 spreadOverdueLeads DELETED v3.44 — invented dates without contact,
 //     violating schedule-rules-all doctrine. Replaced by processMissedSlots +
 //     session capacity caps. See tasks/SPEC-M1-M2-M3-BUILD.md Session 2.) ──────
+
+// ── BUCKET C RESURRECTION (v3.48 — flag-gated, dry-run first) ────────────────
+// 1,701 leads sit in EXIT because the v3.11-era backfill hard-mapped Bucket C →
+// EXIT — before the doctrine existed. Doctrine: EXIT is EARNED by a terminal
+// disposition only. Resurrection moves non-terminal EXIT leads into M3 (30-day
+// slow wave, revenue dials only). True terminals stay dead. Clients (submitted/
+// issued — the 5 R's annual-review track) are excluded from the dial wave.
+export const RESURRECTION_ACTIVE = false;
+
+const TERMINAL_DISPS_SET = new Set(['dnc', 'not_interested', 'withdrawn', 'chargeback']);
+const CLIENT_STAGES = new Set(['issued', 'app_submitted', 'underwriting']);
+
+export const classifyExitLead = (lead) => {
+  if (!lead || lead.phase !== 'EXIT') return null;
+  if (TERMINAL_DISPS_SET.has(lead.disposition) || lead.stage === 'removed') return 'terminal';
+  if (CLIENT_STAGES.has(lead.stage) || lead.disposition === 'submitted') return 'client';
+  return 'candidate';
+};
+
+export const resurrectBucketC = (lead, now = new Date()) => {
+  if (classifyExitLead(lead) !== 'candidate') return null;
+  return {
+    phase: 'M3',
+    next_dial: null,
+    m2_tier: lead.m2_tier ?? deriveM2Tier(lead),
+    m3_next_eligible: lead.m3_next_eligible || _nextEligibleIso(lead, 30, now),
+    phase_start_reason: 'resurrection',
+  };
+};
+
+// Pure read — counts what resurrection WOULD do.
+export const dryRunResurrection = (leads) => {
+  const r = { candidates: 0, terminals: 0, clients: 0 };
+  (leads || []).forEach(l => {
+    const c = classifyExitLead(l);
+    if (c === 'candidate') r.candidates++;
+    else if (c === 'terminal') r.terminals++;
+    else if (c === 'client') r.clients++;
+  });
+  return r;
+};
 
 // ── M2/M3 SPILLOVER (v3.46 — Session 3) ─────────────────────────────────────
 // Fills SPARE dial-block capacity with aged leads. M1 is never interrupted —

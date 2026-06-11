@@ -71,7 +71,7 @@ import { STATE_TZ, STAGES, DISPS, BC, BL, NC, FIELD_MAP_DEFS,
   fmt, fmtDate, currency, chip, inp } from './constants.js';
 // ── Library Modules (v3.6) ───────────────────────────────────────
 import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity, sbLoadSeqStats, sbBeaconFlush, sbSendSms } from './lib/supabaseSync.js';
-import { backfillLead, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, migrateAgedPhases, processMissedSlots, dryRunAgeRebase } from './lib/phaseEngine.js'; // v3.44 calendar engine + v3.47 re-base dry-run
+import { backfillLead, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, migrateAgedPhases, processMissedSlots, dryRunAgeRebase, RESURRECTION_ACTIVE, resurrectBucketC, dryRunResurrection } from './lib/phaseEngine.js'; // v3.44-48 phase machine
 import { buildDispositionPatch } from './lib/dispositionEngine.js'; // v3.43 — F3 unified disposition logic
 import { DEFAULT_GOALS, CONTACT_DISPS, ACTIVITY_TYPES, dayKey, TODAY_KEY, lastNDays, weekKeys, monthKeys, aggregateActivity, fmtTime, goalTone, makeActivityManager } from './lib/activityLog.js';
 import { makeLeadManager } from './lib/leads.js';
@@ -376,6 +376,23 @@ function MetkaCRM(){
       const _lastSeenIso = localStorage.getItem(LS_LAST_SEEN);
       const _changedIds = new Set();
       const _tsNow = Date.now();
+      // v3.48 — Bucket C resurrection (flag-gated; dry-run logs until approved)
+      if (RESURRECTION_ACTIVE) {
+        let _resCount = 0;
+        initialLeads = initialLeads.map(l => {
+          const p = resurrectBucketC(l);
+          if (!p) return l;
+          _resCount++; _changedIds.add(l.id);
+          return { ...l, ...p, _ts: _tsNow };
+        });
+        if (_resCount) console.log('[CRM v3.48] RESURRECTION APPLIED: ' + _resCount + ' Bucket C leads → M3');
+      } else {
+        const _res = dryRunResurrection(initialLeads);
+        console.log('[CRM v3.48] BUCKET C RESURRECTION (dry-run, NOT applied): ' +
+          _res.candidates + ' candidates → M3 · ' + _res.terminals + ' true terminals stay EXIT · ' +
+          _res.clients + ' clients excluded (5 R\'s track)');
+      }
+
       let _agedCount = 0;
       initialLeads = initialLeads.map(l => {
         const p = migrateAgedPhases(l);
@@ -413,9 +430,9 @@ function MetkaCRM(){
       // Prints projected phase distribution; changes NOTHING.
       try {
         const _proj = dryRunAgeRebase(initialLeads);
-        console.log('[CRM v3.47] AGE RE-BASE PROJECTION (dry-run, NOT applied):',
-          'current', _proj.current, '→ projected', _proj.projected,
-          `· ${_proj.moved} leads would shift basis`);
+        console.log('[CRM v3.47] AGE RE-BASE PROJECTION (dry-run, NOT applied): ' +
+          'current ' + JSON.stringify(_proj.current) + ' → projected ' + JSON.stringify(_proj.projected) +
+          ' · ' + _proj.moved + ' leads would shift basis');
       } catch(e) { console.warn('[CRM v3.47] projection failed:', e.message); }
 
       // v3.38 — One-time phone dedup: removes duplicate leads sharing the same phone number.

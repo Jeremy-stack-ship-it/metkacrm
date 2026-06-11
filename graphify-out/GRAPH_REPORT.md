@@ -1,16 +1,16 @@
 # Graph Report - metka-crm  (2026-06-10)
 
 ## Corpus Check
-- 77 files · ~106,682 words
+- 77 files · ~107,173 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 451 nodes · 817 edges · 30 communities (22 shown, 8 thin omitted)
+- 456 nodes · 827 edges · 33 communities (23 shown, 10 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `741552e4`
+- Built from commit: `2c781021`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -44,14 +44,17 @@
 - [[_COMMUNITY_Community 27|Community 27]]
 - [[_COMMUNITY_Community 28|Community 28]]
 - [[_COMMUNITY_Community 29|Community 29]]
+- [[_COMMUNITY_Community 30|Community 30]]
+- [[_COMMUNITY_Community 31|Community 31]]
+- [[_COMMUNITY_Community 32|Community 32]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `MetkaCRM()` - 30 edges
+1. `MetkaCRM()` - 31 edges
 2. `inp()` - 22 edges
 3. `isUWStuck()` - 13 edges
 4. `dayKey()` - 12 edges
-5. `BUILD SPEC — Machine Doctrine Implementation (M1 hardening + M2 + M3)` - 10 edges
-6. `Changelog — Metka Field Ops CRM` - 9 edges
+5. `Changelog — Metka Field Ops CRM` - 10 edges
+6. `BUILD SPEC — Machine Doctrine Implementation (M1 hardening + M2 + M3)` - 10 edges
 7. `applyPhaseTransition()` - 9 edges
 8. `isDueToday()` - 9 edges
 9. `daysInUW()` - 9 edges
@@ -60,24 +63,24 @@
 ## Surprising Connections (you probably didn't know these)
 - `AppointmentConfirmModal()` --calls--> `fmt()`  [INFERRED]
   src/components/AppointmentConfirmModal.jsx → src/constants.js
-- `MetkaCRM()` --calls--> `migrateAgedPhases()`  [EXTRACTED]
-  src/App.jsx → src/lib/phaseEngine.js
-- `MetkaCRM()` --calls--> `processMissedSlots()`  [EXTRACTED]
-  src/App.jsx → src/lib/phaseEngine.js
+- `MetkaCRM()` --calls--> `ccExchangeCode()`  [EXTRACTED]
+  src/App.jsx → src/lib/ccIntegration.js
+- `MetkaCRM()` --calls--> `autoFollowUp()`  [EXTRACTED]
+  src/App.jsx → src/lib/leadScoring.js
+- `MetkaCRM()` --calls--> `priority()`  [EXTRACTED]
+  src/App.jsx → src/lib/leadScoring.js
 - `MetkaCRM()` --calls--> `applyPhaseTransition()`  [EXTRACTED]
   src/App.jsx → src/lib/phaseEngine.js
-- `MetkaCRM()` --calls--> `getPhasePriority()`  [EXTRACTED]
-  src/App.jsx → src/lib/phaseEngine.js
 
-## Communities (30 total, 8 thin omitted)
+## Communities (33 total, 10 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.08
-Nodes (40): BUSINESS_HOURS, dayKey(), fmtHour(), HourlyStats(), useAuth(), ACTIVITY_TYPES, aggregateActivity(), computeActivityQueue() (+32 more)
+Nodes (39): StageStepper(), useAuth(), ACTIVITY_TYPES, aggregateActivity(), computeActivityQueue(), CONTACT_DISPS, dayKey(), DEFAULT_GOALS (+31 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.10
-Nodes (34): AddLeadForm(), AppointmentConfirmModal(), APPT_TYPE_LABELS, inputSt, ContactDetail(), StageStepper(), UnderwritingCard(), ContactsView() (+26 more)
+Cohesion: 0.11
+Nodes (34): AddLeadForm(), AppointmentConfirmModal(), ContactDetail(), UnderwritingCard(), ContactsView(), DialRightPanel(), renderLiveTokens(), TOKEN_FIELDS (+26 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.05
@@ -85,11 +88,11 @@ Nodes (35): active, activityNotes, allRows, archived, archiveNote, base64urlEnco
 
 ### Community 3 - "Community 3"
 Cohesion: 0.08
-Nodes (26): INNER_TABS, SequenceTab(), TC, TD_STYLE, TH_STYLE, advanceSequence(), getNextTouchDate(), getSequenceBadgeColor() (+18 more)
+Nodes (23): INNER_TABS, SequenceTab(), TC, TD_STYLE, TH_STYLE, advanceSequence(), getTodayCallList(), initSequence() (+15 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.07
-Nodes (37): DashboardTab(), PHASE_DEFS, QUICK_DISPS, SMS_SEQUENCES, AUTO_CALLBACKS, buildDispositionPatch(), DISP_NOTE_TEXT, DISP_STAGE_MAP (+29 more)
+Cohesion: 0.09
+Nodes (35): PHASE_DEFS, QUICK_DISPS, SMS_SEQUENCES, AUTO_CALLBACKS, buildDispositionPatch(), DISP_NOTE_TEXT, DISP_STAGE_MAP, addDaysISO() (+27 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.10
@@ -133,7 +136,7 @@ Nodes (14): 3.1 — phaseEngine: buildSpillover(leads, remainingCapacity, now), 
 
 ### Community 15 - "Community 15"
 Cohesion: 0.09
-Nodes (21): [2026-04-01] v1.0.0 — Initial Build, [2026-05-01] v2.0.0 — Ministry Lead Operating System, [2026-05-13] v3.6 — Modular Architecture Refactor, [2026-05-14] v3.6.1 — Power Dialer + Audit Fixes, Added, Added, Added, Added (+13 more)
+Nodes (22): [2026-04-01] v1.0.0 — Initial Build, [2026-05-01] v2.0.0 — Ministry Lead Operating System, [2026-05-13] v3.6 — Modular Architecture Refactor, [2026-05-14] v3.6.1 — Power Dialer + Audit Fixes, Added, Added, Added, Added (+14 more)
 
 ### Community 17 - "Community 17"
 Cohesion: 0.40
@@ -144,36 +147,40 @@ Cohesion: 1.00
 Nodes (4): Dashboard Tab, Queue Tab, Settings Tab, Today's Block Tab
 
 ### Community 27 - "Community 27"
-Cohesion: 0.22
-Nodes (8): Review, Review S2, Review S2.5, Review S3, Session 1 — Correctness Fixes (2026-06-10), Session 2.5 — Funnel CSV Sync (2026-06-10), Session 2 — Calendar Phase Engine (2026-06-10), Session 3 — M2/M3 Spillover (2026-06-10)
+Cohesion: 0.20
+Nodes (9): Review, Review S2, Review S2.5, Review S3, Session 1 — Correctness Fixes (2026-06-10), Session 2.5 — Funnel CSV Sync (2026-06-10), Session 2 — Calendar Phase Engine (2026-06-10), Session 3 — M2/M3 Spillover (2026-06-10) (+1 more)
 
 ### Community 28 - "Community 28"
-Cohesion: 0.22
-Nodes (9): autoFollowUp(), openCalendlyPopup(), priority(), a, assignDate, b, lead, result (+1 more)
+Cohesion: 0.19
+Nodes (10): DashboardTab(), autoFollowUp(), openCalendlyPopup(), priority(), a, assignDate, b, lead (+2 more)
 
 ### Community 29 - "Community 29"
 Cohesion: 0.38
 Nodes (5): DRAFT_OPTS, draftPrompt(), GEMINI_URL(), geminiCall(), leadCtx()
 
+### Community 32 - "Community 32"
+Cohesion: 0.60
+Nodes (4): BUSINESS_HOURS, dayKey(), fmtHour(), HourlyStats()
+
 ## Knowledge Gaps
-- **180 isolated node(s):** `Added`, `Changed`, `Fixed`, `Dependencies`, `Notes` (+175 more)
+- **182 isolated node(s):** `Added`, `Changed`, `Fixed`, `Dependencies`, `Notes` (+177 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `inp()` connect `Community 1` to `Community 0`, `Community 7`?**
-  _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **Why does `applyPhaseTransition()` connect `Community 4` to `Community 0`?**
-  _High betweenness centrality (0.008) - this node is a cross-community bridge._
+  _High betweenness centrality (0.015) - this node is a cross-community bridge._
 - **Why does `autoFollowUp()` connect `Community 28` to `Community 0`, `Community 4`?**
   _High betweenness centrality (0.007) - this node is a cross-community bridge._
+- **Why does `dayKey()` connect `Community 0` to `Community 28`, `Community 4`, `Community 7`?**
+  _High betweenness centrality (0.007) - this node is a cross-community bridge._
 - **What connects `Added`, `Changed`, `Fixed` to the rest of the system?**
-  _180 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _182 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.07595628415300547 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07948568088836938 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.09653092006033183 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11054421768707483 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.047619047619047616 - nodes in this community are weakly interconnected._

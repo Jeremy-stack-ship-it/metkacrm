@@ -353,3 +353,12 @@ NEXT GATE (3b): age re-base dry-run — projected P1/P2/P3/M2/M3 distribution lo
 - Activation path: Jeremy reads projection → approves → one-constant flip commit → next startup, migrateAgedPhases (v3.44) moves the database into its true M2/M3 waves with tiers, spillover (v3.46) works them.
 
 Files: src/lib/phaseEngine.js, src/App.jsx.
+
+## v3.48 — Session 3c: Age Re-base FLIPPED ON + Bucket C Resurrection (dry-run)
+18/18 checks + clean build.
+
+- **AGE_REBASE_ACTIVE = true** — Jeremy approved projection 2026-06-11 (current P1:64/P2:53/P3:151/M2:477/M3:0 → projected P1:57/P2:39/P3:62/M2:521/M3:66, 726 leads shift). Next launch: migrateAgedPhases settles the database into true waves. Event-aged leads (no_sale/no_show/m2_reactivation) keep event-date aging.
+- **Bucket C Resurrection built, ships OFF (RESURRECTION_ACTIVE = false).** Diagnosis: 1,701 leads sit in EXIT from the v3.11 backfill's "Bucket C → EXIT" mapping — EXIT they never earned (doctrine: EXIT = terminal disposition only). classifyExitLead splits them: candidates (non-terminal, non-client) → M3 with tier + 30-day eligibility + phase_start_reason='resurrection'; true terminals (dnc/not_interested/withdrawn/chargeback) stay dead; clients (submitted/issued/underwriting — 5 R's track) excluded from the dial wave.
+- Startup logs `[CRM v3.48] BUCKET C RESURRECTION (dry-run)`: candidates/terminals/clients split. Activation = same one-constant protocol after Jeremy approves the split.
+
+Files: src/lib/phaseEngine.js, src/App.jsx.

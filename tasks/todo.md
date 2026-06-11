@@ -64,3 +64,10 @@ spillover is fully self-contained in TodaysBlock (cleaner than specced).
 - [x] dryRunAgeRebase pure projection + startup log
 - [x] 13/13 checks, build clean
 Awaiting: Jeremy's projection numbers → flip approval.
+
+
+# Session 3c — Flip + Resurrection dry-run (2026-06-11)
+- [x] AGE_REBASE_ACTIVE → true (projection approved)
+- [x] classifyExitLead / resurrectBucketC / dryRunResurrection behind RESURRECTION_ACTIVE=false
+- [x] startup wiring (apply path + dry-run log), 18/18 checks
+Awaiting: Jeremy's resurrection split numbers → flip approval.
