@@ -71,7 +71,7 @@ import { STATE_TZ, STAGES, DISPS, BC, BL, NC, FIELD_MAP_DEFS,
   fmt, fmtDate, currency, chip, inp } from './constants.js';
 // ── Library Modules (v3.6) ───────────────────────────────────────
 import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity, sbLoadSeqStats, sbBeaconFlush, sbSendSms } from './lib/supabaseSync.js';
-import { backfillLead, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, migrateAgedPhases, processMissedSlots } from './lib/phaseEngine.js'; // v3.44 — calendar phase engine
+import { backfillLead, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, migrateAgedPhases, processMissedSlots, dryRunAgeRebase } from './lib/phaseEngine.js'; // v3.44 calendar engine + v3.47 re-base dry-run
 import { buildDispositionPatch } from './lib/dispositionEngine.js'; // v3.43 — F3 unified disposition logic
 import { DEFAULT_GOALS, CONTACT_DISPS, ACTIVITY_TYPES, dayKey, TODAY_KEY, lastNDays, weekKeys, monthKeys, aggregateActivity, fmtTime, goalTone, makeActivityManager } from './lib/activityLog.js';
 import { makeLeadManager } from './lib/leads.js';
@@ -408,6 +408,15 @@ function MetkaCRM(){
         sbSaveActivity(_ms.events).catch(() => {});
       }
       localStorage.setItem(LS_LAST_SEEN, new Date().toISOString());
+
+      // v3.47 — S3b age re-base DRY-RUN (re-base is OFF until Jeremy approves).
+      // Prints projected phase distribution; changes NOTHING.
+      try {
+        const _proj = dryRunAgeRebase(initialLeads);
+        console.log('[CRM v3.47] AGE RE-BASE PROJECTION (dry-run, NOT applied):',
+          'current', _proj.current, '→ projected', _proj.projected,
+          `· ${_proj.moved} leads would shift basis`);
+      } catch(e) { console.warn('[CRM v3.47] projection failed:', e.message); }
 
       // v3.38 — One-time phone dedup: removes duplicate leads sharing the same phone number.
       // Newest _ts wins. Tombstones removed IDs so Supabase hydration doesn't re-add them.

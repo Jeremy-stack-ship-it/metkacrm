@@ -343,3 +343,13 @@ To run: Contacts → Import CSV → map fields → green "Sync from Funnel" butt
 
 Files: src/lib/phaseEngine.js, src/lib/dispositionEngine.js, src/components/TodaysBlock.jsx.
 NEXT GATE (3b): age re-base dry-run — projected P1/P2/P3/M2/M3 distribution logged for approval BEFORE applying.
+
+## v3.47 — Session 3b: Age Re-base (SHIPS INACTIVE — dry-run projection only)
+13/13 checks + clean build. NOTHING CHANGES until Jeremy approves the projection and the flag flips.
+
+- **AGE_REBASE_ACTIVE = false** (phaseEngine). While off, aging works exactly as v3.44-46.
+- When flipped ON: leadAgeDays derives from TRUE lead age — funnelAssignDate (v3.45 sync) else assignDate — EXCEPT event-aged leads (phase_start_reason set, or legacy no_sale/no_show inference) which keep event-date aging per docs. Floor rule unchanged.
+- **dryRunAgeRebase()** — pure read; App startup logs `[CRM v3.47] AGE RE-BASE PROJECTION` every launch: current vs projected P1/P2/P3/M2/M3 counts + how many leads shift basis.
+- Activation path: Jeremy reads projection → approves → one-constant flip commit → next startup, migrateAgedPhases (v3.44) moves the database into its true M2/M3 waves with tiers, spillover (v3.46) works them.
+
+Files: src/lib/phaseEngine.js, src/App.jsx.

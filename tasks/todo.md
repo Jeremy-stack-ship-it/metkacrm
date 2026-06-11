@@ -57,3 +57,10 @@ inFunnel flag = SMS deconfliction source of truth. Conflicts surface in console 
 Deviations from gate: appointment_booked on aged lead keeps freeze behavior (docs-correct) rather than
 promoting — post-appointment outcomes (no_show→P1/no_sale→P3) handle re-entry. No App.jsx change needed —
 spillover is fully self-contained in TodaysBlock (cleaner than specced).
+
+
+# Session 3b — Age Re-base dry-run (2026-06-11)
+- [x] AGE_REBASE_ACTIVE flag (OFF) + true-age basis + event-aging exceptions (flag/inference)
+- [x] dryRunAgeRebase pure projection + startup log
+- [x] 13/13 checks, build clean
+Awaiting: Jeremy's projection numbers → flip approval.

@@ -92,13 +92,58 @@ export const phaseFromBucket = (lead) => {
 // Day 31→P3, Day 61→M2 (≤180d), Day 181→M3. No lead ever goes silently dark.
 export const PHASE_ORDER = ['P1', 'P2', 'P3', 'M2', 'M3'];
 
-// Age in days from phase_start (reset by no-show/no-sale rebuilds) or assignDate.
-export const leadAgeDays = (lead, now = new Date()) => {
-  const base = lead.phase_start || lead.assignDate || lead.seqStartDate || null;
+// ── AGE RE-BASE (v3.47 — Session 3b) ────────────────────────────────────────
+// OFF until Jeremy approves the dry-run projection. When ON: age derives from
+// TRUE lead age (funnelAssignDate from the Funnel sync, else assignDate) —
+// EXCEPT leads whose phase_start came from a dispositional event (reason flag,
+// or inferred for legacy no_sale/no_show), which keep event-date aging per docs.
+export const AGE_REBASE_ACTIVE = false;
+
+const _eventAged = (lead) =>
+  !!lead.phase_start && (
+    !!lead.phase_start_reason ||                       // v3.46+ stamps
+    ['no_sale', 'no_show'].includes(lead.disposition)  // legacy inference
+  );
+
+const _ageBasis = (lead, rebase) => {
+  if (rebase && !_eventAged(lead)) {
+    return lead.funnelAssignDate || lead.assignDate || lead.phase_start || lead.seqStartDate || null;
+  }
+  return lead.phase_start || lead.assignDate || lead.seqStartDate || null;
+};
+
+export const leadAgeDays = (lead, now = new Date(), rebase = AGE_REBASE_ACTIVE) => {
+  const base = _ageBasis(lead, rebase);
   if (!base) return 0;
   const d = new Date(base);
   if (isNaN(d.getTime())) return 0;
   return Math.max(0, Math.floor((now - d) / 86400000));
+};
+
+// Dry-run projection: current vs re-based phase distribution. PURE READ.
+export const dryRunAgeRebase = (leads, now = new Date()) => {
+  const count = (rebase) => {
+    const c = { P1: 0, P2: 0, P3: 0, M2: 0, M3: 0, EXIT: 0 };
+    (leads || []).forEach(l => {
+      if (!l) return;
+      if (l.phase === 'EXIT') { c.EXIT++; return; }
+      const days = leadAgeDays(l, now, rebase);
+      let p = days <= 14 ? 'P1' : days <= 30 ? 'P2' : days <= 60 ? 'P3' : days <= 180 ? 'M2' : 'M3';
+      // same floor rule as effectivePhase
+      if (l.phase && PHASE_ORDER.includes(l.phase) &&
+          PHASE_ORDER.indexOf(p) < PHASE_ORDER.indexOf(l.phase)) p = l.phase;
+      c[p]++;
+    });
+    return c;
+  };
+  const current = count(false);
+  const projected = count(true);
+  let moved = 0;
+  (leads || []).forEach(l => {
+    if (!l || l.phase === 'EXIT') return;
+    if (leadAgeDays(l, now, false) !== leadAgeDays(l, now, true)) moved++;
+  });
+  return { current, projected, moved };
 };
 
 // Derived phase by age, with a FLOOR at the stored phase: a disposition that
