@@ -15,8 +15,8 @@
     "semantic_hash": "cf2c74ef32bde44e46ec9f929f2ca283"
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\App.jsx": {
-    "mtime": 1781141573.5731108,
-    "ast_hash": "c59ddfce01850bc110f911366ef55989",
+    "mtime": 1781142153.0121596,
+    "ast_hash": "ed2db4e1eccad2fa6c724d8b3091045e",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\constants.js": {
@@ -195,8 +195,8 @@
     "semantic_hash": "07226ae8dd518f728e5ce3307c70a485"
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\lib\\phaseEngine.js": {
-    "mtime": 1781141573.4975932,
-    "ast_hash": "55c1eb0f4e39d9c729066cd5a7aa1ced",
+    "mtime": 1781142152.9201732,
+    "ast_hash": "42e75509aececa30ead276eb314c8808",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\lib\\sequenceEngine.js": {
@@ -285,8 +285,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\CHANGELOG.md": {
-    "mtime": 1781141627.091728,
-    "ast_hash": "979e24cc314b034b19af07181e28edd7",
+    "mtime": 1781142207.084325,
+    "ast_hash": "818d1477451f56423b59c21344a3be5f",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\CRM-MAP.md": {
@@ -380,8 +380,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\tasks\\todo.md": {
-    "mtime": 1781141627.1091964,
-    "ast_hash": "3f38ea0f120e21fa42735576198d5b1a",
+    "mtime": 1781142207.0916626,
+    "ast_hash": "439e53c1740bf1ab26afd8fbc84ff38b",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\lib\\funnelSync.js": {

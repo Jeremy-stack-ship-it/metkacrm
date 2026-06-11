@@ -362,3 +362,6 @@ Files: src/lib/phaseEngine.js, src/App.jsx.
 - Startup logs `[CRM v3.48] BUCKET C RESURRECTION (dry-run)`: candidates/terminals/clients split. Activation = same one-constant protocol after Jeremy approves the split.
 
 Files: src/lib/phaseEngine.js, src/App.jsx.
+
+## v3.49 — Resurrection FLIPPED ON
+Jeremy approved the split (1,594 candidates → M3 · 91 true terminals stay EXIT · 16 clients → 5 R's track; sums to 1,701 exactly). RESURRECTION_ACTIVE = true. Next launch: non-terminal EXIT leads enter M3 with tier + 30-day eligibility + phase_start_reason='resurrection', _ts-bumped and pushed to Supabase. The graveyard becomes inventory.

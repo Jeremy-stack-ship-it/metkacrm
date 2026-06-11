@@ -1,16 +1,16 @@
 # Graph Report - metka-crm  (2026-06-10)
 
 ## Corpus Check
-- 77 files · ~107,173 words
+- 77 files · ~107,708 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 456 nodes · 827 edges · 33 communities (23 shown, 10 thin omitted)
+- 463 nodes · 841 edges · 32 communities (23 shown, 9 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2c781021`
+- Built from commit: `a95696b5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -45,15 +45,14 @@
 - [[_COMMUNITY_Community 28|Community 28]]
 - [[_COMMUNITY_Community 29|Community 29]]
 - [[_COMMUNITY_Community 30|Community 30]]
-- [[_COMMUNITY_Community 31|Community 31]]
 - [[_COMMUNITY_Community 32|Community 32]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `MetkaCRM()` - 31 edges
+1. `MetkaCRM()` - 33 edges
 2. `inp()` - 22 edges
 3. `isUWStuck()` - 13 edges
 4. `dayKey()` - 12 edges
-5. `Changelog — Metka Field Ops CRM` - 10 edges
+5. `Changelog — Metka Field Ops CRM` - 11 edges
 6. `BUILD SPEC — Machine Doctrine Implementation (M1 hardening + M2 + M3)` - 10 edges
 7. `applyPhaseTransition()` - 9 edges
 8. `isDueToday()` - 9 edges
@@ -72,15 +71,15 @@
 - `MetkaCRM()` --calls--> `applyPhaseTransition()`  [EXTRACTED]
   src/App.jsx → src/lib/phaseEngine.js
 
-## Communities (33 total, 10 thin omitted)
+## Communities (32 total, 9 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.08
-Nodes (39): StageStepper(), useAuth(), ACTIVITY_TYPES, aggregateActivity(), computeActivityQueue(), CONTACT_DISPS, dayKey(), DEFAULT_GOALS (+31 more)
+Nodes (40): StageStepper(), useAuth(), ACTIVITY_TYPES, aggregateActivity(), computeActivityQueue(), CONTACT_DISPS, dayKey(), DEFAULT_GOALS (+32 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.11
-Nodes (34): AddLeadForm(), AppointmentConfirmModal(), ContactDetail(), UnderwritingCard(), ContactsView(), DialRightPanel(), renderLiveTokens(), TOKEN_FIELDS (+26 more)
+Cohesion: 0.10
+Nodes (32): AddLeadForm(), AppointmentConfirmModal(), APPT_TYPE_LABELS, inputSt, ContactDetail(), UnderwritingCard(), ContactsView(), DialRightPanel() (+24 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.05
@@ -88,11 +87,11 @@ Nodes (35): active, activityNotes, allRows, archived, archiveNote, base64urlEnco
 
 ### Community 3 - "Community 3"
 Cohesion: 0.08
-Nodes (23): INNER_TABS, SequenceTab(), TC, TD_STYLE, TH_STYLE, advanceSequence(), getTodayCallList(), initSequence() (+15 more)
+Nodes (27): INNER_TABS, SequenceTab(), TC, TD_STYLE, TH_STYLE, advanceSequence(), getNextTouchDate(), getSequenceBadgeColor() (+19 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.09
-Nodes (35): PHASE_DEFS, QUICK_DISPS, SMS_SEQUENCES, AUTO_CALLBACKS, buildDispositionPatch(), DISP_NOTE_TEXT, DISP_STAGE_MAP, addDaysISO() (+27 more)
+Cohesion: 0.08
+Nodes (40): PHASE_DEFS, QUICK_DISPS, SMS_SEQUENCES, AUTO_CALLBACKS, buildDispositionPatch(), DISP_NOTE_TEXT, DISP_STAGE_MAP, addDaysISO() (+32 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.10
@@ -103,8 +102,8 @@ Cohesion: 0.24
 Nodes (14): btn(), card(), CCTab(), sectionLabel(), ccAuthorize(), ccClearTokens(), ccExchangeCode(), ccFetch() (+6 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.12
-Nodes (17): autoDetectMapping(), mapFunnelStatus(), parseBucket(), parseCSV(), parseDisp(), parseStage(), DISP_RANK, FIELD_KEYS (+9 more)
+Cohesion: 0.13
+Nodes (16): autoDetectMapping(), mapFunnelStatus(), parseBucket(), parseCSV(), parseDisp(), parseStage(), DISP_RANK, FIELD_KEYS (+8 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.14
@@ -135,8 +134,8 @@ Cohesion: 0.13
 Nodes (14): 3.1 — phaseEngine: buildSpillover(leads, remainingCapacity, now), 3.2 — dispositionEngine: M2/M3 outcome branches (inside buildDispositionPatch), 3.3 — UI wiring, 3.4 — Verification, BUILD SPEC — Machine Doctrine Implementation (M1 hardening + M2 + M3), CLOSEOUT EVERY SESSION, DEFERRED (do not build yet), DOCTRINE (one paragraph, memorize) (+6 more)
 
 ### Community 15 - "Community 15"
-Cohesion: 0.09
-Nodes (22): [2026-04-01] v1.0.0 — Initial Build, [2026-05-01] v2.0.0 — Ministry Lead Operating System, [2026-05-13] v3.6 — Modular Architecture Refactor, [2026-05-14] v3.6.1 — Power Dialer + Audit Fixes, Added, Added, Added, Added (+14 more)
+Cohesion: 0.08
+Nodes (23): [2026-04-01] v1.0.0 — Initial Build, [2026-05-01] v2.0.0 — Ministry Lead Operating System, [2026-05-13] v3.6 — Modular Architecture Refactor, [2026-05-14] v3.6.1 — Power Dialer + Audit Fixes, Added, Added, Added, Added (+15 more)
 
 ### Community 17 - "Community 17"
 Cohesion: 0.40
@@ -147,8 +146,8 @@ Cohesion: 1.00
 Nodes (4): Dashboard Tab, Queue Tab, Settings Tab, Today's Block Tab
 
 ### Community 27 - "Community 27"
-Cohesion: 0.20
-Nodes (9): Review, Review S2, Review S2.5, Review S3, Session 1 — Correctness Fixes (2026-06-10), Session 2.5 — Funnel CSV Sync (2026-06-10), Session 2 — Calendar Phase Engine (2026-06-10), Session 3 — M2/M3 Spillover (2026-06-10) (+1 more)
+Cohesion: 0.18
+Nodes (10): Review, Review S2, Review S2.5, Review S3, Session 1 — Correctness Fixes (2026-06-10), Session 2.5 — Funnel CSV Sync (2026-06-10), Session 2 — Calendar Phase Engine (2026-06-10), Session 3 — M2/M3 Spillover (2026-06-10) (+2 more)
 
 ### Community 28 - "Community 28"
 Cohesion: 0.19
@@ -163,9 +162,9 @@ Cohesion: 0.60
 Nodes (4): BUSINESS_HOURS, dayKey(), fmtHour(), HourlyStats()
 
 ## Knowledge Gaps
-- **182 isolated node(s):** `Added`, `Changed`, `Fixed`, `Dependencies`, `Notes` (+177 more)
+- **186 isolated node(s):** `Added`, `Changed`, `Fixed`, `Dependencies`, `Notes` (+181 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -177,10 +176,10 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `dayKey()` connect `Community 0` to `Community 28`, `Community 4`, `Community 7`?**
   _High betweenness centrality (0.007) - this node is a cross-community bridge._
 - **What connects `Added`, `Changed`, `Fixed` to the rest of the system?**
-  _182 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _186 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.07948568088836938 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07796610169491526 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.11054421768707483 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10285714285714286 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.047619047619047616 - nodes in this community are weakly interconnected._

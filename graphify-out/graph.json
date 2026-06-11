@@ -211,6 +211,15 @@
       "norm_label": "v3.47 \u2014 session 3b: age re-base (ships inactive \u2014 dry-run projection only)"
     },
     {
+      "label": "v3.48 \u2014 Session 3c: Age Re-base FLIPPED ON + Bucket C Resurrection (dry-run)",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L357",
+      "id": "metka_crm_changelog_v3_48_session_3c_age_re_base_flipped_on_bucket_c_resurrection_dry_run",
+      "community": 15,
+      "norm_label": "v3.48 \u2014 session 3c: age re-base flipped on + bucket c resurrection (dry-run)"
+    },
+    {
       "label": "App.jsx",
       "file_type": "code",
       "source_file": "src/App.jsx",
@@ -270,7 +279,7 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L25",
       "id": "lib_phaseengine_sched_cols",
-      "community": 7,
+      "community": 4,
       "norm_label": "sched_cols"
     },
     {
@@ -508,10 +517,55 @@
       "norm_label": "buildsessionqueue()"
     },
     {
+      "label": "TERMINAL_DISPS_SET",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L605",
+      "id": "lib_phaseengine_terminal_disps_set",
+      "community": 4,
+      "norm_label": "terminal_disps_set"
+    },
+    {
+      "label": "CLIENT_STAGES",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L606",
+      "id": "lib_phaseengine_client_stages",
+      "community": 4,
+      "norm_label": "client_stages"
+    },
+    {
+      "label": "classifyExitLead()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L608",
+      "id": "lib_phaseengine_classifyexitlead",
+      "community": 4,
+      "norm_label": "classifyexitlead()"
+    },
+    {
+      "label": "resurrectBucketC()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L615",
+      "id": "lib_phaseengine_resurrectbucketc",
+      "community": 4,
+      "norm_label": "resurrectbucketc()"
+    },
+    {
+      "label": "dryRunResurrection()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L627",
+      "id": "lib_phaseengine_dryrunresurrection",
+      "community": 0,
+      "norm_label": "dryrunresurrection()"
+    },
+    {
       "label": "buildSpillover()",
       "file_type": "code",
       "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L603",
+      "source_location": "L644",
       "id": "lib_phaseengine_buildspillover",
       "community": 4,
       "norm_label": "buildspillover()"
@@ -520,7 +574,7 @@
       "label": "normalizePhaseSchedule()",
       "file_type": "code",
       "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L642",
+      "source_location": "L683",
       "id": "lib_phaseengine_normalizephaseschedule",
       "community": 4,
       "norm_label": "normalizephaseschedule()"
@@ -614,6 +668,15 @@
       "id": "tasks_todo_session_3b_age_re_base_dry_run_2026_06_11",
       "community": 27,
       "norm_label": "session 3b \u2014 age re-base dry-run (2026-06-11)"
+    },
+    {
+      "label": "Session 3c \u2014 Flip + Resurrection dry-run (2026-06-11)",
+      "file_type": "document",
+      "source_file": "tasks/todo.md",
+      "source_location": "L69",
+      "id": "tasks_todo_session_3c_flip_resurrection_dry_run_2026_06_11",
+      "community": 27,
+      "norm_label": "session 3c \u2014 flip + resurrection dry-run (2026-06-11)"
     },
     {
       "label": "TodaysBlock.jsx",
@@ -2150,7 +2213,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L1",
-      "community": 31,
+      "community": 1,
       "norm_label": "appointmentsview.jsx",
       "id": "src_components_appointmentsview_jsx"
     },
@@ -2159,7 +2222,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L11",
-      "community": 31,
+      "community": 1,
       "norm_label": "appt_type_labels",
       "id": "components_appointmentsview_appt_type_labels"
     },
@@ -2168,7 +2231,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L19",
-      "community": 31,
+      "community": 1,
       "norm_label": "btn()",
       "id": "components_appointmentsview_btn"
     },
@@ -2177,7 +2240,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L26",
-      "community": 31,
+      "community": 1,
       "norm_label": "inputst",
       "id": "components_appointmentsview_inputst"
     },
@@ -2186,7 +2249,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L32",
-      "community": 31,
+      "community": 1,
       "norm_label": "appointmentsview()",
       "id": "components_appointmentsview_appointmentsview"
     },
@@ -2780,7 +2843,7 @@
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L38",
-      "community": 1,
+      "community": 3,
       "norm_label": "getnexttouchdate()",
       "id": "lib_sequenceengine_getnexttouchdate"
     },
@@ -2789,7 +2852,7 @@
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L58",
-      "community": 1,
+      "community": 3,
       "norm_label": "isseqduetoday()",
       "id": "lib_sequenceengine_isseqduetoday"
     },
@@ -2843,7 +2906,7 @@
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L131",
-      "community": 1,
+      "community": 3,
       "norm_label": "getsequencestatus()",
       "id": "lib_sequenceengine_getsequencestatus"
     },
@@ -2852,7 +2915,7 @@
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L155",
-      "community": 1,
+      "community": 3,
       "norm_label": "getsequencebadgecolor()",
       "id": "lib_sequenceengine_getsequencebadgecolor"
     },
@@ -4273,8 +4336,18 @@
       "source_file": "CHANGELOG.md",
       "source_location": "L347",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metka_crm_changelog_changelog_metka_field_ops_crm",
-      "target": "metka_crm_changelog_v3_47_session_3b_age_re_base_ships_inactive_dry_run_projection_only",
+      "target": "metka_crm_changelog_v3_47_session_3b_age_re_base_ships_inactive_dry_run_projection_only"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L357",
+      "weight": 1.0,
+      "source": "metka_crm_changelog_changelog_metka_field_ops_crm",
+      "target": "metka_crm_changelog_v3_48_session_3c_age_re_base_flipped_on_bucket_c_resurrection_dry_run",
       "confidence_score": 1.0
     },
     {
@@ -4635,9 +4708,9 @@
       "source_file": "src/App.jsx",
       "source_location": "L75",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_jsx",
-      "target": "lib_dispositionengine_builddispositionpatch",
-      "confidence_score": 1.0
+      "target": "lib_dispositionengine_builddispositionpatch"
     },
     {
       "relation": "imports",
@@ -4723,8 +4796,19 @@
       "source_file": "src/App.jsx",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_jsx",
-      "target": "lib_phaseengine_dryrunagerebase",
+      "target": "lib_phaseengine_dryrunagerebase"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L74",
+      "weight": 1.0,
+      "source": "src_app_jsx",
+      "target": "lib_phaseengine_dryrunresurrection",
       "confidence_score": 1.0
     },
     {
@@ -4792,6 +4876,17 @@
       "confidence_score": 1.0,
       "source": "src_app_jsx",
       "target": "lib_phaseengine_processmissedslots"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L74",
+      "weight": 1.0,
+      "source": "src_app_jsx",
+      "target": "lib_phaseengine_resurrectbucketc",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -5820,8 +5915,19 @@
       "source_file": "src/App.jsx",
       "source_location": "L415",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_metkacrm",
-      "target": "lib_phaseengine_dryrunagerebase",
+      "target": "lib_phaseengine_dryrunagerebase"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L390",
+      "weight": 1.0,
+      "source": "src_app_metkacrm",
+      "target": "lib_phaseengine_dryrunresurrection",
       "confidence_score": 1.0
     },
     {
@@ -5878,6 +5984,17 @@
       "confidence_score": 1.0,
       "source": "src_app_metkacrm",
       "target": "lib_phaseengine_processmissedslots"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L383",
+      "weight": 1.0,
+      "source": "src_app_metkacrm",
+      "target": "lib_phaseengine_resurrectbucketc",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -6071,9 +6188,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L108",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_phaseengine_js",
-      "target": "lib_phaseengine_agebasis",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_agebasis"
     },
     {
       "relation": "contains",
@@ -6139,6 +6256,26 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L608",
+      "weight": 1.0,
+      "source": "src_lib_phaseengine_js",
+      "target": "lib_phaseengine_classifyexitlead",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L606",
+      "weight": 1.0,
+      "source": "src_lib_phaseengine_js",
+      "target": "lib_phaseengine_client_stages",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/phaseEngine.js",
       "source_location": "L63",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -6161,8 +6298,18 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L124",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_phaseengine_js",
-      "target": "lib_phaseengine_dryrunagerebase",
+      "target": "lib_phaseengine_dryrunagerebase"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L627",
+      "weight": 1.0,
+      "source": "src_lib_phaseengine_js",
+      "target": "lib_phaseengine_dryrunresurrection",
       "confidence_score": 1.0
     },
     {
@@ -6181,9 +6328,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L102",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_phaseengine_js",
-      "target": "lib_phaseengine_eventaged",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_eventaged"
     },
     {
       "relation": "contains",
@@ -6319,6 +6466,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L615",
+      "weight": 1.0,
+      "source": "src_lib_phaseengine_js",
+      "target": "lib_phaseengine_resurrectbucketc",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/phaseEngine.js",
       "source_location": "L24",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -6354,6 +6511,16 @@
       "confidence_score": 1.0,
       "source": "src_lib_phaseengine_js",
       "target": "lib_phaseengine_suggestseqcat"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L605",
+      "weight": 1.0,
+      "source": "src_lib_phaseengine_js",
+      "target": "lib_phaseengine_terminal_disps_set",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -6560,9 +6727,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L109",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_phaseengine_agebasis",
-      "target": "lib_phaseengine_eventaged",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_eventaged"
     },
     {
       "relation": "calls",
@@ -6571,9 +6738,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L116",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_phaseengine_leadagedays",
-      "target": "lib_phaseengine_agebasis",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_agebasis"
     },
     {
       "relation": "calls",
@@ -6679,11 +6846,33 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L620",
+      "weight": 1.0,
+      "source": "lib_phaseengine_resurrectbucketc",
+      "target": "lib_phaseengine_derivem2tier",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/phaseEngine.js",
       "source_location": "L153",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "lib_phaseengine_migrateagedphases",
       "target": "lib_phaseengine_nexteligibleiso"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L621",
+      "weight": 1.0,
+      "source": "lib_phaseengine_resurrectbucketc",
+      "target": "lib_phaseengine_nexteligibleiso",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -7027,6 +7216,17 @@
       "target": "lib_phaseengine_masterqueuesort"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L616",
+      "weight": 1.0,
+      "source": "lib_phaseengine_resurrectbucketc",
+      "target": "lib_phaseengine_classifyexitlead",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -7083,8 +7283,18 @@
       "source_file": "tasks/todo.md",
       "source_location": "L62",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tasks_todo_md",
-      "target": "tasks_todo_session_3b_age_re_base_dry_run_2026_06_11",
+      "target": "tasks_todo_session_3b_age_re_base_dry_run_2026_06_11"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks/todo.md",
+      "source_location": "L69",
+      "weight": 1.0,
+      "source": "tasks_todo_md",
+      "target": "tasks_todo_session_3c_flip_resurrection_dry_run_2026_06_11",
       "confidence_score": 1.0
     },
     {
@@ -12891,5 +13101,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "2c781021f8f1ba5ecc961d09776e8c33b2e7cd60"
+  "built_at_commit": "a95696b50fb05a115badc4deaa2b9f27c25a0333"
 }

@@ -600,7 +600,7 @@ export const buildSessionQueue = (leads, session) => {
 // disposition only. Resurrection moves non-terminal EXIT leads into M3 (30-day
 // slow wave, revenue dials only). True terminals stay dead. Clients (submitted/
 // issued — the 5 R's annual-review track) are excluded from the dial wave.
-export const RESURRECTION_ACTIVE = false;
+export const RESURRECTION_ACTIVE = true; // FLIPPED 2026-06-11 — Jeremy approved split: 1,594 candidates → M3 · 91 terminals stay · 16 clients excluded
 
 const TERMINAL_DISPS_SET = new Set(['dnc', 'not_interested', 'withdrawn', 'chargeback']);
 const CLIENT_STAGES = new Set(['issued', 'app_submitted', 'underwriting']);
