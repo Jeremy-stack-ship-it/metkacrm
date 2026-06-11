@@ -10,7 +10,7 @@
 // Doctrine (locked 2026-06-10): the pre-made schedule rules all — only
 // contacted dispositions rebuild it. applyPhaseTransition enforces this.
 
-import { applyPhaseTransition } from './phaseEngine.js';
+import { applyPhaseTransition, effectivePhase, buildSchedule } from './phaseEngine.js'; // v3.46 + spillover outcomes
 import { autoFollowUp } from './leadScoring.js';
 import { dayKey } from './activityLog.js';
 
@@ -83,6 +83,35 @@ export const buildDispositionPatch = (freshLead, dispId) => {
   // Phase transition computed from freshest lead state (schedule-rules-all)
   const phasePatch = applyPhaseTransition(freshLead, dispId);
 
+  // v3.46 — M2/M3 spillover outcomes (Session 3). Overrides slot-consumption
+  // patches (aged leads have no slots). no_show/no_sale/terminal pass through
+  // untouched — their rebuilds/wipes above are already correct.
+  let agedPatch = {};
+  const _eff = effectivePhase(freshLead);
+  if ((_eff === 'M2' || _eff === 'M3') &&
+      !['no_show', 'no_sale', 'dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked'].includes(dispId)) {
+    if (['callback', 'follow_up_needed'].includes(dispId)) {
+      // ENGAGEMENT → promote to Machine 1: full P1 schedule from today (docs:
+      // "immediately reassign to Machine 1"). Reason flag = event-date aging.
+      const sched = buildSchedule(new Date());
+      agedPatch = {
+        ...sched,
+        phase: 'P1',
+        phase_start: ts,
+        phase_start_reason: 'm2_reactivation',
+        next_dial: sched.p1_1,
+        m2_next_eligible: null,
+        m3_next_eligible: null,
+      };
+    } else if (['no_answer', 'vm_left', 'direct_vm', 'hung_up'].includes(dispId)) {
+      // Non-contact → re-space per docs minimums. hung_up = re-space, not
+      // promote (negative answer is not momentum) — Jeremy can veto.
+      agedPatch = _eff === 'M2'
+        ? { m2_next_eligible: new Date(Date.now() + 14 * 86400000).toISOString() }
+        : { m3_next_eligible: new Date(Date.now() + 30 * 86400000).toISOString() };
+    }
+  }
+
   const autoNotes = [];
   if (autoHours === 96) autoNotes.push({ ts, type: "note", text: `\u{1F504} Follow-Up — next call in 4 days (${new Date(Date.now() + 96 * 3_600_000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})` });
   if (autoHours === 24) autoNotes.push({ ts, type: "note", text: `\u274C No-Show — recovery call set for 24hrs. Text family to reschedule.` });
@@ -96,6 +125,7 @@ export const buildDispositionPatch = (freshLead, dispId) => {
     lastContact: dayKey(),   // v3.43 — F1: LOCAL date key (was UTC in some paths)
     ...stagePatch,
     ...phasePatch,
+    ...agedPatch,
     ...cbPatch,
     ...autoCallbackPatch,
     ...directVmPatch,

@@ -214,6 +214,7 @@ export const applyPhaseTransition = (lead, dispId) => {
     Object.assign(patch, sched);
     patch.phase = 'P1';
     patch.phase_start = now;
+    patch.phase_start_reason = 'no_show'; // v3.46 — event-date aging survives S3b re-base
     patch.next_dial = sched.p1_1;
   } else if (dispId === 'no_sale') {
     // Post-audit: sequence track owns days 1-30, phase engine picks up at P3 (day 31, weekly)
@@ -221,6 +222,7 @@ export const applyPhaseTransition = (lead, dispId) => {
     Object.assign(patch, sched);
     patch.phase = 'P3';
     patch.phase_start = now;
+    patch.phase_start_reason = 'no_sale'; // v3.46 — event-date aging survives S3b re-base
     patch.next_dial = sched.p3_1;
   } else if (['no_answer', 'vm_left', 'callback', 'follow_up_needed', 'hung_up'].includes(dispId)) {
     const earliest = SCHED_COLS
@@ -546,6 +548,44 @@ export const buildSessionQueue = (leads, session) => {
 // ── (v3.42 spreadOverdueLeads DELETED v3.44 — invented dates without contact,
 //     violating schedule-rules-all doctrine. Replaced by processMissedSlots +
 //     session capacity caps. See tasks/SPEC-M1-M2-M3-BUILD.md Session 2.) ──────
+
+// ── M2/M3 SPILLOVER (v3.46 — Session 3) ─────────────────────────────────────
+// Fills SPARE dial-block capacity with aged leads. M1 is never interrupted —
+// spillover is bonus work with zero guaranteed time (docs: Machine 2 addendum).
+// M2: tier ascending (T1 first), then longest-since-contact. T4 excluded.
+// M3: only after M2 exhausts, oldest-contact first. Eligibility gates respect
+// the 14-day (M2) / 30-day (M3) minimum re-contact spacing.
+export const buildSpillover = (leads, remainingCapacity, now = new Date()) => {
+  if (!remainingCapacity || remainingCapacity <= 0) return { m2: [], m3: [] };
+  const todayStr = now.toLocaleDateString('en-CA');
+  const SKIP = new Set(['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked']);
+  const m2pool = [], m3pool = [];
+  (leads || []).forEach(l => {
+    if (!l || l.phase === 'EXIT' || l.stage === 'removed') return;
+    if (SKIP.has(l.disposition)) return;
+    if (l.lastContact === todayStr) return; // never re-dial same day
+    const eff = effectivePhase(l, now);
+    if (eff === 'M2') {
+      if ((l.m2_tier ?? deriveM2Tier(l)) > 3) return;
+      if (l.m2_next_eligible && new Date(l.m2_next_eligible) > now) return;
+      m2pool.push(l);
+    } else if (eff === 'M3') {
+      if (l.m3_next_eligible && new Date(l.m3_next_eligible) > now) return;
+      m3pool.push(l);
+    }
+  });
+  const oldestFirst = (a, b) => {
+    const at = a.lastContact ? new Date(a.lastContact).getTime() : -Infinity; // never-reached first
+    const bt = b.lastContact ? new Date(b.lastContact).getTime() : -Infinity;
+    return at - bt;
+  };
+  m2pool.sort((a, b) =>
+    ((a.m2_tier ?? deriveM2Tier(a)) - (b.m2_tier ?? deriveM2Tier(b))) || oldestFirst(a, b));
+  m3pool.sort(oldestFirst);
+  const m2 = m2pool.slice(0, remainingCapacity);
+  const m3 = m3pool.slice(0, Math.max(0, remainingCapacity - m2.length));
+  return { m2, m3 };
+};
 
 // ── PHASE DATE NORMALIZATION (v3.15) ─────────────────────────────────────────
 // Repairs leads whose next_dial is past-due — typically leads imported months ago

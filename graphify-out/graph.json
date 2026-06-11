@@ -184,346 +184,175 @@
       "norm_label": "v3.44 \u2014 2026-06-10 \u2014 session 2: calendar phase engine (m2/m3 machinery)"
     },
     {
-      "label": "App.jsx",
+      "label": "v3.45 \u2014 2026-06-10 \u2014 Session 2.5: Funnel CSV Sync (import mode 3)",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L322",
+      "id": "metka_crm_changelog_v3_45_2026_06_10_session_2_5_funnel_csv_sync_import_mode_3",
+      "community": 15,
+      "norm_label": "v3.45 \u2014 2026-06-10 \u2014 session 2.5: funnel csv sync (import mode 3)"
+    },
+    {
+      "label": "ImportModal.jsx",
       "file_type": "code",
-      "source_file": "src/App.jsx",
+      "source_file": "src/components/ImportModal.jsx",
       "source_location": "L1",
-      "id": "src_app_jsx",
-      "community": 0,
-      "norm_label": "app.jsx"
+      "id": "src_components_importmodal_jsx",
+      "community": 1,
+      "norm_label": "importmodal.jsx"
     },
     {
-      "label": "todayStr()",
+      "label": "ImportModal()",
       "file_type": "code",
-      "source_file": "src/App.jsx",
-      "source_location": "L138",
-      "id": "src_app_todaystr",
-      "community": 0,
-      "norm_label": "todaystr()"
+      "source_file": "src/components/ImportModal.jsx",
+      "source_location": "L4",
+      "id": "components_importmodal_importmodal",
+      "community": 1,
+      "norm_label": "importmodal()"
     },
     {
-      "label": "SEEDS",
+      "label": "csvParser.js",
       "file_type": "code",
-      "source_file": "src/App.jsx",
-      "source_location": "L140",
-      "id": "src_app_seeds",
-      "community": 0,
-      "norm_label": "seeds"
-    },
-    {
-      "label": "MetkaCRM()",
-      "file_type": "code",
-      "source_file": "src/App.jsx",
-      "source_location": "L148",
-      "id": "src_app_metkacrm",
-      "community": 0,
-      "norm_label": "metkacrm()"
-    },
-    {
-      "label": "TodaysBlock.jsx",
-      "file_type": "code",
-      "source_file": "src/components/TodaysBlock.jsx",
+      "source_file": "src/lib/csvParser.js",
       "source_location": "L1",
-      "id": "src_components_todaysblock_jsx",
-      "community": 4,
-      "norm_label": "todaysblock.jsx"
+      "id": "src_lib_csvparser_js",
+      "community": 7,
+      "norm_label": "csvparser.js"
     },
     {
-      "label": "PHASE_DEFS",
+      "label": "parseBucket()",
       "file_type": "code",
-      "source_file": "src/components/TodaysBlock.jsx",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L5",
+      "id": "lib_csvparser_parsebucket",
+      "community": 7,
+      "norm_label": "parsebucket()"
+    },
+    {
+      "label": "parseDisp()",
+      "file_type": "code",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L13",
+      "id": "lib_csvparser_parsedisp",
+      "community": 7,
+      "norm_label": "parsedisp()"
+    },
+    {
+      "label": "parseStage()",
+      "file_type": "code",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L21",
+      "id": "lib_csvparser_parsestage",
+      "community": 7,
+      "norm_label": "parsestage()"
+    },
+    {
+      "label": "autoDetectMapping()",
+      "file_type": "code",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L27",
+      "id": "lib_csvparser_autodetectmapping",
+      "community": 7,
+      "norm_label": "autodetectmapping()"
+    },
+    {
+      "label": "mapFunnelStatus()",
+      "file_type": "code",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L74",
+      "id": "lib_csvparser_mapfunnelstatus",
+      "community": 7,
+      "norm_label": "mapfunnelstatus()"
+    },
+    {
+      "label": "parseCSV()",
+      "file_type": "code",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L104",
+      "id": "lib_csvparser_parsecsv",
+      "community": 7,
+      "norm_label": "parsecsv()"
+    },
+    {
+      "label": "funnelSync.js",
+      "file_type": "code",
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L1",
+      "id": "src_lib_funnelsync_js",
+      "community": 7,
+      "norm_label": "funnelsync.js"
+    },
+    {
+      "label": "DISP_RANK",
+      "file_type": "code",
+      "source_file": "src/lib/funnelSync.js",
       "source_location": "L26",
-      "id": "components_todaysblock_phase_defs",
-      "community": 4,
-      "norm_label": "phase_defs"
+      "id": "lib_funnelsync_disp_rank",
+      "community": 7,
+      "norm_label": "disp_rank"
     },
     {
-      "label": "SMS_SEQUENCES",
+      "label": "FIELD_KEYS",
       "file_type": "code",
-      "source_file": "src/components/TodaysBlock.jsx",
-      "source_location": "L35",
-      "id": "components_todaysblock_sms_sequences",
-      "community": 4,
-      "norm_label": "sms_sequences"
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L48",
+      "id": "lib_funnelsync_field_keys",
+      "community": 7,
+      "norm_label": "field_keys"
     },
     {
-      "label": "suggestSeqCat()",
+      "label": "phoneDigits()",
       "file_type": "code",
-      "source_file": "src/components/TodaysBlock.jsx",
-      "source_location": "L107",
-      "id": "components_todaysblock_suggestseqcat",
-      "community": 4,
-      "norm_label": "suggestseqcat()"
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L51",
+      "id": "lib_funnelsync_phonedigits",
+      "community": 7,
+      "norm_label": "phonedigits()"
     },
     {
-      "label": "QUICK_DISPS",
+      "label": "syncFromCsv()",
       "file_type": "code",
-      "source_file": "src/components/TodaysBlock.jsx",
-      "source_location": "L117",
-      "id": "components_todaysblock_quick_disps",
-      "community": 4,
-      "norm_label": "quick_disps"
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L55",
+      "id": "lib_funnelsync_syncfromcsv",
+      "community": 7,
+      "norm_label": "syncfromcsv()"
     },
     {
-      "label": "phaseColor()",
+      "label": "summarizeSyncReport()",
       "file_type": "code",
-      "source_file": "src/components/TodaysBlock.jsx",
-      "source_location": "L129",
-      "id": "components_todaysblock_phasecolor",
-      "community": 4,
-      "norm_label": "phasecolor()"
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L155",
+      "id": "lib_funnelsync_summarizesyncreport",
+      "community": 7,
+      "norm_label": "summarizesyncreport()"
     },
     {
-      "label": "TodaysBlock()",
+      "label": "useImportHandlers.js",
       "file_type": "code",
-      "source_file": "src/components/TodaysBlock.jsx",
-      "source_location": "L134",
-      "id": "components_todaysblock_todaysblock",
-      "community": 4,
-      "norm_label": "todaysblock()"
-    },
-    {
-      "label": "phaseEngine.js",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
+      "source_file": "src/lib/useImportHandlers.js",
       "source_location": "L1",
-      "id": "src_lib_phaseengine_js",
-      "community": 4,
-      "norm_label": "phaseengine.js"
+      "id": "src_lib_useimporthandlers_js",
+      "community": 7,
+      "norm_label": "useimporthandlers.js"
     },
     {
-      "label": "PHASE_DEFS",
+      "label": "loadSavedMapping()",
       "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L16",
-      "id": "lib_phaseengine_phase_defs",
-      "community": 4,
-      "norm_label": "phase_defs"
-    },
-    {
-      "label": "SCHED_COLS",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L25",
-      "id": "lib_phaseengine_sched_cols",
-      "community": 4,
-      "norm_label": "sched_cols"
-    },
-    {
-      "label": "addDaysISO()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
+      "source_file": "src/lib/useImportHandlers.js",
       "source_location": "L33",
-      "id": "lib_phaseengine_adddaysiso",
-      "community": 4,
-      "norm_label": "adddaysiso()"
+      "id": "lib_useimporthandlers_loadsavedmapping",
+      "community": 7,
+      "norm_label": "loadsavedmapping()"
     },
     {
-      "label": "buildSchedule()",
+      "label": "useImportHandlers()",
       "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
+      "source_file": "src/lib/useImportHandlers.js",
       "source_location": "L40",
-      "id": "lib_phaseengine_buildschedule",
-      "community": 4,
-      "norm_label": "buildschedule()"
-    },
-    {
-      "label": "computeNextDial()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L64",
-      "id": "lib_phaseengine_computenextdial",
-      "community": 4,
-      "norm_label": "computenextdial()"
-    },
-    {
-      "label": "phaseFromBucket()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L76",
-      "id": "lib_phaseengine_phasefrombucket",
-      "community": 4,
-      "norm_label": "phasefrombucket()"
-    },
-    {
-      "label": "PHASE_ORDER",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L93",
-      "id": "lib_phaseengine_phase_order",
-      "community": 4,
-      "norm_label": "phase_order"
-    },
-    {
-      "label": "leadAgeDays()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L96",
-      "id": "lib_phaseengine_leadagedays",
-      "community": 4,
-      "norm_label": "leadagedays()"
-    },
-    {
-      "label": "effectivePhase()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L107",
-      "id": "lib_phaseengine_effectivephase",
-      "community": 4,
-      "norm_label": "effectivephase()"
-    },
-    {
-      "label": "deriveM2Tier()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L120",
-      "id": "lib_phaseengine_derivem2tier",
-      "community": 4,
-      "norm_label": "derivem2tier()"
-    },
-    {
-      "label": "_nextEligibleIso()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L129",
-      "id": "lib_phaseengine_nexteligibleiso",
-      "community": 4,
-      "norm_label": "_nexteligibleiso()"
-    },
-    {
-      "label": "migrateAgedPhases()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L140",
-      "id": "lib_phaseengine_migrateagedphases",
-      "community": 4,
-      "norm_label": "migrateagedphases()"
-    },
-    {
-      "label": "processMissedSlots()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L166",
-      "id": "lib_phaseengine_processmissedslots",
-      "community": 0,
-      "norm_label": "processmissedslots()"
-    },
-    {
-      "label": "applyPhaseTransition()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L202",
-      "id": "lib_phaseengine_applyphasetransition",
-      "community": 4,
-      "norm_label": "applyphasetransition()"
-    },
-    {
-      "label": "getPhasePriority()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L242",
-      "id": "lib_phaseengine_getphasepriority",
-      "community": 4,
-      "norm_label": "getphasepriority()"
-    },
-    {
-      "label": "isDueToday()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L259",
-      "id": "lib_phaseengine_isduetoday",
-      "community": 4,
-      "norm_label": "isduetoday()"
-    },
-    {
-      "label": "backfillLead()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L323",
-      "id": "lib_phaseengine_backfilllead",
-      "community": 4,
-      "norm_label": "backfilllead()"
-    },
-    {
-      "label": "SMS_SEQUENCES",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L350",
-      "id": "lib_phaseengine_sms_sequences",
-      "community": 4,
-      "norm_label": "sms_sequences"
-    },
-    {
-      "label": "suggestSeqCat()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L423",
-      "id": "lib_phaseengine_suggestseqcat",
-      "community": 4,
-      "norm_label": "suggestseqcat()"
-    },
-    {
-      "label": "SESSIONS",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L436",
-      "id": "lib_phaseengine_sessions",
-      "community": 4,
-      "norm_label": "sessions"
-    },
-    {
-      "label": "getActiveSession()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L452",
-      "id": "lib_phaseengine_getactivesession",
-      "community": 4,
-      "norm_label": "getactivesession()"
-    },
-    {
-      "label": "getNextSession()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L465",
-      "id": "lib_phaseengine_getnextsession",
-      "community": 4,
-      "norm_label": "getnextsession()"
-    },
-    {
-      "label": "assignSlot()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L483",
-      "id": "lib_phaseengine_assignslot",
-      "community": 0,
-      "norm_label": "assignslot()"
-    },
-    {
-      "label": "masterQueueSort()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L505",
-      "id": "lib_phaseengine_masterqueuesort",
-      "community": 4,
-      "norm_label": "masterqueuesort()"
-    },
-    {
-      "label": "buildSessionQueue()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L518",
-      "id": "lib_phaseengine_buildsessionqueue",
-      "community": 4,
-      "norm_label": "buildsessionqueue()"
-    },
-    {
-      "label": "normalizePhaseSchedule()",
-      "file_type": "code",
-      "source_file": "src/lib/phaseEngine.js",
-      "source_location": "L557",
-      "id": "lib_phaseengine_normalizephaseschedule",
-      "community": 4,
-      "norm_label": "normalizephaseschedule()"
+      "id": "lib_useimporthandlers_useimporthandlers",
+      "community": 7,
+      "norm_label": "useimporthandlers()"
     },
     {
       "label": "todo.md",
@@ -569,6 +398,366 @@
       "id": "tasks_todo_review_s2",
       "community": 27,
       "norm_label": "review s2"
+    },
+    {
+      "label": "Session 2.5 \u2014 Funnel CSV Sync (2026-06-10)",
+      "file_type": "document",
+      "source_file": "tasks/todo.md",
+      "source_location": "L38",
+      "id": "tasks_todo_session_2_5_funnel_csv_sync_2026_06_10",
+      "community": 27,
+      "norm_label": "session 2.5 \u2014 funnel csv sync (2026-06-10)"
+    },
+    {
+      "label": "Review S2.5",
+      "file_type": "document",
+      "source_file": "tasks/todo.md",
+      "source_location": "L44",
+      "id": "tasks_todo_review_s2_5",
+      "community": 27,
+      "norm_label": "review s2.5"
+    },
+    {
+      "label": "App.jsx",
+      "file_type": "code",
+      "source_file": "src/App.jsx",
+      "source_location": "L1",
+      "community": 0,
+      "norm_label": "app.jsx",
+      "id": "src_app_jsx"
+    },
+    {
+      "label": "todayStr()",
+      "file_type": "code",
+      "source_file": "src/App.jsx",
+      "source_location": "L138",
+      "community": 0,
+      "norm_label": "todaystr()",
+      "id": "src_app_todaystr"
+    },
+    {
+      "label": "SEEDS",
+      "file_type": "code",
+      "source_file": "src/App.jsx",
+      "source_location": "L140",
+      "community": 0,
+      "norm_label": "seeds",
+      "id": "src_app_seeds"
+    },
+    {
+      "label": "MetkaCRM()",
+      "file_type": "code",
+      "source_file": "src/App.jsx",
+      "source_location": "L148",
+      "community": 0,
+      "norm_label": "metkacrm()",
+      "id": "src_app_metkacrm"
+    },
+    {
+      "label": "TodaysBlock.jsx",
+      "file_type": "code",
+      "source_file": "src/components/TodaysBlock.jsx",
+      "source_location": "L1",
+      "community": 4,
+      "norm_label": "todaysblock.jsx",
+      "id": "src_components_todaysblock_jsx"
+    },
+    {
+      "label": "PHASE_DEFS",
+      "file_type": "code",
+      "source_file": "src/components/TodaysBlock.jsx",
+      "source_location": "L26",
+      "community": 4,
+      "norm_label": "phase_defs",
+      "id": "components_todaysblock_phase_defs"
+    },
+    {
+      "label": "SMS_SEQUENCES",
+      "file_type": "code",
+      "source_file": "src/components/TodaysBlock.jsx",
+      "source_location": "L35",
+      "community": 4,
+      "norm_label": "sms_sequences",
+      "id": "components_todaysblock_sms_sequences"
+    },
+    {
+      "label": "suggestSeqCat()",
+      "file_type": "code",
+      "source_file": "src/components/TodaysBlock.jsx",
+      "source_location": "L107",
+      "community": 4,
+      "norm_label": "suggestseqcat()",
+      "id": "components_todaysblock_suggestseqcat"
+    },
+    {
+      "label": "QUICK_DISPS",
+      "file_type": "code",
+      "source_file": "src/components/TodaysBlock.jsx",
+      "source_location": "L117",
+      "community": 4,
+      "norm_label": "quick_disps",
+      "id": "components_todaysblock_quick_disps"
+    },
+    {
+      "label": "phaseColor()",
+      "file_type": "code",
+      "source_file": "src/components/TodaysBlock.jsx",
+      "source_location": "L129",
+      "community": 4,
+      "norm_label": "phasecolor()",
+      "id": "components_todaysblock_phasecolor"
+    },
+    {
+      "label": "TodaysBlock()",
+      "file_type": "code",
+      "source_file": "src/components/TodaysBlock.jsx",
+      "source_location": "L134",
+      "community": 4,
+      "norm_label": "todaysblock()",
+      "id": "components_todaysblock_todaysblock"
+    },
+    {
+      "label": "phaseEngine.js",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L1",
+      "community": 4,
+      "norm_label": "phaseengine.js",
+      "id": "src_lib_phaseengine_js"
+    },
+    {
+      "label": "PHASE_DEFS",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L16",
+      "community": 1,
+      "norm_label": "phase_defs",
+      "id": "lib_phaseengine_phase_defs"
+    },
+    {
+      "label": "SCHED_COLS",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L25",
+      "community": 4,
+      "norm_label": "sched_cols",
+      "id": "lib_phaseengine_sched_cols"
+    },
+    {
+      "label": "addDaysISO()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L33",
+      "community": 4,
+      "norm_label": "adddaysiso()",
+      "id": "lib_phaseengine_adddaysiso"
+    },
+    {
+      "label": "buildSchedule()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L40",
+      "community": 4,
+      "norm_label": "buildschedule()",
+      "id": "lib_phaseengine_buildschedule"
+    },
+    {
+      "label": "computeNextDial()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L64",
+      "community": 4,
+      "norm_label": "computenextdial()",
+      "id": "lib_phaseengine_computenextdial"
+    },
+    {
+      "label": "phaseFromBucket()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L76",
+      "community": 4,
+      "norm_label": "phasefrombucket()",
+      "id": "lib_phaseengine_phasefrombucket"
+    },
+    {
+      "label": "PHASE_ORDER",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L93",
+      "community": 4,
+      "norm_label": "phase_order",
+      "id": "lib_phaseengine_phase_order"
+    },
+    {
+      "label": "leadAgeDays()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L96",
+      "community": 4,
+      "norm_label": "leadagedays()",
+      "id": "lib_phaseengine_leadagedays"
+    },
+    {
+      "label": "effectivePhase()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L107",
+      "community": 4,
+      "norm_label": "effectivephase()",
+      "id": "lib_phaseengine_effectivephase"
+    },
+    {
+      "label": "deriveM2Tier()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L120",
+      "community": 4,
+      "norm_label": "derivem2tier()",
+      "id": "lib_phaseengine_derivem2tier"
+    },
+    {
+      "label": "_nextEligibleIso()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L129",
+      "community": 4,
+      "norm_label": "_nexteligibleiso()",
+      "id": "lib_phaseengine_nexteligibleiso"
+    },
+    {
+      "label": "migrateAgedPhases()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L140",
+      "community": 4,
+      "norm_label": "migrateagedphases()",
+      "id": "lib_phaseengine_migrateagedphases"
+    },
+    {
+      "label": "processMissedSlots()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L166",
+      "community": 0,
+      "norm_label": "processmissedslots()",
+      "id": "lib_phaseengine_processmissedslots"
+    },
+    {
+      "label": "applyPhaseTransition()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L202",
+      "community": 4,
+      "norm_label": "applyphasetransition()",
+      "id": "lib_phaseengine_applyphasetransition"
+    },
+    {
+      "label": "getPhasePriority()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L242",
+      "community": 4,
+      "norm_label": "getphasepriority()",
+      "id": "lib_phaseengine_getphasepriority"
+    },
+    {
+      "label": "isDueToday()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L259",
+      "community": 4,
+      "norm_label": "isduetoday()",
+      "id": "lib_phaseengine_isduetoday"
+    },
+    {
+      "label": "backfillLead()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L323",
+      "community": 4,
+      "norm_label": "backfilllead()",
+      "id": "lib_phaseengine_backfilllead"
+    },
+    {
+      "label": "SMS_SEQUENCES",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L350",
+      "community": 1,
+      "norm_label": "sms_sequences",
+      "id": "lib_phaseengine_sms_sequences"
+    },
+    {
+      "label": "suggestSeqCat()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L423",
+      "community": 1,
+      "norm_label": "suggestseqcat()",
+      "id": "lib_phaseengine_suggestseqcat"
+    },
+    {
+      "label": "SESSIONS",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L436",
+      "community": 4,
+      "norm_label": "sessions",
+      "id": "lib_phaseengine_sessions"
+    },
+    {
+      "label": "getActiveSession()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L452",
+      "community": 4,
+      "norm_label": "getactivesession()",
+      "id": "lib_phaseengine_getactivesession"
+    },
+    {
+      "label": "getNextSession()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L465",
+      "community": 4,
+      "norm_label": "getnextsession()",
+      "id": "lib_phaseengine_getnextsession"
+    },
+    {
+      "label": "assignSlot()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L483",
+      "community": 0,
+      "norm_label": "assignslot()",
+      "id": "lib_phaseengine_assignslot"
+    },
+    {
+      "label": "masterQueueSort()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L505",
+      "community": 4,
+      "norm_label": "masterqueuesort()",
+      "id": "lib_phaseengine_masterqueuesort"
+    },
+    {
+      "label": "buildSessionQueue()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L518",
+      "community": 4,
+      "norm_label": "buildsessionqueue()",
+      "id": "lib_phaseengine_buildsessionqueue"
+    },
+    {
+      "label": "normalizePhaseSchedule()",
+      "file_type": "code",
+      "source_file": "src/lib/phaseEngine.js",
+      "source_location": "L557",
+      "community": 4,
+      "norm_label": "normalizephaseschedule()",
+      "id": "lib_phaseengine_normalizephaseschedule"
     },
     {
       "label": "AIPanel.jsx",
@@ -737,7 +926,7 @@
       "file_type": "code",
       "source_file": "src/components/DashboardTab.jsx",
       "source_location": "L1",
-      "community": 28,
+      "community": 3,
       "norm_label": "dashboardtab.jsx",
       "id": "src_components_dashboardtab_jsx"
     },
@@ -746,7 +935,7 @@
       "file_type": "code",
       "source_file": "src/components/DashboardTab.jsx",
       "source_location": "L7",
-      "community": 28,
+      "community": 3,
       "norm_label": "dashboardtab()",
       "id": "components_dashboardtab_dashboardtab"
     },
@@ -755,7 +944,7 @@
       "file_type": "code",
       "source_file": "src/components/MessagesView.jsx",
       "source_location": "L1",
-      "community": 4,
+      "community": 1,
       "norm_label": "messagesview.jsx",
       "id": "src_components_messagesview_jsx"
     },
@@ -764,7 +953,7 @@
       "file_type": "code",
       "source_file": "src/components/MessagesView.jsx",
       "source_location": "L9",
-      "community": 4,
+      "community": 1,
       "norm_label": "messagesview()",
       "id": "components_messagesview_messagesview"
     },
@@ -818,7 +1007,7 @@
       "file_type": "code",
       "source_file": "src/components/SmsThread.jsx",
       "source_location": "L1",
-      "community": 4,
+      "community": 1,
       "norm_label": "smsthread.jsx",
       "id": "src_components_smsthread_jsx"
     },
@@ -827,7 +1016,7 @@
       "file_type": "code",
       "source_file": "src/components/SmsThread.jsx",
       "source_location": "L15",
-      "community": 4,
+      "community": 1,
       "norm_label": "smsthread()",
       "id": "components_smsthread_smsthread"
     },
@@ -971,7 +1160,7 @@
       "file_type": "code",
       "source_file": "src/components/ContactDetail.jsx",
       "source_location": "L24",
-      "community": 0,
+      "community": 1,
       "norm_label": "stagestepper()",
       "id": "components_contactdetail_stagestepper"
     },
@@ -1457,7 +1646,7 @@
       "file_type": "code",
       "source_file": "src/constants.js",
       "source_location": "L6",
-      "community": 0,
+      "community": 1,
       "norm_label": "state_tz",
       "id": "src_constants_state_tz"
     },
@@ -1700,7 +1889,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L1",
-      "community": 1,
+      "community": 30,
       "norm_label": "appointmentsview.jsx",
       "id": "src_components_appointmentsview_jsx"
     },
@@ -1709,7 +1898,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L11",
-      "community": 1,
+      "community": 30,
       "norm_label": "appt_type_labels",
       "id": "components_appointmentsview_appt_type_labels"
     },
@@ -1718,7 +1907,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L19",
-      "community": 1,
+      "community": 30,
       "norm_label": "btn()",
       "id": "components_appointmentsview_btn"
     },
@@ -1727,7 +1916,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L26",
-      "community": 1,
+      "community": 30,
       "norm_label": "inputst",
       "id": "components_appointmentsview_inputst"
     },
@@ -1736,7 +1925,7 @@
       "file_type": "code",
       "source_file": "src/components/AppointmentsView.jsx",
       "source_location": "L32",
-      "community": 1,
+      "community": 30,
       "norm_label": "appointmentsview()",
       "id": "components_appointmentsview_appointmentsview"
     },
@@ -1919,24 +2108,6 @@
       "community": 14,
       "norm_label": "hourlystats()",
       "id": "components_hourlystats_hourlystats"
-    },
-    {
-      "label": "ImportModal.jsx",
-      "file_type": "code",
-      "source_file": "src/components/ImportModal.jsx",
-      "source_location": "L1",
-      "community": 1,
-      "norm_label": "importmodal.jsx",
-      "id": "src_components_importmodal_jsx"
-    },
-    {
-      "label": "ImportModal()",
-      "file_type": "code",
-      "source_file": "src/components/ImportModal.jsx",
-      "source_location": "L4",
-      "community": 1,
-      "norm_label": "importmodal()",
-      "id": "components_importmodal_importmodal"
     },
     {
       "label": "LoginGate.jsx",
@@ -2254,60 +2425,6 @@
       "id": "lib_ccintegration_ccsyncleads"
     },
     {
-      "label": "csvParser.js",
-      "file_type": "code",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L1",
-      "community": 7,
-      "norm_label": "csvparser.js",
-      "id": "src_lib_csvparser_js"
-    },
-    {
-      "label": "parseBucket()",
-      "file_type": "code",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L5",
-      "community": 7,
-      "norm_label": "parsebucket()",
-      "id": "lib_csvparser_parsebucket"
-    },
-    {
-      "label": "parseDisp()",
-      "file_type": "code",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L13",
-      "community": 7,
-      "norm_label": "parsedisp()",
-      "id": "lib_csvparser_parsedisp"
-    },
-    {
-      "label": "parseStage()",
-      "file_type": "code",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L21",
-      "community": 7,
-      "norm_label": "parsestage()",
-      "id": "lib_csvparser_parsestage"
-    },
-    {
-      "label": "autoDetectMapping()",
-      "file_type": "code",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L27",
-      "community": 7,
-      "norm_label": "autodetectmapping()",
-      "id": "lib_csvparser_autodetectmapping"
-    },
-    {
-      "label": "parseCSV()",
-      "file_type": "code",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L61",
-      "community": 7,
-      "norm_label": "parsecsv()",
-      "id": "lib_csvparser_parsecsv"
-    },
-    {
       "label": "defaultScripts.js",
       "file_type": "code",
       "source_file": "src/lib/defaultScripts.js",
@@ -2402,7 +2519,7 @@
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L38",
-      "community": 1,
+      "community": 3,
       "norm_label": "getnexttouchdate()",
       "id": "lib_sequenceengine_getnexttouchdate"
     },
@@ -2411,7 +2528,7 @@
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L58",
-      "community": 1,
+      "community": 3,
       "norm_label": "isseqduetoday()",
       "id": "lib_sequenceengine_isseqduetoday"
     },
@@ -2465,7 +2582,7 @@
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L131",
-      "community": 1,
+      "community": 3,
       "norm_label": "getsequencestatus()",
       "id": "lib_sequenceengine_getsequencestatus"
     },
@@ -2474,7 +2591,7 @@
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L155",
-      "community": 1,
+      "community": 3,
       "norm_label": "getsequencebadgecolor()",
       "id": "lib_sequenceengine_getsequencebadgecolor"
     },
@@ -2711,33 +2828,6 @@
       "community": 0,
       "norm_label": "usecontactfilters()",
       "id": "lib_usecontactfilters_usecontactfilters"
-    },
-    {
-      "label": "useImportHandlers.js",
-      "file_type": "code",
-      "source_file": "src/lib/useImportHandlers.js",
-      "source_location": "L1",
-      "community": 7,
-      "norm_label": "useimporthandlers.js",
-      "id": "src_lib_useimporthandlers_js"
-    },
-    {
-      "label": "loadSavedMapping()",
-      "file_type": "code",
-      "source_file": "src/lib/useImportHandlers.js",
-      "source_location": "L32",
-      "community": 7,
-      "norm_label": "loadsavedmapping()",
-      "id": "lib_useimporthandlers_loadsavedmapping"
-    },
-    {
-      "label": "useImportHandlers()",
-      "file_type": "code",
-      "source_file": "src/lib/useImportHandlers.js",
-      "source_location": "L39",
-      "community": 7,
-      "norm_label": "useimporthandlers()",
-      "id": "lib_useimporthandlers_useimporthandlers"
     },
     {
       "label": "usePowerDialer.js",
@@ -3882,9 +3972,9 @@
       "source_file": "CHANGELOG.md",
       "source_location": "L295",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metka_crm_changelog_changelog_metka_field_ops_crm",
-      "target": "metka_crm_changelog_v3_43_2026_06_10_session_1_correctness_fixes_audit_driven",
-      "confidence_score": 1.0
+      "target": "metka_crm_changelog_v3_43_2026_06_10_session_1_correctness_fixes_audit_driven"
     },
     {
       "relation": "contains",
@@ -3892,8 +3982,18 @@
       "source_file": "CHANGELOG.md",
       "source_location": "L306",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "metka_crm_changelog_changelog_metka_field_ops_crm",
-      "target": "metka_crm_changelog_v3_44_2026_06_10_session_2_calendar_phase_engine_m2_m3_machinery",
+      "target": "metka_crm_changelog_v3_44_2026_06_10_session_2_calendar_phase_engine_m2_m3_machinery"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L322",
+      "weight": 1.0,
+      "source": "metka_crm_changelog_changelog_metka_field_ops_crm",
+      "target": "metka_crm_changelog_v3_45_2026_06_10_session_2_5_funnel_csv_sync_import_mode_3",
       "confidence_score": 1.0
     },
     {
@@ -4015,6 +4115,591 @@
       "confidence_score": 1.0,
       "source": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
       "target": "metka_crm_changelog_fixed_279"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L87",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_jsx",
+      "target": "src_components_importmodal_jsx"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ImportModal.jsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_importmodal_jsx",
+      "target": "components_importmodal_importmodal"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ImportModal.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_importmodal_jsx",
+      "target": "src_constants_inp"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ImportModal.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_importmodal_jsx",
+      "target": "src_constants_js"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/ImportModal.jsx",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "components_importmodal_importmodal",
+      "target": "src_constants_inp"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_jsx",
+      "target": "src_lib_csvparser_js"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/FieldMapModal.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_fieldmapmodal_jsx",
+      "target": "src_lib_csvparser_js"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L27",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_csvparser_js",
+      "target": "lib_csvparser_autodetectmapping"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L74",
+      "weight": 1.0,
+      "source": "src_lib_csvparser_js",
+      "target": "lib_csvparser_mapfunnelstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_csvparser_js",
+      "target": "lib_csvparser_parsebucket"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L61",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_csvparser_js",
+      "target": "lib_csvparser_parsecsv"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_csvparser_js",
+      "target": "lib_csvparser_parsedisp"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_csvparser_js",
+      "target": "lib_csvparser_parsestage"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_csvparser_js",
+      "target": "src_constants_js"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_csvparser_js",
+      "target": "src_constants_stages"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "src_lib_funnelsync_js",
+      "target": "src_lib_csvparser_js",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useImportHandlers.js",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_useimporthandlers_js",
+      "target": "src_lib_csvparser_js"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/__tests__/csvParser.test.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tests_csvparser_test_js",
+      "target": "src_lib_csvparser_js"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_jsx",
+      "target": "lib_csvparser_parsebucket"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/__tests__/csvParser.test.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tests_csvparser_test_js",
+      "target": "lib_csvparser_parsebucket"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_jsx",
+      "target": "lib_csvparser_parsedisp"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/__tests__/csvParser.test.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tests_csvparser_test_js",
+      "target": "lib_csvparser_parsedisp"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_jsx",
+      "target": "lib_csvparser_parsestage"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/csvParser.js",
+      "source_location": "L65",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "lib_csvparser_parsecsv",
+      "target": "lib_csvparser_autodetectmapping"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_jsx",
+      "target": "lib_csvparser_autodetectmapping"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/FieldMapModal.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_fieldmapmodal_jsx",
+      "target": "lib_csvparser_autodetectmapping"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useImportHandlers.js",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_useimporthandlers_js",
+      "target": "lib_csvparser_autodetectmapping"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/__tests__/csvParser.test.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tests_csvparser_test_js",
+      "target": "lib_csvparser_autodetectmapping"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "src_lib_funnelsync_js",
+      "target": "lib_csvparser_mapfunnelstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_jsx",
+      "target": "lib_csvparser_parsecsv"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useImportHandlers.js",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_useimporthandlers_js",
+      "target": "lib_csvparser_parsecsv"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/__tests__/csvParser.test.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tests_csvparser_test_js",
+      "target": "lib_csvparser_parsecsv"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "src_lib_funnelsync_js",
+      "target": "lib_activitylog_daykey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "src_lib_funnelsync_js",
+      "target": "lib_funnelsync_disp_rank",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "src_lib_funnelsync_js",
+      "target": "lib_funnelsync_field_keys",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "src_lib_funnelsync_js",
+      "target": "lib_funnelsync_phonedigits",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L155",
+      "weight": 1.0,
+      "source": "src_lib_funnelsync_js",
+      "target": "lib_funnelsync_summarizesyncreport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "src_lib_funnelsync_js",
+      "target": "lib_funnelsync_syncfromcsv",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/funnelSync.js",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "src_lib_funnelsync_js",
+      "target": "lib_phaseengine_sched_cols",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useImportHandlers.js",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "src_lib_useimporthandlers_js",
+      "target": "src_lib_funnelsync_js",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useImportHandlers.js",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "src_lib_useimporthandlers_js",
+      "target": "lib_funnelsync_syncfromcsv",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useImportHandlers.js",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "src_lib_useimporthandlers_js",
+      "target": "lib_funnelsync_summarizesyncreport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L99",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_jsx",
+      "target": "src_lib_useimporthandlers_js"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useImportHandlers.js",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_useimporthandlers_js",
+      "target": "lib_useimporthandlers_loadsavedmapping"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useImportHandlers.js",
+      "source_location": "L39",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_useimporthandlers_js",
+      "target": "lib_useimporthandlers_useimporthandlers"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useImportHandlers.js",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_useimporthandlers_js",
+      "target": "src_constants_field_map_defs"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/useImportHandlers.js",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_useimporthandlers_js",
+      "target": "src_constants_js"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L99",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_jsx",
+      "target": "lib_useimporthandlers_useimporthandlers"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L590",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_metkacrm",
+      "target": "lib_useimporthandlers_useimporthandlers"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks/todo.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tasks_todo_md",
+      "target": "tasks_todo_session_1_correctness_fixes_2026_06_10"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks/todo.md",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "tasks_todo_md",
+      "target": "tasks_todo_session_2_5_funnel_csv_sync_2026_06_10",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks/todo.md",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tasks_todo_md",
+      "target": "tasks_todo_session_2_calendar_phase_engine_2026_06_10"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks/todo.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tasks_todo_session_1_correctness_fixes_2026_06_10",
+      "target": "tasks_todo_review"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks/todo.md",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tasks_todo_session_2_calendar_phase_engine_2026_06_10",
+      "target": "tasks_todo_review_s2"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks/todo.md",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "tasks_todo_session_2_5_funnel_csv_sync_2026_06_10",
+      "target": "tasks_todo_review_s2_5",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -4197,61 +4882,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/App.jsx",
-      "source_location": "L78",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_jsx",
-      "target": "lib_csvparser_autodetectmapping"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/App.jsx",
-      "source_location": "L78",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_jsx",
-      "target": "lib_csvparser_parsebucket"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/App.jsx",
-      "source_location": "L78",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_jsx",
-      "target": "lib_csvparser_parsecsv"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/App.jsx",
-      "source_location": "L78",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_jsx",
-      "target": "lib_csvparser_parsedisp"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/App.jsx",
-      "source_location": "L78",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_jsx",
-      "target": "lib_csvparser_parsestage"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/App.jsx",
       "source_location": "L75",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -4364,9 +4994,9 @@
       "source_file": "src/App.jsx",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_jsx",
-      "target": "lib_phaseengine_migrateagedphases",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_migrateagedphases"
     },
     {
       "relation": "imports",
@@ -4386,9 +5016,9 @@
       "source_file": "src/App.jsx",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_jsx",
-      "target": "lib_phaseengine_processmissedslots",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_processmissedslots"
     },
     {
       "relation": "imports",
@@ -4532,17 +5162,6 @@
       "confidence_score": 1.0,
       "source": "src_app_jsx",
       "target": "lib_usecontactfilters_usecontactfilters"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/App.jsx",
-      "source_location": "L99",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_jsx",
-      "target": "lib_useimporthandlers_useimporthandlers"
     },
     {
       "relation": "imports",
@@ -4771,17 +5390,6 @@
       "confidence_score": 1.0,
       "source": "src_app_jsx",
       "target": "src_components_hourlystats_jsx"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/App.jsx",
-      "source_location": "L87",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_jsx",
-      "target": "src_components_importmodal_jsx"
     },
     {
       "relation": "imports_from",
@@ -5140,17 +5748,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/App.jsx",
-      "source_location": "L78",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_jsx",
-      "target": "src_lib_csvparser_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/App.jsx",
       "source_location": "L77",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -5211,17 +5808,6 @@
       "confidence_score": 1.0,
       "source": "src_app_jsx",
       "target": "src_lib_usecontactfilters_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/App.jsx",
-      "source_location": "L99",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_jsx",
-      "target": "src_lib_useimporthandlers_js"
     },
     {
       "relation": "imports_from",
@@ -5439,9 +6025,9 @@
       "source_file": "src/App.jsx",
       "source_location": "L381",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_metkacrm",
-      "target": "lib_phaseengine_migrateagedphases",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_migrateagedphases"
     },
     {
       "relation": "calls",
@@ -5461,9 +6047,9 @@
       "source_file": "src/App.jsx",
       "source_location": "L386",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_metkacrm",
-      "target": "lib_phaseengine_processmissedslots",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_processmissedslots"
     },
     {
       "relation": "calls",
@@ -5519,17 +6105,6 @@
       "confidence_score": 1.0,
       "source": "src_app_metkacrm",
       "target": "lib_usecontactfilters_usecontactfilters"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/App.jsx",
-      "source_location": "L590",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_metkacrm",
-      "target": "lib_useimporthandlers_useimporthandlers"
     },
     {
       "relation": "calls",
@@ -5876,9 +6451,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L120",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_phaseengine_js",
-      "target": "lib_phaseengine_derivem2tier",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_derivem2tier"
     },
     {
       "relation": "contains",
@@ -5886,9 +6461,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L107",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_phaseengine_js",
-      "target": "lib_phaseengine_effectivephase",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_effectivephase"
     },
     {
       "relation": "contains",
@@ -5936,9 +6511,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L96",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_phaseengine_js",
-      "target": "lib_phaseengine_leadagedays",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_leadagedays"
     },
     {
       "relation": "contains",
@@ -5956,9 +6531,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L140",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_phaseengine_js",
-      "target": "lib_phaseengine_migrateagedphases",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_migrateagedphases"
     },
     {
       "relation": "contains",
@@ -5966,9 +6541,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L129",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_phaseengine_js",
-      "target": "lib_phaseengine_nexteligibleiso",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_nexteligibleiso"
     },
     {
       "relation": "contains",
@@ -5996,9 +6571,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L93",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_phaseengine_js",
-      "target": "lib_phaseengine_phase_order",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_phase_order"
     },
     {
       "relation": "contains",
@@ -6016,9 +6591,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L166",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_phaseengine_js",
-      "target": "lib_phaseengine_processmissedslots",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_processmissedslots"
     },
     {
       "relation": "contains",
@@ -6188,9 +6763,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L110",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_phaseengine_effectivephase",
-      "target": "lib_phaseengine_leadagedays",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_leadagedays"
     },
     {
       "relation": "calls",
@@ -6199,9 +6774,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L143",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_phaseengine_migrateagedphases",
-      "target": "lib_phaseengine_leadagedays",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_leadagedays"
     },
     {
       "relation": "calls",
@@ -6210,9 +6785,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L248",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_phaseengine_getphasepriority",
-      "target": "lib_phaseengine_effectivephase",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_effectivephase"
     },
     {
       "relation": "calls",
@@ -6221,9 +6796,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L277",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_phaseengine_isduetoday",
-      "target": "lib_phaseengine_effectivephase",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_effectivephase"
     },
     {
       "relation": "calls",
@@ -6232,9 +6807,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L339",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_phaseengine_backfilllead",
-      "target": "lib_phaseengine_derivem2tier",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_derivem2tier"
     },
     {
       "relation": "calls",
@@ -6243,9 +6818,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L151",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_phaseengine_migrateagedphases",
-      "target": "lib_phaseengine_derivem2tier",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_derivem2tier"
     },
     {
       "relation": "calls",
@@ -6254,9 +6829,9 @@
       "source_file": "src/lib/phaseEngine.js",
       "source_location": "L153",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_phaseengine_migrateagedphases",
-      "target": "lib_phaseengine_nexteligibleiso",
-      "confidence_score": 1.0
+      "target": "lib_phaseengine_nexteligibleiso"
     },
     {
       "relation": "imports",
@@ -6510,46 +7085,6 @@
       "confidence_score": 1.0,
       "source": "src_lib_usepowerdialer_js",
       "target": "lib_phaseengine_masterqueuesort"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tasks/todo.md",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "tasks_todo_md",
-      "target": "tasks_todo_session_1_correctness_fixes_2026_06_10",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tasks/todo.md",
-      "source_location": "L21",
-      "weight": 1.0,
-      "source": "tasks_todo_md",
-      "target": "tasks_todo_session_2_calendar_phase_engine_2026_06_10",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tasks/todo.md",
-      "source_location": "L12",
-      "weight": 1.0,
-      "source": "tasks_todo_session_1_correctness_fixes_2026_06_10",
-      "target": "tasks_todo_review",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tasks/todo.md",
-      "source_location": "L32",
-      "weight": 1.0,
-      "source": "tasks_todo_session_2_calendar_phase_engine_2026_06_10",
-      "target": "tasks_todo_review_s2",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8575,17 +9110,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/ImportModal.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_importmodal_jsx",
-      "target": "src_constants_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/PipelineView.jsx",
       "source_location": "L3",
       "weight": 1.0,
@@ -8810,33 +9334,11 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_csvparser_js",
-      "target": "src_constants_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/lib/leadScoring.js",
       "source_location": "L5",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_lib_leadscoring_js",
-      "target": "src_constants_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/useImportHandlers.js",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_useimporthandlers_js",
       "target": "src_constants_js"
     },
     {
@@ -8859,17 +9361,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_components_pipelineview_jsx",
-      "target": "src_constants_stages"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_csvparser_js",
       "target": "src_constants_stages"
     },
     {
@@ -9152,17 +9643,6 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "src/components/ImportModal.jsx",
-      "source_location": "L66",
-      "weight": 1.0,
-      "source": "components_importmodal_importmodal",
-      "target": "src_constants_inp"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
       "source_file": "src/components/ScriptPanel.jsx",
       "source_location": "L30",
       "weight": 1.0,
@@ -9228,17 +9708,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/ImportModal.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_importmodal_jsx",
-      "target": "src_constants_inp"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/ScriptPanel.jsx",
       "source_location": "L2",
       "weight": 1.0,
@@ -9277,17 +9746,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_components_fieldmapmodal_jsx",
-      "target": "src_constants_field_map_defs"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/useImportHandlers.js",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_useimporthandlers_js",
       "target": "src_constants_field_map_defs"
     },
     {
@@ -9615,28 +10073,6 @@
       "target": "components_fieldmapmodal_fieldmapmodal"
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/FieldMapModal.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_fieldmapmodal_jsx",
-      "target": "lib_csvparser_autodetectmapping"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/FieldMapModal.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_fieldmapmodal_jsx",
-      "target": "src_lib_csvparser_js"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/components/HourlyStats.jsx",
@@ -9697,16 +10133,6 @@
       "confidence_score": 1.0,
       "source": "components_hourlystats_hourlystats",
       "target": "components_hourlystats_daykey"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/ImportModal.jsx",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_importmodal_jsx",
-      "target": "components_importmodal_importmodal"
     },
     {
       "relation": "contains",
@@ -10164,155 +10590,6 @@
       "confidence_score": 1.0,
       "source": "lib_ccintegration_ccgetlists",
       "target": "lib_ccintegration_ccfetch"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L27",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_csvparser_js",
-      "target": "lib_csvparser_autodetectmapping"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_csvparser_js",
-      "target": "lib_csvparser_parsebucket"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L61",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_csvparser_js",
-      "target": "lib_csvparser_parsecsv"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_csvparser_js",
-      "target": "lib_csvparser_parsedisp"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L21",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_csvparser_js",
-      "target": "lib_csvparser_parsestage"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/useImportHandlers.js",
-      "source_location": "L25",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_useimporthandlers_js",
-      "target": "src_lib_csvparser_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/__tests__/csvParser.test.js",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tests_csvparser_test_js",
-      "target": "src_lib_csvparser_js"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/__tests__/csvParser.test.js",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tests_csvparser_test_js",
-      "target": "lib_csvparser_parsebucket"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/__tests__/csvParser.test.js",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tests_csvparser_test_js",
-      "target": "lib_csvparser_parsedisp"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/csvParser.js",
-      "source_location": "L65",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "lib_csvparser_parsecsv",
-      "target": "lib_csvparser_autodetectmapping"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/useImportHandlers.js",
-      "source_location": "L25",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_useimporthandlers_js",
-      "target": "lib_csvparser_autodetectmapping"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/__tests__/csvParser.test.js",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tests_csvparser_test_js",
-      "target": "lib_csvparser_autodetectmapping"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/useImportHandlers.js",
-      "source_location": "L25",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_useimporthandlers_js",
-      "target": "lib_csvparser_parsecsv"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/__tests__/csvParser.test.js",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tests_csvparser_test_js",
-      "target": "lib_csvparser_parsecsv"
     },
     {
       "relation": "contains",
@@ -10923,26 +11200,6 @@
       "confidence_score": 1.0,
       "source": "src_lib_usecontactfilters_js",
       "target": "lib_usecontactfilters_usecontactfilters"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/useImportHandlers.js",
-      "source_location": "L32",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_useimporthandlers_js",
-      "target": "lib_useimporthandlers_loadsavedmapping"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/useImportHandlers.js",
-      "source_location": "L39",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_useimporthandlers_js",
-      "target": "lib_useimporthandlers_useimporthandlers"
     },
     {
       "relation": "contains",
@@ -11927,5 +12184,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "9f0cb6c9d96ddd7b5724bd311c6ab5c01a95a0db"
+  "built_at_commit": "3df740aeb0a3b5747b6ed6d7ff04fedd0454a6eb"
 }

@@ -21,12 +21,37 @@ Exit test: dial after 7PM → lead correctly suppressed today, surfaces tomorrow
 5. Missed-block auto-log: on startup, slots whose datetime passed >24h ago without a logged dial → log activity event `[auto-logged: block missed]` outcome no-answer, consume slot, advance pointer. Counts as dial+attempt, 0 contacts (per handoff counting rule).
 Exit test: lead seeded 90 days ago lands in M2 with correct tier; 200-day lead lands M3; nobody dark.
 
-## SESSION 3 — Queue integration (G2/M3 fill + caps)
-1. buildSessionQueue: fill order = callbacks (cap ~50%, align from 37.5%) → P1 → P2 → P3; if under capacity → M2 (T1→T2→T3, oldest last_contact first, respect m2_next_eligible) → M3 (oldest first, respect m3_next_eligible, monthly spacing).
-2. M2/M3 dial outcome: any engagement (contacted/callback/appointment) → reassign to M1: rebuild schedule from today, phase_start=now. Non-contact → next_eligible = now+14d (M2) / +30d (M3).
-3. No-sale agreement trigger: optional `nextCallback` date captured at no_sale disposition ("they said Thursday") — surfaces as callback at priority 100 on that day, one-time; weekly P3 cadence otherwise.
-4. UI: phase chip shows derived phase (P1 Day 4 · M2 T1 · M3); TodaysBlock sections for M2/M3 spillover, visually below M1 work.
-Exit test: 40-cap block with 10 due M1 leads pulls M2 T1 fill; M2 answer → lead reappears in P1 next session.
+## SESSION 3 — Queue Spillover Integration (DETAILED SPEC — written 2026-06-10 pre-session)
+**Goal:** M2/M3 leads fill spare dial-block capacity. M1 is NEVER interrupted (docs: spillover is bonus work, zero guaranteed time). Engagement promotes back to M1.
+
+### 3.1 — phaseEngine: buildSpillover(leads, remainingCapacity, now)
+- M2 pool: effectivePhase==='M2' AND m2_next_eligible <= now AND m2_tier <= 3 AND not EXIT/removed/terminal-disp/appointment_booked AND not contacted today (dayKey check).
+- Sort: m2_tier ASC, then longest-since-contact first (null lastContact = never reached = first).
+- M3 pool (only after M2 exhausted): m3_next_eligible <= now, same exclusions, oldest-contact first.
+- Returns { m2: [...], m3: [...] } capped to remainingCapacity. Pure function.
+
+### 3.2 — dispositionEngine: M2/M3 outcome branches (inside buildDispositionPatch)
+When effectivePhase(freshLead) is M2/M3:
+- Non-contact (no_answer, vm_left, direct_vm): patch m2_next_eligible = now+14d / m3_next_eligible = now+30d. NO slot consumption (no slots exist). AM/PM flip still applies.
+- hung_up: same re-spacing as non-contact (human answered but negative — not momentum). ⚠ Jeremy may veto at gate → promote instead.
+- Engagement (callback, follow_up_needed, appointment_booked): PROMOTE TO M1 — buildSchedule(now), phase='P1', phase_start=now, phase_start_reason='m2_reactivation'. Docs: "immediately reassign to Machine 1."
+- no_show / no_sale: existing rebuilds work unchanged (no_show→P1, no_sale→P3 weekly per Jeremy).
+- Terminal: existing EXIT wipe unchanged. DNC compliance unchanged.
+
+### 3.3 — UI wiring
+- TodaysBlock: spillover section BELOW M1 work — "M2 Reactivation (bonus)" amber + "M3 Deep Wave" grey, tier badges (T1/T2/T3), only renders when M1 list < session capacity. Header counts: "M1 due: x · M2 fill: y · M3 fill: z".
+- DialQueuePanel session tiles: include spillover counts in capacity display.
+- Phase chip: derived phase via effectivePhase (DialView already reads PHASE_DEFS — M3 def shipped v3.44).
+
+### 3.4 — Verification
+Node checks: tier-then-oldest ordering · capacity respected (M1 first, M2 only with room, M3 only after M2) · 14d/30d eligibility gates · promotion patch (callback on M2 lead → full P1 schedule + reason flag) · non-contact re-spacing · no_show/no_sale behavior unchanged · contacted-today exclusion · M1-never-interrupted invariant (spillover length === 0 when M1 fills capacity).
+Exit test: 40-cap block with 10 due M1 leads pulls 30 spillover (T1 first); M2 answer + callback → lead holds full P1 schedule next render.
+
+## SESSION 3b — AGE RE-BASE (separate gate, AFTER S3 verified live)
+Flip leadAgeDays to prefer funnelAssignDate || assignDate (true age) over phase_start, EXCEPT when phase_start_reason is set (no_show/no_sale/m2_reactivation resets keep event-date aging — docs rule).
+- dispositionEngine: stamp phase_start_reason on every rebuild (no_show, no_sale, m2_reactivation) starting Session 3.
+- DRY-RUN FIRST: console-log projected phase distribution (P1/P2/P3/M2/M3 counts) WITHOUT applying — Jeremy approves the numbers, then the flip applies next startup. Expected: most of 2,440 → M2/M3 waves; Today queue unaffected (M1 due + spillover fill).
+Exit test: lead with funnelAssignDate 2025-03, backfill phase_start 2026-05, no reason flag → M3. Lead with no_sale reset 10 days ago → P3 (floor) regardless of 2025 funnelAssignDate.
 
 ## SESSION 4 — Flags + metrics (G5)
 1. Lifetime flags `appointment_set`, `sat` (never revert, cap 1 per lead). "Audit Held" button fires sat + audit_ran event.

@@ -332,3 +332,14 @@ Expected on real data: most of the 2,440 migrate to M2/M3 with tiers on first la
 
 Files: src/lib/csvParser.js, src/lib/funnelSync.js (new), src/lib/useImportHandlers.js, src/components/ImportModal.jsx.
 To run: Contacts → Import CSV → map fields → green "Sync from Funnel" button.
+
+## v3.46 — Session 3: M2/M3 Queue Spillover
+**Source:** SPEC-M1-M2-M3-BUILD.md Session 3 (detailed spec). 23/23 behavior checks + clean build.
+
+- **buildSpillover()** (phaseEngine): fills SPARE dial-block capacity with aged leads. M1 never interrupted — zero-capacity guard proven by test. M2 first (tier ascending, never-reached → longest-silent first, T4 excluded, 14-day spacing respected), M3 only after M2 exhausts (30-day spacing, oldest first). Same-day re-dial blocked.
+- **Aged disposition outcomes** (dispositionEngine): callback/follow_up_needed on an M2/M3 lead → **PROMOTED to Machine 1** — full P1 schedule from today, phase_start_reason='m2_reactivation'. no_answer/vm_left/direct_vm/hung_up → re-spaced +14d (M2) / +30d (M3); hung_up deliberately re-spaces rather than promotes (negative answer ≠ momentum — Jeremy may veto). no_show/no_sale/terminal flow through unchanged (P1 rebuild / P3 weekly / EXIT wipe).
+- **phase_start_reason** now stamped on every dispositional rebuild (no_show, no_sale, m2_reactivation) — Session 3b's age re-base depends on it to distinguish event-date aging from legacy backfill stamps.
+- **TodaysBlock UI:** spillover sections render below M1 work — "M2 REACTIVATION — BONUS WORK" with T1/T2/T3 badges + "M3 DEEP WAVE", dashed-border compact cards with last-contact date, open + quick-disposition actions. Header shows M2/M3 fill counts; legend gains M3.
+
+Files: src/lib/phaseEngine.js, src/lib/dispositionEngine.js, src/components/TodaysBlock.jsx.
+NEXT GATE (3b): age re-base dry-run — projected P1/P2/P3/M2/M3 distribution logged for approval BEFORE applying.

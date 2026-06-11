@@ -20,7 +20,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { SCHED_COLS, buildSchedule, computeNextDial, phaseFromBucket, applyPhaseTransition, getPhasePriority, isDueToday, backfillLead, masterQueueSort, getActiveSession } from '../lib/phaseEngine';
+import { SCHED_COLS, buildSchedule, computeNextDial, phaseFromBucket, applyPhaseTransition, getPhasePriority, isDueToday, backfillLead, masterQueueSort, getActiveSession, buildSpillover, effectivePhase } from '../lib/phaseEngine'; // v3.46 spillover
 
 // ── PHASE CONSTANTS ──────────────────────────────────────────────
 export const PHASE_DEFS = {
@@ -126,7 +126,7 @@ const QUICK_DISPS = [
   { id:'dnc',               label:'DNC 🚫',          color:'#DC2626' },
 ];
 
-const phaseColor = (p) => ({ P1:'#3B82F6', P2:'#8B5CF6', P3:'#F59E0B', M2:'#64748B', EXIT:'#DC2626' }[p] || '#94A3B8');
+const phaseColor = (p) => ({ P1:'#3B82F6', P2:'#8B5CF6', P3:'#F59E0B', M2:'#64748B', M3:'#94A3B8', EXIT:'#DC2626' }[p] || '#94A3B8');
 
 
 // ── TODAY'S BLOCK COMPONENT ──────────────────────────────────────
@@ -179,6 +179,13 @@ export default function TodaysBlock({
     }).slice(0, maxLeads);
   }, [leads]);
 
+  // v3.46 — M2/M3 spillover: fills SPARE capacity only. M1 never interrupted.
+  const spillover = useMemo(() => {
+    const activeSess = getActiveSession();
+    const cap = activeSess ? activeSess.capacity : 80;
+    return buildSpillover(leads, Math.max(0, cap - todayListComputed.length));
+  }, [leads, todayListComputed]);
+
   const dialedToday = useMemo(() => {
     const todayStr = new Date().toDateString();
     return leads.filter(l => l.lastContact && new Date(l.lastContact).toDateString() === todayStr).length;
@@ -217,7 +224,7 @@ export default function TodaysBlock({
               TODAY'S DIAL BLOCK
             </div>
             <div style={{ color:'#64748b', fontSize:'10px', fontWeight:'600', marginTop:'2px', letterSpacing:'0.5px' }}>
-              {blockLabel()} · {todayListComputed.length} due · {dialedToday} dialed today
+              {blockLabel()} · {todayListComputed.length} due · {dialedToday} dialed today{(spillover.m2.length > 0 || spillover.m3.length > 0) ? ` · M2 fill: ${spillover.m2.length} · M3: ${spillover.m3.length}` : ''}
               {blockActive ? ` · ⏱ ${fmtElapsed(elapsed)}` : ''}
             </div>
           </div>
@@ -238,11 +245,11 @@ export default function TodaysBlock({
       {/* ── PHASE LEGEND ── */}
       <div style={{ background:'var(--surface)', padding:'8px 20px', borderBottom:'1px solid var(--border)', display:'flex', gap:'12px', alignItems:'center', flexShrink:0, flexWrap:'wrap' }}>
         <span style={{ fontSize:'10px', fontWeight:'700', color:'var(--t3)', letterSpacing:'0.5px' }}>PRIORITY:</span>
-        {[['NO SALE','#EF4444'],['NO SHOW','#F59E0B'],['P1','#3B82F6'],['P2','#8B5CF6'],['P3','#F59E0B'],['M2','#64748B']].map(([label,color],i) => (
+        {[['NO SALE','#EF4444'],['NO SHOW','#F59E0B'],['P1','#3B82F6'],['P2','#8B5CF6'],['P3','#F59E0B'],['M2','#64748B'],['M3','#94A3B8']].map(([label,color],i) => (
           <div key={label} style={{ display:'flex', alignItems:'center', gap:'4px' }}>
             <div style={{ width:'8px', height:'8px', borderRadius:'2px', background:color, flexShrink:0 }} />
             <span style={{ fontSize:'9px', fontWeight:'700', color:'var(--t3)', letterSpacing:'0.5px' }}>{label}</span>
-            {i < 5 && <span style={{ fontSize:'9px', color:'var(--t4)', marginLeft:'4px' }}>→</span>}
+            {i < 6 && <span style={{ fontSize:'9px', color:'var(--t4)', marginLeft:'4px' }}>→</span>}
           </div>
         ))}
         <span style={{ marginLeft:'auto', fontSize:'10px', fontWeight:'700', color:'var(--t4)' }}>{todayListComputed.length} leads</span>
@@ -346,6 +353,55 @@ export default function TodaysBlock({
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* ── v3.46 — M2/M3 SPILLOVER (bonus work — only after M1 is done) ── */}
+        {(spillover.m2.length > 0 || spillover.m3.length > 0) && (
+          <div style={{ marginTop:'18px' }}>
+            {[['m2','M2 REACTIVATION — BONUS WORK', '#64748B', 'Work ONLY after M1 above is done. Low pressure, brief, natural.'],
+              ['m3','M3 DEEP WAVE', '#94A3B8', 'Oldest files. One respectful touch, then 30 days of space.']].map(([key, title, color, hint]) =>
+              spillover[key].length > 0 && (
+                <div key={key} style={{ marginBottom:'14px' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 4px 6px' }}>
+                    <span style={{ fontSize:'10px', fontWeight:'800', color, letterSpacing:'1.2px' }}>{title} ({spillover[key].length})</span>
+                    <span style={{ fontSize:'9px', color:'var(--t4)', fontWeight:'500' }}>{hint}</span>
+                  </div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+                    {spillover[key].map((lead, i) => (
+                      <div key={lead.id} style={{ background:'var(--surface)', border:'1px dashed var(--border)', borderLeft:`3px solid ${color}`, borderRadius:'10px', overflow:'hidden', opacity:0.92 }}>
+                        <div style={{ padding:'8px 12px', display:'flex', alignItems:'center', gap:'10px' }}>
+                          <div style={{ width:'18px', height:'18px', borderRadius:'50%', background:'var(--surface-2)', color:'var(--t4)', fontSize:'8px', fontWeight:'800', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{i + 1}</div>
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:'6px', flexWrap:'wrap' }}>
+                              <span style={{ fontWeight:'700', fontSize:'12px', color:'var(--t1)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'140px' }}>{lead.name || 'Unknown'}</span>
+                              {key === 'm2' && <span style={{ fontSize:'8px', fontWeight:'800', color, background:color+'22', padding:'2px 5px', borderRadius:'3px', flexShrink:0 }}>T{lead.m2_tier || '?'}</span>}
+                              {key === 'm3' && <span style={{ fontSize:'8px', fontWeight:'800', color, background:color+'22', padding:'2px 5px', borderRadius:'3px', flexShrink:0 }}>M3</span>}
+                              {lead.lastContact && <span style={{ fontSize:'9px', color:'var(--t4)', flexShrink:0 }}>last: {lead.lastContact}</span>}
+                            </div>
+                            <div style={{ fontSize:'10px', color:'var(--t3)', marginTop:'2px', fontFamily:"'JetBrains Mono',monospace" }}>{lead.phone || '—'}{lead.state ? ` · ${lead.state}` : ''}</div>
+                          </div>
+                          <div style={{ display:'flex', gap:'5px', flexShrink:0 }}>
+                            <button onClick={() => onOpen(lead.id)} title="Open full lead"
+                              style={{ padding:'5px 8px', background:'var(--surface-2)', color:'var(--t2)', border:'1px solid var(--border)', borderRadius:'6px', fontSize:'10px', fontWeight:'700', cursor:'pointer' }}>↗</button>
+                            <button onClick={() => setInlineDisp(prev => ({ ...prev, [lead.id]: !inlineDisp[lead.id] }))} title="Quick disposition"
+                              style={{ padding:'5px 8px', background: inlineDisp[lead.id] ? 'var(--blue-dim)' : 'var(--surface-2)', color: inlineDisp[lead.id] ? 'var(--blue)' : 'var(--t2)', border:'1px solid var(--border)', borderRadius:'6px', fontSize:'10px', fontWeight:'700', cursor:'pointer' }}>≡</button>
+                          </div>
+                        </div>
+                        {inlineDisp[lead.id] && (
+                          <div style={{ padding:'8px 12px', background:'var(--surface-2)', borderTop:'1px solid var(--border)', display:'flex', flexWrap:'wrap', gap:'5px' }}>
+                            {QUICK_DISPS.map(d => (
+                              <button key={d.id} onClick={() => handleDispose(lead.id, d.id)}
+                                style={{ padding:'4px 10px', fontSize:'11px', fontWeight:'700', color:d.color, background:d.color+'18', border:`1px solid ${d.color}44`, borderRadius:'6px', cursor:'pointer' }}>{d.label}</button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            )}
           </div>
         )}
       </div>

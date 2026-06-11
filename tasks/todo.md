@@ -44,3 +44,16 @@ duplication for future dedup. lastSeen key: metka-last-seen-v1.
 ## Review S2.5
 funnelAssignDate stored but age re-base deferred until after S3 (queue-safety decision).
 inFunnel flag = SMS deconfliction source of truth. Conflicts surface in console + alert.
+
+
+# Session 3 — M2/M3 Spillover (2026-06-10)
+- [x] buildSpillover: tier/oldest ordering, capacity + eligibility gates
+- [x] dispositionEngine aged branch: promote on engagement, re-space on non-contact
+- [x] phase_start_reason stamps (no_show/no_sale/m2_reactivation)
+- [x] TodaysBlock spillover UI + header counts + M3 legend
+- [x] 23/23 checks, build clean
+
+## Review S3
+Deviations from gate: appointment_booked on aged lead keeps freeze behavior (docs-correct) rather than
+promoting — post-appointment outcomes (no_show→P1/no_sale→P3) handle re-entry. No App.jsx change needed —
+spillover is fully self-contained in TodaysBlock (cleaner than specced).
