@@ -24,6 +24,7 @@ import LZString from 'lz-string';
 import { FIELD_MAP_DEFS } from '../constants.js';
 import { autoDetectMapping, parseCSV } from './csvParser.js';
 import { syncFromCsv, summarizeSyncReport } from './funnelSync.js'; // v3.45 — Funnel sync mode
+import { stampImportOrder } from './leadOrders.js'; // v3.51 — every batch = a lead order
 
 // ── localStorage keys (must match App.jsx — never rename) ────────────
 const LS_BACKUP  = 'metka-crm-backup-v1';
@@ -70,6 +71,10 @@ export const useImportHandlers = ({ leads, saveLeads, backfillLead, setBackupExi
       const allKeys = [
         ...FIELD_MAP_DEFS.map(f => f.key),
         'score', 'tier', 'daysOld', 'flags', 'rationale', 'leadLevel', 'importStage',
+        // v3.52 — BUG FIX: v3.45 sync fields were auto-detected but stripped here,
+        // so every modal-confirmed import lost leadCode/purchaseAmount/leadSource etc.
+        'leadCode', 'leadAssignmentId', 'sex', 'street', 'leadSource',
+        'leadSubSource', 'exclusivityEnd', 'purchaseAmount', 'birthday',
       ];
       allKeys.forEach(k => {
         if (savedMapping[k] !== undefined) {
@@ -128,12 +133,13 @@ export const useImportHandlers = ({ leads, saveLeads, backfillLead, setBackupExi
     } catch {}
     const withPhases = arr => arr.map(l => backfillLead(l));
 
+    const batchLabel = new Date().toISOString().slice(0, 10);
     if (mode === 'sync') {
       // v3.45 — Funnel Sync (import mode 3). Status-diff against the CSV:
       // never downgrades, DNC always wins, conflicts reported. New CSV-only
       // leads come in through the normal backfill path.
       const { leads: synced, report } = syncFromCsv(importPreview.all, leads);
-      const next = [...withPhases(report.newLeads), ...synced];
+      const next = [...stampImportOrder(withPhases(report.newLeads), batchLabel), ...synced];
       saveLeads(next);
       console.log('[Funnel Sync] status updates:', report.statusUpdated);
       console.log('[Funnel Sync] conflicts (CRM kept):', report.conflicts);
@@ -142,8 +148,8 @@ export const useImportHandlers = ({ leads, saveLeads, backfillLead, setBackupExi
     } else {
       saveLeads(
         mode === 'append'
-          ? [...withPhases(importPreview.newLeads), ...leads]
-          : withPhases(importPreview.all)
+          ? [...stampImportOrder(withPhases(importPreview.newLeads), batchLabel), ...leads]
+          : stampImportOrder(withPhases(importPreview.all), batchLabel)
       );
     }
     setImportModal(false);

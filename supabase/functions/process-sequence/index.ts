@@ -700,6 +700,34 @@ serve(async (req) => {
       return !!track && !d.seqPaused && !d.seqExitReason;
     });
 
+    // ── v3.54 SMS GUARDS (incident 2026-06-11: 169 texts at 4AM CT) ──────────
+    // 1. KILL-SWITCH: SMS only fires if the SMS_ENABLED secret is exactly "true".
+    //    Unset/anything else = email-only mode. Default = OFF.
+    // 2. OPT-OUT: smsOptOut leads are never texted (15 flagged from the incident).
+    // 3. QUIET HOURS: 8AM–9PM in the LEAD'S timezone (state-based), enforced in
+    //    code — cron schedule alone is not a compliance control.
+    // 4. DECONFLICTION: inFunnel leads never get automated SMS (Funnel runs its
+    //    own 2-yr automations — double-texting burns trust + phone reputation).
+    // 5. CAP: max SMS per run.
+    const SMS_ENABLED   = (Deno.env.get("SMS_ENABLED") || "").toLowerCase() === "true";
+    const SMS_RUN_CAP   = parseInt(Deno.env.get("SMS_RUN_CAP") || "50", 10);
+    const STATE_TZ: Record<string, string> = {
+      OK: "America/Chicago",  TX: "America/Chicago",  IL: "America/Chicago",
+      MO: "America/Chicago",  AL: "America/Chicago",
+      VA: "America/New_York", OH: "America/New_York", NC: "America/New_York",
+      NJ: "America/New_York", PA: "America/New_York", NY: "America/New_York",
+      FL: "America/New_York", GA: "America/New_York",
+      AZ: "America/Phoenix",
+      WA: "America/Los_Angeles", CA: "America/Los_Angeles",
+    };
+    const inSmsWindow = (state: string): boolean => {
+      const tz = STATE_TZ[(state || "").toUpperCase()] || "America/Chicago";
+      const hour = parseInt(new Intl.DateTimeFormat("en-US", {
+        timeZone: tz, hour: "numeric", hour12: false,
+      }).format(new Date()), 10);
+      return hour >= 8 && hour < 21; // TCPA window: 8AM–9PM lead-local
+    };
+
     const results = {
       total:      allRows.length,
       active:     active.length,
@@ -708,6 +736,7 @@ serve(async (req) => {
       emailsSent: 0,
       smsSent:    0,
       skipped:    0,
+      smsBlocked: { killSwitch: 0, optOut: 0, quietHours: 0, inFunnel: 0, cap: 0 }, // v3.54
       errors:     [] as string[],
     };
 
@@ -747,8 +776,9 @@ serve(async (req) => {
             seqStartDate:  assignDateStr,
             notes:         [enrollNote, ...existingNotes],
           };
+          (enrolled as Record<string, unknown>)._ts = Date.now(); // v3.53 — in-blob _ts so the app's merge accepts this write
           await supabase.from("leads")
-            .update({ data: enrolled, updated_at: new Date().toISOString() })
+            .update({ data: enrolled, updated_at: new Date().toISOString(), _ts: Date.now() })
             .eq("id", row.id);
           results.processed++;
         } else {
@@ -763,8 +793,9 @@ serve(async (req) => {
             stage: (lead.stage === "new" || lead.stage === "contacted") ? "archived" : lead.stage,
             notes: [archiveNote, ...existingNotes],
           };
+          (archived as Record<string, unknown>)._ts = Date.now(); // v3.53 — in-blob _ts so the app's merge accepts this write
           await supabase.from("leads")
-            .update({ data: archived, updated_at: new Date().toISOString() })
+            .update({ data: archived, updated_at: new Date().toISOString(), _ts: Date.now() })
             .eq("id", row.id);
           results.archived++;
         }
@@ -776,8 +807,20 @@ serve(async (req) => {
 
       const activityNotes: CRMNote[] = [];
 
-      // ── SEND SMS ──────────────────────────────────────────────────
+      // ── SEND SMS (v3.54 — five guards, in order; see header) ─────────────
+      const _smsGuard = (): string | null => {
+        if (!SMS_ENABLED)                      return "killSwitch";
+        if (lead.smsOptOut === true)           return "optOut";
+        if (!inSmsWindow(lead.state as string)) return "quietHours";
+        if (lead.inFunnel === true)            return "inFunnel";
+        if (results.smsSent >= SMS_RUN_CAP)    return "cap";
+        return null;
+      };
       if (entry.channels.includes("sms") && lead.phone) {
+        const _blocked = _smsGuard();
+        if (_blocked) {
+          (results.smsBlocked as Record<string, number>)[_blocked]++;
+        } else {
         const smsBody = getSmsBody(track, step, cat, firstName);
         if (smsBody) {
           try {
@@ -791,9 +834,11 @@ serve(async (req) => {
             });
             if (resp.ok) {
               results.smsSent++;
-              activityNotes.push(makeNote(
+              const _smsNote = makeNote(
                 `[SEQ] SMS sent — Track: ${trackLabel} | Step ${step} | To: ${lead.phone}`
-              ));
+              ) as Record<string, unknown>;
+              _smsNote.body = smsBody; // v3.53 — store the ACTUAL text so threads show it
+              activityNotes.push(_smsNote as CRMNote);
             } else {
               const errText = await resp.text();
               const errMsg = errText.slice(0, 120);
@@ -810,6 +855,7 @@ serve(async (req) => {
             ));
           }
         }
+        } // v3.54 — close guard else
       }
 
       // ── SEND EMAIL (Gmail API) ─────────────────────────────────────
@@ -880,8 +926,9 @@ serve(async (req) => {
         notes: [...activityNotes, ...existingNotes],
       };
 
-      await supabase.from("leads")
-        .update({ data: updatedLead, updated_at: new Date().toISOString() })
+      (updatedLead as Record<string, unknown>)._ts = Date.now(); // v3.53 — in-blob _ts so the app's merge accepts this write
+          await supabase.from("leads")
+            .update({ data: updatedLead, updated_at: new Date().toISOString(), _ts: Date.now() })
         .eq("id", row.id);
 
       results.processed++;

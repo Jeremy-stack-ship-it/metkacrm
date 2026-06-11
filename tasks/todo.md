@@ -79,3 +79,11 @@ Awaiting: Jeremy's resurrection split numbers → flip approval.
 - [x] saveMeeting Held → audit_ran (logActivity prop chain App→ContactDetail)
 - [x] G10 write order: activity before persist
 - [x] 6/6 checks, build clean
+
+
+# Session 5 — Lead Order Economics (2026-06-11)
+- [x] leadOrders.js: clustering (src+lvl+week), import stamping, rollup, BE-date, medians
+- [x] ContactDetail App Economics card (APV/commission/advance/date/status + chargeback warn)
+- [x] LeadOrdersView + ORDERS nav entry + startup backfill (one-time flag)
+- [x] 17/17 math checks, build clean
+- [x] Corrected mid-build App.jsx string corruption (heredoc escape) — verify-after-insert saved it

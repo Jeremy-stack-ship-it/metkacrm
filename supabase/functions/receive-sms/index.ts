@@ -138,6 +138,11 @@ serve(async (req) => {
     // Mark lead as having unread SMS
     patch.smsUnread = true;
 
+    // v3.53 FIX — bump the IN-BLOB _ts. The CRM's hydration/realtime merge
+    // compares data._ts (not the column) — without this, inbound notes and
+    // STOP opt-out flags NEVER reach the app (local copy always "wins").
+    patch._ts = Date.now();
+
     // Handle opt-out / opt-in
     if (isOptOut)  { patch.smsOptOut = true;  patch.smsOptIn = false; }
     if (isOptIn)   { patch.smsOptOut = false; patch.smsOptIn = true;  }

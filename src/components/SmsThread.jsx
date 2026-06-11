@@ -1,4 +1,5 @@
 import React from 'react';
+import { reconstructSeqSms } from '../lib/seqSmsBodies.js'; // v3.53 — real text for auto sends
 import { SMS_SEQUENCES, suggestSeqCat } from '../lib/phaseEngine.js';
 
 const CALENDLY = 'https://calendly.com/metkasolutions/20min';
@@ -121,8 +122,11 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
         : smsMessages.map((msg, i) => {
             const isInbound = msg.type === 'sms_inbound';
             const isAuto    = msg.text && msg.text.startsWith('[SEQ]');
+            // v3.53 — show the ACTUAL sent text: prefer logged body (new sends),
+            // else reconstruct from the deterministic template map (old sends).
             const display   = isAuto
-              ? '[Auto · ' + (msg.text.match(/Step (\d+)/)?.[0] || 'sequence') + ']'
+              ? (msg.body || reconstructSeqSms(msg.text, open) ||
+                 '[Auto · ' + (msg.text.match(/Step (\d+)/)?.[0] || 'sequence') + ']')
               : msg.text.replace('📱 SMS sent: ', '');
             const msgDay    = dayLabel(msg.ts);
             const showDiv   = msgDay !== lastDay;
@@ -156,7 +160,14 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
     ),
 
     // ── Compose ─────────────────────────────────────────────────────
-    React.createElement('div', { style:{ borderTop:'1px solid var(--border)', background:'var(--surface)', padding:'10px 12px', flexShrink:0, position:'relative' } },
+    // v3.54 — OPT-OUT HARD LOCK: this family texted STOP. Composer is replaced,
+    // not just disabled — texting them again is a willful TCPA violation.
+    (open && open.smsOptOut === true)
+      ? React.createElement('div', { style:{ borderTop:'1px solid #FCA5A5', background:'var(--red-dim)', padding:'14px 16px', flexShrink:0, textAlign:'center' } },
+          React.createElement('div', { style:{ fontSize:'12px', fontWeight:'800', color:'var(--red)', letterSpacing:'0.5px' } }, '⛔ OPTED OUT — texted STOP'),
+          React.createElement('div', { style:{ fontSize:'10px', color:'var(--red)', marginTop:'4px', opacity:0.85 } }, 'Texting this family again is a TCPA violation. Phone calls only. (They can reply START to opt back in.)')
+        )
+      : React.createElement('div', { style:{ borderTop:'1px solid var(--border)', background:'var(--surface)', padding:'10px 12px', flexShrink:0, position:'relative' } },
 
       // Template drawer
       tplOpen && React.createElement('div', {

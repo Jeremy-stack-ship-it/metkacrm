@@ -62,6 +62,7 @@ import ContactDetail, { StageStepper, UnderwritingCard } from './components/Cont
 import MessagesView from './components/MessagesView.jsx';
 import ContactsView from './components/ContactsView.jsx';
 import PipelineView from './components/PipelineView.jsx';
+import LeadOrdersView from './components/LeadOrdersView.jsx'; // v3.51 — economics
 import ScriptsView from './components/ScriptsView.jsx';
 import TemplatesView from './components/TemplatesView.jsx';
 import SettingsView from './components/SettingsView.jsx';
@@ -73,6 +74,7 @@ import { STATE_TZ, STAGES, DISPS, BC, BL, NC, FIELD_MAP_DEFS,
 import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity, sbLoadSeqStats, sbBeaconFlush, sbSendSms } from './lib/supabaseSync.js';
 import { backfillLead, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, migrateAgedPhases, processMissedSlots, dryRunAgeRebase, RESURRECTION_ACTIVE, resurrectBucketC, dryRunResurrection } from './lib/phaseEngine.js'; // v3.44-48 phase machine
 import { buildDispositionPatch } from './lib/dispositionEngine.js'; // v3.43 — F3 unified disposition logic
+import { assignLeadOrders, orderRollup, medianDaysToBE } from './lib/leadOrders.js'; // v3.51 — economics
 import { DEFAULT_GOALS, CONTACT_DISPS, ACTIVITY_TYPES, dayKey, TODAY_KEY, lastNDays, weekKeys, monthKeys, aggregateActivity, fmtTime, goalTone, makeActivityManager } from './lib/activityLog.js';
 import { makeLeadManager } from './lib/leads.js';
 import LoginGate, { useAuth } from './components/LoginGate.jsx';
@@ -425,6 +427,21 @@ function MetkaCRM(){
         sbSaveActivity(_ms.events).catch(() => {});
       }
       localStorage.setItem(LS_LAST_SEEN, new Date().toISOString());
+
+      // v3.51 — one-time lead-order clustering: every historical lead gets a
+      // leadOrderId (source + level + assign-week). Economics needs cohorts.
+      const LS_ORDER_BACKFILL = 'metka-order-backfill-v2'; // v3.52 — re-cluster after field-map bug fix
+      if (!localStorage.getItem(LS_ORDER_BACKFILL)) {
+        const _ord = assignLeadOrders(initialLeads);
+        if (_ord.changed > 0) {
+          initialLeads = _ord.leads;
+          try {
+            localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
+          } catch(e) { console.warn('[CRM v3.51] order backfill persist failed:', e); }
+          console.log(`[CRM v3.51] Lead-order backfill: ${_ord.changed} leads clustered into orders`);
+        }
+        localStorage.setItem(LS_ORDER_BACKFILL, '1');
+      }
 
       // v3.47 — S3b age re-base DRY-RUN (re-base is OFF until Jeremy approves).
       // Prints projected phase distribution; changes NOTHING.
@@ -1298,6 +1315,8 @@ const queue = useMemo(() => {
         }),
 
         // ── PIPELINE VIEW ──
+        view==="orders" && React.createElement(LeadOrdersView, { leads }),
+
         view==="pipeline" && React.createElement(PipelineView, {
           leads,
           useTwilioCalling, twilioDevice,

@@ -50,6 +50,55 @@ const StageStepper = ({ stage, onSelect }) => {
   );
 };
 
+// ── APP ECONOMICS CARD (v3.51 — Session 5) ───────────────────────
+// Money-in per application: APV, commission, advance, payment date, status.
+// Feeds the Lead Orders break-even dashboard (💰 ORDERS in nav).
+const ECON_STAGES = ["app_submitted", "underwriting", "issued"];
+const APP_STATUSES = ["submitted", "issued", "paid", "chargeback", "cancelled"];
+const AppEconomicsCard = ({ lead, upd }) => {
+  if (!lead) return null;
+  const show = ECON_STAGES.includes(lead.stage) || lead.appStatus || lead.apv;
+  if (!show) return null;
+  const numIn = (label, field, ph) => React.createElement("div", { style:{ flex:"1 1 110px", minWidth:"100px" } },
+    React.createElement("div", { style:{ fontSize:"9px", fontWeight:"800", color:"var(--t4)", letterSpacing:"0.8px", marginBottom:"4px" } }, label),
+    React.createElement("input", {
+      type:"number", step:"0.01", placeholder: ph || "0",
+      value: lead[field] ?? "",
+      onChange: e => upd(lead.id, { [field]: e.target.value === "" ? null : parseFloat(e.target.value) }),
+      style:{ width:"100%", padding:"8px 10px", fontSize:"13px", fontFamily:"'JetBrains Mono',monospace", border:"1px solid var(--border)", borderRadius:"8px", background:"var(--surface-2)", color:"var(--t1)", outline:"none" }
+    })
+  );
+  return React.createElement("div", { style:{ background:"var(--surface)", borderRadius:"12px", border:"1px solid var(--border)", padding:"20px 24px" } },
+    React.createElement("div", { style:{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"12px", flexWrap:"wrap", gap:"8px" } },
+      React.createElement("div", { style:{ fontSize:"11px", fontWeight:"800", color:"var(--t3)", letterSpacing:"1.5px" } }, "\u{1F4B0} APP ECONOMICS"),
+      React.createElement("select", {
+        value: lead.appStatus || "",
+        onChange: e => upd(lead.id, { appStatus: e.target.value || null }),
+        style:{ padding:"6px 10px", fontSize:"11px", fontWeight:"700", border:"1px solid var(--border)", borderRadius:"8px", background:"var(--surface-2)", color: lead.appStatus === "chargeback" ? "var(--red)" : lead.appStatus === "paid" ? "var(--green)" : "var(--t2)", cursor:"pointer" }
+      },
+        React.createElement("option", { value:"" }, "status\u2026"),
+        APP_STATUSES.map(st => React.createElement("option", { key:st, value:st }, st))
+      )
+    ),
+    React.createElement("div", { style:{ display:"flex", gap:"10px", flexWrap:"wrap" } },
+      numIn("APV ($/yr)", "apv"),
+      numIn("COMMISSION PAID", "commissionPaid"),
+      numIn("ADVANCE PAID", "advancePaid"),
+      React.createElement("div", { style:{ flex:"1 1 130px", minWidth:"120px" } },
+        React.createElement("div", { style:{ fontSize:"9px", fontWeight:"800", color:"var(--t4)", letterSpacing:"0.8px", marginBottom:"4px" } }, "PAYMENT DATE"),
+        React.createElement("input", {
+          type:"date",
+          value: lead.paymentDate ? lead.paymentDate.slice(0,10) : "",
+          onChange: e => upd(lead.id, { paymentDate: e.target.value || null }),
+          style:{ width:"100%", padding:"7px 10px", fontSize:"12px", border:"1px solid var(--border)", borderRadius:"8px", background:"var(--surface-2)", color:"var(--t1)", outline:"none" }
+        })
+      )
+    ),
+    lead.appStatus === "chargeback" && React.createElement("div", { style:{ marginTop:"10px", fontSize:"11px", fontWeight:"700", color:"var(--red)", background:"var(--red-dim)", padding:"8px 12px", borderRadius:"8px" } },
+      "\u26A0 Chargeback \u2014 commission + advance SUBTRACT from this lead's order P&L.")
+  );
+};
+
 // ── UNDERWRITING CARD (local — only used in ContactDetail) ───────
 const UnderwritingCard = ({ lead, upd, newReqText, setNewReqText, initUWReqs, toggleUWReq, removeUWReq, addUWReq }) => {
   if (!lead || !UW_VISIBLE_STAGES.includes(lead.stage)) return null;
@@ -903,6 +952,7 @@ export default function ContactDetail({
             })(),
 
             // Underwriting card
+            React.createElement(AppEconomicsCard, { lead: open, upd }),
             React.createElement(UnderwritingCard, {
               lead:open, key:"uw-cp-"+open.id,
               upd, newReqText, setNewReqText,

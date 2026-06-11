@@ -375,3 +375,35 @@ Jeremy approved the split (1,594 candidates → M3 · 91 true terminals stay EXI
 - **G10 write order (Derick handoff):** activity events append BEFORE the lead row persists in upd() — a crash can no longer eat an attempt record the lead claims happened.
 
 Files: src/lib/leads.js, src/lib/dispositionEngine.js, src/components/ContactDetail.jsx, src/components/DialView.jsx, src/App.jsx (prop).
+
+## v3.51 — Session 5: Lead Order Economics ("the Derick dashboard")
+17/17 math checks + clean build. "Never blend DLHA numbers with aged analog."
+
+- **leadOrderId on every lead.** One-time startup backfill clusters historical leads by source + level + assign-week (deterministic, idempotent — flag metka-order-backfill-v1). Every CSV import (append AND sync modes) stamps its batch as a new order.
+- **💰 App Economics card** (ContactDetail, shows for app_submitted/underwriting/issued or when data exists): APV, commission paid, advance paid, payment date, app status (submitted/issued/paid/chargeback/cancelled). Chargeback status subtracts that lead's money from its order P&L — with a red warning strip.
+- **💰 ORDERS view** (nav → DATA): per-order table — source, level, start, leads, spend (Σ Funnel PurchaseAmount — captured on 2,407 leads by v3.45 sync), appointments (apptSetEver), sat (satEver), apps, APV, collected, NET (green/red), ROI multiple, **break-even date** (first payment date where cumulative collections ≥ spend) and days-to-BE. Header totals across all orders.
+- **Median days-to-break-even per lead level** — chips at the top: "DLHA: median 11d to break even." Derick's exact projection use case, live.
+- Fix during build: heredoc escape bug briefly injected an import inside a CC alert string — caught by immediate grep verify, repaired before anything shipped. (Lesson: verify every blind insert.)
+
+Files: src/lib/leadOrders.js (new), src/components/LeadOrdersView.jsx (new), src/components/ContactDetail.jsx, src/components/NavSidebar.jsx, src/lib/useImportHandlers.js, src/App.jsx.
+
+## v3.52 — BUG FIX: field-map whitelist was stripping all v3.45 sync fields
+Jeremy's ORDERS screenshot showed every source "—", labels UNKNOWN, spend $0. Root cause: confirmFieldMapping's allKeys whitelist (useImportHandlers) never got the 9 v3.45 keys — every modal-confirmed import/sync silently dropped leadCode, purchaseAmount, leadSource, sex, street, etc. (leadLevel survived because it was on the OLD list — which is why levels rendered.)
+- allKeys extended with all 9 fields.
+- assignLeadOrders now re-clusters leads whose order id contains _UNKNOWN_ once leadSource exists; import-stamped orders untouched.
+- Order backfill flag bumped to v2 — re-cluster runs once after Jeremy re-runs the Funnel sync.
+RECOVERY STEPS (Jeremy): 1) relaunch CRM, 2) re-run Sync from Funnel with the same CSV (idempotent — fills the holes), 3) relaunch again → re-cluster fires → ORDERS shows real sources + spend.
+
+## v3.54 — SMS Guard Session (incident response — five locks + UI hard lock)
+process-sequence type-checked clean (deno check); quiet-hours logic 5/5 node tests incl. lead-local nuance (CA blocked at 9AM CT run). DEPLOY = Jeremy via CLI; cron stays OFF until deploy confirmed.
+
+- **Guard 1 — KILL-SWITCH:** SMS fires only if Supabase secret SMS_ENABLED === "true". Unset (current state) = email-only mode, permanently, by default.
+- **Guard 2 — OPT-OUT:** smsOptOut leads never texted (15 flagged from the 6/11 incident).
+- **Guard 3 — QUIET HOURS:** 8AM–9PM in the LEAD'S timezone (state→tz map for all 16 licensed states), enforced in code at send time.
+- **Guard 4 — DECONFLICTION:** inFunnel leads never get automated SMS (Funnel owns automated texting — 2yr sequences).
+- **Guard 5 — CAP:** SMS_RUN_CAP per run (default 50).
+- Blocked sends counted per-guard in sequence_runs (smsBlocked breakdown) — visibility without sends.
+- **UI hard lock (SmsThread):** opted-out leads get a red ⛔ OPTED OUT banner INSTEAD of the composer — manual texting physically removed. START re-opens (receive-sms handles opt-in).
+- Cron plan: re-enable at 0 14 * * * UTC (9AM CDT — was 9 UTC/4AM, the incident hour) AFTER Jeremy deploys.
+
+Files: supabase/functions/process-sequence/index.ts, src/components/SmsThread.jsx.
