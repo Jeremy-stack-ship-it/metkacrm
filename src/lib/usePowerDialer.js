@@ -194,11 +194,19 @@ export function usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenI
   const pdBg     = pdStatus === 'answered' ? '#1A3A5C' : pdStatus === 'pausing' ? '#252D3D' : '#171E2D';
   const pdAccent = pdStatus === 'answered' ? '#3B82F6' : pdStatus === 'pausing' ? '#64748B' : '#3B82F6';
 
+  // v3.61 — SKIP: advance without logging a disposition (sold client served by
+  // a stale locked queue, wrong number on screen, etc.). No data is written.
+  const pdSkip = useCallback(() => {
+    if (!pdMode) return;
+    if (twilioDevice) twilioDevice.disconnectAll();
+    pdAdvanceToNext(pdLockedQueue, pdIdx + 1);
+  }, [pdMode, twilioDevice, pdAdvanceToNext, pdLockedQueue, pdIdx]);
+
   return {
     pdQueue,
     pdMode, pdStatus, pdIdx, pdLockedQueue, pdAttempt, pdCountdown,
     pdSessionLog,
     currentPdLead, pdBg, pdAccent,
-    pdStart, pdStop, fireDisp,
+    pdStart, pdStop, fireDisp, pdSkip,
   };
 }

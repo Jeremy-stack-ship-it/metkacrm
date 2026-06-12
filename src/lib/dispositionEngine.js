@@ -10,7 +10,7 @@
 // Doctrine (locked 2026-06-10): the pre-made schedule rules all — only
 // contacted dispositions rebuild it. applyPhaseTransition enforces this.
 
-import { applyPhaseTransition, effectivePhase, buildSchedule } from './phaseEngine.js'; // v3.46 + spillover outcomes
+import { applyPhaseTransition, effectivePhase, buildSchedule, retireSoldSchedule } from './phaseEngine.js'; // v3.46-61
 import { autoFollowUp } from './leadScoring.js';
 import { dayKey } from './activityLog.js';
 
@@ -81,7 +81,10 @@ export const buildDispositionPatch = (freshLead, dispId) => {
   }
 
   // Phase transition computed from freshest lead state (schedule-rules-all)
-  const phasePatch = applyPhaseTransition(freshLead, dispId);
+  // v3.61 — sold retires the dial machine (schedule wiped, EXIT; callbacks kept)
+  const phasePatch = dispId === 'submitted'
+    ? (retireSoldSchedule({ ...freshLead, disposition: 'submitted' }) || {})
+    : applyPhaseTransition(freshLead, dispId);
 
   // v3.46 — M2/M3 spillover outcomes (Session 3). Overrides slot-consumption
   // patches (aged leads have no slots). no_show/no_sale/terminal pass through

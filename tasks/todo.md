@@ -119,3 +119,9 @@ Awaiting: Jeremy's resurrection split numbers → flip approval.
 - [x] Toasts replace dial-flow alerts (lib/toast.js)
 - [x] TodaysBlock wiring removed; App.jsx 1391→1384 (net −7)
 - [!] JEREMY: del src\components\TodaysBlock.jsx + git ritual (v3.55-58)
+
+
+# Session 7c — Promises + Hot Queue (2026-06-12)
+- [x] inPromiseWindow → 105; isDueToday promise gap fixed
+- [x] buildHotQueue + 🔥 filter + chips/pills
+- [x] 11/11 tests, build clean

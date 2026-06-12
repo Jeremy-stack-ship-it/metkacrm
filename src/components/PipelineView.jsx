@@ -29,7 +29,9 @@ export default function PipelineView({
           )
         ),
         React.createElement("div",{style:{flex:1,overflowY:"auto",background:"#E9E7E1",border:"1px solid var(--border)",borderTop:"none",borderRadius:"0 0 12px 12px",padding:"10px"}},
-          sl.map(lead=>{
+          // v3.60 — render cap per column (Jeremy: "pipeline is the slowest to load").
+          // 2,233 New Lead cards in one column was the lag; column header still shows true count.
+          sl.slice(0, 30).map(lead=>{
             const disp=DISPS.find(d=>d.id===lead.disposition)||DISPS[0];
             const isOD=lead.nextCallback&&new Date(lead.nextCallback)<new Date();
             const stuck = isUWStuck(lead);
@@ -75,6 +77,8 @@ export default function PipelineView({
               )
             );
           }),
+          sl.length > 30 && React.createElement("div",{style:{padding:"10px",textAlign:"center",fontSize:"11px",fontWeight:"700",color:"var(--t3)"}},
+            "+" + (sl.length - 30).toLocaleString() + " more — use LEADS view to browse all"),
           sl.length===0&&React.createElement("div",{style:{fontSize:"12px",color:"var(--t4)",padding:"24px",textAlign:"center",fontWeight:"500"}},"Empty")
         )
       );

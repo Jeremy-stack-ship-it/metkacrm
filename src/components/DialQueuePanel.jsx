@@ -1,6 +1,6 @@
 import React from 'react';
 import { BC, isUWStuck } from '../constants.js';
-import { getPhasePriority, isDueToday, getActiveSession, getNextSession, SESSIONS, masterQueueSort, effectivePhase, PHASE_DEFS } from '../lib/phaseEngine'; // v3.58 truth chips
+import { getPhasePriority, isDueToday, getActiveSession, getNextSession, SESSIONS, masterQueueSort, effectivePhase, PHASE_DEFS, buildHotQueue, hoursSinceOpen, inPromiseWindow } from '../lib/phaseEngine'; // v3.58-59 chips + hot queue + promises
 
 const LS_SESSION = 'metka-session-v1';
 
@@ -33,7 +33,7 @@ export default function DialQueuePanel({
   onHold, setOnHold,
   // PD state
   pdMode, pdStatus, pdIdx, pdLockedQueue, pdAttempt, pdCountdown,
-  pdStart, pdStop,
+  pdStart, pdStop, pdSkip,
   pdQueue,
   pdSessionLog,
   currentPdLead, pdBg, pdAccent,
@@ -267,11 +267,14 @@ export default function DialQueuePanel({
             title: onHold ? 'Resume' : 'Hold',
             style: { flex: 1, minHeight: '36px', borderRadius: '7px', fontSize: '11px', fontWeight: '800', cursor: isLive ? 'pointer' : 'not-allowed', background: onHold ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.07)', color: onHold ? '#818CF8' : isLive ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.4)', border: onHold ? '1px solid rgba(99,102,241,0.5)' : '1px solid rgba(255,255,255,0.1)', transition: 'all 0.15s' }
           }, onHold ? '⏸ HOLD' : '⏸ HOLD'),
-          React.createElement('button', {
-            onClick: isLive ? hangUp : undefined,
-            title: 'End call',
-            style: { flex: 1, minHeight: '36px', borderRadius: '7px', fontSize: '11px', fontWeight: '800', cursor: isLive ? 'pointer' : 'not-allowed', background: isLive ? 'rgba(220,38,38,0.2)' : 'rgba(255,255,255,0.05)', color: isLive ? '#EF4444' : 'rgba(255,255,255,0.12)', border: isLive ? '1px solid rgba(220,38,38,0.5)' : '1px solid rgba(255,255,255,0.07)', transition: 'all 0.15s' }
-          }, '📵 END')
+          // v3.62 — END works while RINGING too (was connected-only; manual dials
+          // that rang out or misdials had no hang-up outside power dial)
+          (() => { const canEnd = isLive || isConnecting;
+          return React.createElement('button', {
+            onClick: canEnd ? hangUp : undefined,
+            title: canEnd ? 'End call' : 'No active call',
+            style: { flex: 1, minHeight: '36px', borderRadius: '7px', fontSize: '11px', fontWeight: '800', cursor: canEnd ? 'pointer' : 'not-allowed', background: canEnd ? 'rgba(220,38,38,0.2)' : 'rgba(255,255,255,0.05)', color: canEnd ? '#EF4444' : 'rgba(255,255,255,0.12)', border: canEnd ? '1px solid rgba(220,38,38,0.5)' : '1px solid rgba(255,255,255,0.07)', transition: 'all 0.15s' }
+          }, '📵 END'); })()
         )
       );
     })(),
@@ -281,15 +284,21 @@ export default function DialQueuePanel({
 
       !session && React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '8px' } },
 
-        // ⚡ Power Dial
+        // ⚡ Power Dial (v3.61 — SKIP added: advance without logging anything)
         pdMode && pdStatus !== 'idle'
-          ? React.createElement('button', {
-              onClick: pdStop, title: 'Stop Power Dial',
-              style: { width: '100%', minHeight: '34px', padding: '0 8px', fontSize: '11px', fontWeight: '800', letterSpacing: '0.8px', background: 'rgba(220,38,38,0.22)', color: '#EF4444', border: '1px solid rgba(220,38,38,0.45)', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }
-            },
-              React.createElement('span', null, '■'),
-              React.createElement('span', null, 'STOP POWER DIAL'),
-              React.createElement('span', { style: { fontSize: '11px', fontWeight: '800', background: 'rgba(220,38,38,0.3)', color: '#EF4444', borderRadius: '8px', padding: '1px 7px' } }, (pdIdx + 1) + '/' + pdLockedQueue.length)
+          ? React.createElement('div', { style: { display: 'flex', gap: '5px' } },
+              React.createElement('button', {
+                onClick: pdStop, title: 'Stop Power Dial',
+                style: { flex: 1, minHeight: '34px', padding: '0 8px', fontSize: '11px', fontWeight: '800', letterSpacing: '0.8px', background: 'rgba(220,38,38,0.22)', color: '#EF4444', border: '1px solid rgba(220,38,38,0.45)', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }
+              },
+                React.createElement('span', null, '■'),
+                React.createElement('span', null, 'STOP'),
+                React.createElement('span', { style: { fontSize: '11px', fontWeight: '800', background: 'rgba(220,38,38,0.3)', color: '#EF4444', borderRadius: '8px', padding: '1px 7px' } }, (pdIdx + 1) + '/' + pdLockedQueue.length)
+              ),
+              React.createElement('button', {
+                onClick: pdSkip, title: 'Skip this lead — advance without logging a disposition',
+                style: { minHeight: '34px', padding: '0 12px', fontSize: '11px', fontWeight: '800', letterSpacing: '0.8px', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: '4px', cursor: 'pointer' }
+              }, 'SKIP \u2192')
             )
           : React.createElement('button', {
               onClick: pdStart,
@@ -345,9 +354,11 @@ export default function DialQueuePanel({
         style: { fontSize: '12px', fontWeight: '700', color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }
       }, session
         ? (session.idx + 1) + ' / ' + session.total + ' leads'
-        : dialQueueFilter === 'today'
-          ? queue.filter(isDueToday).length + ' due today'
-          : queue.length + ' in queue'
+        : dialQueueFilter === 'hot'
+          ? buildHotQueue(leads).length + ' \ud83d\udd25 openers (48h)'
+          : dialQueueFilter === 'today'
+            ? queue.filter(isDueToday).length + ' due today'
+            : queue.length + ' in queue'
       ),
 
       session && React.createElement('div', {
@@ -420,7 +431,16 @@ export default function DialQueuePanel({
               key: 'f-all', onClick: () => setDialQueueFilter('all'),
               title: 'Show full queue',
               style: { ...btnBase, background: dialQueueFilter === 'all' ? 'rgba(59,130,246,0.18)' : 'rgba(255,255,255,0.05)', color: dialQueueFilter === 'all' ? '#60A5FA' : 'rgba(255,255,255,0.4)', borderColor: dialQueueFilter === 'all' ? 'rgba(59,130,246,0.45)' : 'rgba(255,255,255,0.12)' }
-            }, 'ALL', React.createElement('span', { style: { marginLeft: '5px', fontSize: '11px', fontWeight: '800', background: dialQueueFilter === 'all' ? 'rgba(59,130,246,0.25)' : 'rgba(255,255,255,0.1)', color: dialQueueFilter === 'all' ? '#60A5FA' : 'rgba(255,255,255,0.5)', borderRadius: '8px', padding: '1px 5px' } }, allCount))
+            }, 'ALL', React.createElement('span', { style: { marginLeft: '5px', fontSize: '11px', fontWeight: '800', background: dialQueueFilter === 'all' ? 'rgba(59,130,246,0.25)' : 'rgba(255,255,255,0.1)', color: dialQueueFilter === 'all' ? '#60A5FA' : 'rgba(255,255,255,0.5)', borderRadius: '8px', padding: '1px 5px' } }, allCount)),
+            // v3.59 — 7c: 🔥 openers-only queue, summoned on demand
+            (() => {
+              const hotCount = buildHotQueue(leads).length;
+              return React.createElement('button', {
+                key: 'f-hot', onClick: () => setDialQueueFilter('hot'),
+                title: 'Email openers (last 48h) — ride the warm wave when YOU choose',
+                style: { ...btnBase, background: dialQueueFilter === 'hot' ? 'rgba(239,68,68,0.18)' : 'rgba(255,255,255,0.05)', color: dialQueueFilter === 'hot' ? '#F87171' : 'rgba(255,255,255,0.4)', borderColor: dialQueueFilter === 'hot' ? 'rgba(239,68,68,0.45)' : 'rgba(255,255,255,0.12)' }
+              }, '\ud83d\udd25', React.createElement('span', { style: { marginLeft: '4px', fontSize: '11px', fontWeight: '800', background: dialQueueFilter === 'hot' ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.1)', color: dialQueueFilter === 'hot' ? '#F87171' : 'rgba(255,255,255,0.5)', borderRadius: '8px', padding: '1px 5px' } }, hotCount));
+            })()
           ];
         })()
       ),
@@ -442,7 +462,8 @@ export default function DialQueuePanel({
     },
       (() => {
         const now3       = new Date();
-        const activeList = dialQueueFilter === 'today' ? queue.filter(isDueToday) : queue;
+        const activeList = dialQueueFilter === 'hot' ? buildHotQueue(leads)
+          : dialQueueFilter === 'today' ? queue.filter(isDueToday) : queue;
         let sorted = [...activeList];
 
         if (dialSortMode === 'priority') sorted.sort(masterQueueSort); // v3.26 — composite: phase + next_dial tiebreaker; overdue sort mode handles callback urgency
@@ -508,6 +529,10 @@ export default function DialQueuePanel({
               React.createElement('span', { 'aria-hidden': 'true', style: { fontSize: '11px', color: 'rgba(255,255,255,0.5)', minWidth: '15px', fontFamily: "'JetBrains Mono',monospace", lineHeight: 1 } }, idx + 1),
               React.createElement('span', { style: { fontSize: '12px', fontWeight: '700', color: isActive ? '#5DCAA5' : 'rgba(255,255,255,0.88)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, lead.name),
               calledToday && React.createElement('span', { title: 'Already worked today', style: { fontSize: '10px', padding: '1px 4px', borderRadius: '4px', background: 'rgba(93,202,165,0.15)', color: '#5DCAA5', fontWeight: '800', flexShrink: 0, marginRight: '3px' } }, '✓'),
+              // v3.59 — 7c: promise + heat chips
+              inPromiseWindow(lead) && React.createElement('span', { title: 'Promised callback — due now', style: { fontSize: '11px', padding: '1px 5px', borderRadius: '8px', background: 'rgba(245,158,11,0.25)', color: '#FCD34D', fontWeight: '800', flexShrink: 0 } },
+                '\u23f0 ' + new Date(lead.nextCallback).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })),
+              (() => { const h = hoursSinceOpen(lead); return (h != null && h <= 48) ? React.createElement('span', { title: 'Opened an email ' + h + 'h ago', style: { fontSize: '11px', flexShrink: 0 } }, '\ud83d\udd25') : null; })(),
               // v3.58 — 7b: derived-phase chip (bucket = legacy label, retired from queue UI)
               (() => {
                 const eff = effectivePhase(lead);

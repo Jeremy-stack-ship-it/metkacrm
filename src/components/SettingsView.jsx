@@ -52,45 +52,15 @@ export default function SettingsView({
     React.createElement("div",{style:{maxWidth:"640px",margin:"0 auto"}},
       React.createElement("h2",{style:{fontSize:"20px",fontWeight:"800",marginBottom:"24px",color:"var(--t1)",fontFamily:"'Syne',sans-serif"}},"Settings"),
 
-      // ── PHASE LIFECYCLE ENGINE CARD ──
+      // ── PHASE LIFECYCLE ENGINE CARD (v3.60 — DISARMED: calendar engine runs phases automatically) ──
       React.createElement("div",{style:{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"16px",padding:"24px",marginBottom:"16px",boxShadow:"0 4px 16px rgba(0,0,0,0.03)"}},
         React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px"}},
           React.createElement("div",null,
-            React.createElement("div",{style:{fontSize:"15px",fontWeight:"700",color:"var(--t1)"}},"⚡ Phase Lifecycle Engine"),
-            React.createElement("div",{style:{fontSize:"12px",color:"var(--t3)",marginTop:"4px",fontWeight:"500",lineHeight:"1.5"}},"Assigns P1/P2/P3/M2 phases to all leads and builds their forward dial schedules. Run this once to initialize Today's Block.")
+            React.createElement("div",{style:{fontSize:"15px",fontWeight:"700",color:"var(--t1)"}},"⚡ Phase Lifecycle Engine — automatic"),
+            React.createElement("div",{style:{fontSize:"12px",color:"var(--t3)",marginTop:"4px",fontWeight:"500",lineHeight:"1.5"}},"Phases are calendar-driven since v3.44: P1→P2→P3→M2→M3 advance on their own at every startup. The old Activate/Reset buttons were removed — resetting would fight the engine.")
           )
         ),
         React.createElement("div",{style:{display:"flex",gap:"10px",flexWrap:"wrap"}},
-          React.createElement("button",{
-            onClick:()=>{
-              const unphased = leads.filter(l => !l.phase);
-              if(unphased.length === 0){ alert("✅ All leads already have phases assigned."); return; }
-              if(!window.confirm(`Assign phases to ${unphased.length} leads without phases?\n\nBucket A → P1/P2/P3/M2 based on age\nBucket B → M2\nBucket C → EXIT\n\nThis does NOT overwrite existing phase assignments.`)) return;
-              const backfilled = leads.map(l => backfillLead(l));
-              setLeads(backfilled);
-              saveLeads(backfilled);
-              alert(`✅ Phase lifecycle activated for ${unphased.length} leads.\n\nToday's Block is now ready — tap ⚡ in the sidebar.`);
-            },
-            style:{padding:"10px 20px",background:"var(--blue)",color:"#fff",border:"none",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}
-          },"🚀 Activate Phase System"),
-          React.createElement("button",{
-            onClick:()=>{
-              const phased = leads.filter(l => l.phase);
-              if(!window.confirm(`Clear all phase data from ${phased.length} leads?\n\nThis lets you re-run Activate Phase System with updated bucket assignments.`)) return;
-              const reset = leads.map(l => {
-                const cleared = {...l};
-                delete cleared.phase;
-                delete cleared.phase_start;
-                delete cleared.next_dial;
-                SCHED_COLS.forEach(k => { delete cleared[k]; });
-                return cleared;
-              });
-              setLeads(reset);
-              saveLeads(reset);
-              alert("✅ Phase data cleared. Now click Activate Phase System to re-assign.");
-            },
-            style:{padding:"10px 20px",background:"var(--surface-2)",color:"var(--t2)",border:"1px solid var(--border)",borderRadius:"8px",fontSize:"13px",fontWeight:"600",cursor:"pointer"}
-          },"↺ Reset All Phases"),
 
           // Balance AM/PM Slots button
           React.createElement("button",{

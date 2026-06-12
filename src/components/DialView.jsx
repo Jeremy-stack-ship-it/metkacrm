@@ -3,7 +3,7 @@ import { BC, BL, NC, fmt, inp, isUWStuck, daysInUW } from '../constants.js';
 import { usePowerDialer } from '../lib/usePowerDialer.js';
 import { getNextTouchDate } from '../lib/sequenceEngine.js';
 import { getTrackLength } from '../lib/sequenceTemplates.js';
-import { PHASE_DEFS, buildTodayQueue, effectivePhase, leadAgeDays } from '../lib/phaseEngine.js'; // v3.57-58 queue brain + truth chips
+import { PHASE_DEFS, buildTodayQueue, effectivePhase, leadAgeDays, hoursSinceOpen } from '../lib/phaseEngine.js'; // v3.57-59 queue brain + chips + heat
 
 
 // ── Script token renderer — module scope (no per-render redefinition) ──────
@@ -65,7 +65,7 @@ export default function DialView({
     pdMode, pdStatus, pdIdx, pdLockedQueue, pdAttempt, pdCountdown,
     pdSessionLog,
     currentPdLead, pdBg, pdAccent,
-    pdStart, pdStop, fireDisp,
+    pdStart, pdStop, fireDisp, pdSkip,
   } = usePowerDialer({ queue, openId, dialLead, twilioDevice, setOpenId, handleDisposition, callStatus, selectedSlot });
   // v3.24 — auto-start PD when launched from dashboard slot tile
   const pdStartRef = useRef(pdStart);
@@ -100,7 +100,7 @@ export default function DialView({
       onHold, setOnHold,
       // PD state
       pdMode, pdStatus, pdIdx, pdLockedQueue, pdAttempt, pdCountdown,
-      pdStart, pdStop,
+      pdStart, pdStop, pdSkip,
       pdQueue,
       pdSessionLog,
       currentPdLead, pdBg, pdAccent,
@@ -200,6 +200,17 @@ export default function DialView({
                 " \u00b7 " + dialLabel
               )
             );
+          })(),
+
+          // v3.59 — 7c: 🔥 heat pill (opened an email recently)
+          (function() {
+            var h = hoursSinceOpen(open);
+            if (h == null || h > 48) return null;
+            return React.createElement("span", {
+              title: "This family opened an email " + h + "h ago — strike while warm",
+              style: { fontSize:"11px", fontWeight:"700", padding:"3px 9px", borderRadius:"20px",
+                background:"rgba(239,68,68,0.12)", color:"#EF4444", border:"1px solid rgba(239,68,68,0.4)" }
+            }, "\ud83d\udd25 Opened " + (h === 0 ? "<1" : h) + "h ago");
           })(),
 
           // Pill 2 — Sequence step + next touch

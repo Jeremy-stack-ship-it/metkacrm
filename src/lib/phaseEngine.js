@@ -286,8 +286,20 @@ export const applyPhaseTransition = (lead, dispId) => {
   return patch;
 };
 
+// v3.59 — 7c: a kept promise outranks everything. nextCallback due within the
+// next hour (or earlier today, still unhandled) → priority 105.
+export const inPromiseWindow = (lead, now = new Date()) => {
+  if (!lead || !lead.nextCallback) return false;
+  if (['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked'].includes(lead.disposition)) return false;
+  const cb = new Date(lead.nextCallback);
+  if (isNaN(cb.getTime())) return false;
+  const startOfDay = new Date(now); startOfDay.setHours(0, 0, 0, 0);
+  return cb >= startOfDay && cb <= new Date(now.getTime() + 60 * 60 * 1000);
+};
+
 export const getPhasePriority = (lead) => {
   const disp = lead.disposition || '';
+  if (inPromiseWindow(lead)) return 105; // v3.59 — promise window
   if (disp === 'no_sale') return 100;
   if (disp === 'no_show') return 90;
   // v3.44 — F4: rank on CALENDAR-derived phase, not the stored label.
@@ -304,9 +316,19 @@ export const getPhasePriority = (lead) => {
 };
 
 export const isDueToday = (lead) => {
-  if (lead.phase === 'EXIT') return false;
   if (lead.stage === 'removed') return false;
   if (['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked'].includes(lead.disposition)) return false;
+
+  // v3.61 — a due PROMISE beats the EXIT guard: retired sold clients' UW
+  // check-in callbacks must still surface (promise window). Terminal
+  // dispositions are already excluded above.
+  if (lead.nextCallback) {
+    const _cbP = new Date(lead.nextCallback);
+    const _eodP = new Date(); _eodP.setHours(23, 59, 59, 999);
+    if (!isNaN(_cbP.getTime()) && _cbP <= _eodP) return true;
+  }
+
+  if (lead.phase === 'EXIT') return false;
 
   // v3.7 — don't resurface a lead already contacted today unless a callback is now due
   // v3.10 fix: compare date strings directly (avoids UTC midnight parse timezone offset)
@@ -317,6 +339,12 @@ export const isDueToday = (lead) => {
       if (!cbDue) return false;
     }
   }
+
+  // (v3.59 promise check moved ABOVE the EXIT guard in v3.61)
+
+  // v3.61 — SOLD CLIENTS never surface via schedule (the promise check above
+  // already returned true for due UW check-in callbacks — that path stays).
+  if (isClientLead(lead)) return false;
 
   // v3.44 — M2/M3 leads stay out of the Today queue (Session 3 wires their
   // spillover fill) EXCEPT a due callback always surfaces — agreement-based
@@ -594,6 +622,24 @@ export const buildSessionQueue = (leads, session) => {
 //     violating schedule-rules-all doctrine. Replaced by processMissedSlots +
 //     session capacity caps. See tasks/SPEC-M1-M2-M3-BUILD.md Session 2.) ──────
 
+// ── SOLD-CLIENT RETIREMENT (v3.61 — BUG: Lori Mills, sold 6/4, served by the
+//     dial queue 6/12). Doctrine: buying a policy ends the dial machine's claim.
+//     Wipes phase schedule + phase→EXIT for submitted/issued/UW leads. Their
+//     nextCallback is PRESERVED — UW check-ins still surface via the promise
+//     window. Clients are served by appointments and the 5 R's, not dial waves.
+export const CLIENT_STAGES_SET = new Set(['issued', 'app_submitted', 'underwriting']);
+export const isClientLead = (lead) =>
+  !!lead && (lead.disposition === 'submitted' || CLIENT_STAGES_SET.has(lead.stage));
+
+export const retireSoldSchedule = (lead) => {
+  if (!isClientLead(lead)) return null;
+  const hasMachine = lead.next_dial || lead.phase !== 'EXIT' || SCHED_COLS.some(k => lead[k]);
+  if (!hasMachine) return null;
+  const patch = { phase: 'EXIT', next_dial: null };
+  SCHED_COLS.forEach(k => { if (lead[k]) patch[k] = null; });
+  return patch;
+};
+
 // ── BUCKET C RESURRECTION (v3.48 — flag-gated, dry-run first) ────────────────
 // 1,701 leads sit in EXIT because the v3.11-era backfill hard-mapped Bucket C →
 // EXIT — before the doctrine existed. Doctrine: EXIT is EARNED by a terminal
@@ -635,6 +681,29 @@ export const dryRunResurrection = (leads) => {
   return r;
 };
 
+// ── HOT QUEUE (v3.59 — 7c) ───────────────────────────────────────────────────
+// Email openers, on demand. NEVER merged into the main queue — Jeremy summons
+// this list when he chooses to ride a warm wave (e.g. after a morning send).
+// Opens change visibility only — never schedules.
+export const buildHotQueue = (leads, hours = 48, now = new Date()) => {
+  const cutoff = now.getTime() - hours * 3600 * 1000;
+  const todayStr = now.toLocaleDateString('en-CA');
+  const SKIP = new Set(['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked', 'submitted']);
+  return (leads || [])
+    .filter(l => l && !isClientLead(l) && l.lastEmailOpenedAt &&
+      new Date(l.lastEmailOpenedAt).getTime() >= cutoff &&
+      l.phase !== 'EXIT' && l.stage !== 'removed' &&
+      !SKIP.has(l.disposition) &&
+      l.lastContact !== todayStr)
+    .sort((a, b) => new Date(b.lastEmailOpenedAt) - new Date(a.lastEmailOpenedAt));
+};
+
+export const hoursSinceOpen = (lead, now = Date.now()) => {
+  if (!lead || !lead.lastEmailOpenedAt) return null;
+  const h = (now - new Date(lead.lastEmailOpenedAt).getTime()) / 3600000;
+  return isNaN(h) ? null : Math.max(0, Math.floor(h));
+};
+
 // ── TODAY QUEUE BUILDER (v3.57 — Session 7a) ────────────────────────────────
 // THE queue brain, transplanted from TodaysBlock (now pure + shared).
 // Doctrine order: ghosts out → due today → slot → masterQueueSort →
@@ -644,7 +713,7 @@ export const buildTodayQueue = (leads, opts = {}) => {
   const slot = opts.slot !== undefined ? opts.slot : (sess ? sess.slot : null);
   const capacity = opts.capacity ?? (sess ? sess.capacity : 80);
   const maxRecovery = opts.maxRecovery ?? Math.min(15, Math.round(capacity * 0.375));
-  const GHOST_DISP  = ['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked', 'invalid', 'archive'];
+  const GHOST_DISP  = ['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked', 'invalid', 'archive', 'submitted']; // v3.61 — sold = out
   const GHOST_STAGE = ['removed', 'dnc', 'issued', 'app_submitted', 'underwriting'];
   const eligible = (leads || []).filter(l => {
     if (!l) return false;

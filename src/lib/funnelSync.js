@@ -127,6 +127,13 @@ export const syncFromCsv = (csvLeads, currentLeads) => {
           SCHED_COLS.forEach(k => { if (match[k]) patch[k] = null; });
           if (toDisp === 'dnc') patch.stage = 'removed';
         }
+        // v3.61 — SOLD also retires the dial machine (Lori Mills bug: Issue Paid
+        // synced 6/10 but her P2 schedule kept marching → dialed her 6/12)
+        if (toDisp === 'submitted') {
+          patch.phase = 'EXIT';
+          patch.next_dial = null;
+          SCHED_COLS.forEach(k => { if (match[k]) patch[k] = null; });
+        }
         patch.notes = [{ ts, type: 'note',
           text: `\u{1F501} Funnel sync ${syncDay}: status ${c.funnelStatusRaw || fromDisp} \u2192 ${toDisp}` },
           ...(match.notes || [])];

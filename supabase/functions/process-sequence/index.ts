@@ -859,7 +859,9 @@ serve(async (req) => {
       }
 
       // ── SEND EMAIL (Gmail API) ─────────────────────────────────────
-      if (entry.channels.includes("email") && lead.email && (lead.emailBounced as boolean)) {
+      // v3.60 — honor unsubscribes (emailOptOut set by the unsubscribe fn)
+      if (lead.emailOptOut === true) { results.skipped++; }
+      else if (entry.channels.includes("email") && lead.email && (lead.emailBounced as boolean)) {
         activityNotes.push(makeNote(
           `[SEQ] Email SKIPPED — emailBounced flag set | Track: ${trackLabel} | Step ${step}`
         ));

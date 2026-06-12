@@ -450,3 +450,41 @@ Clean builds throughout. App.jsx 1391 → 1384 (net −7, Session 7 promise hono
 - Sidebar last-contact stamps: already existed (recencyLabel) — verified, no work needed.
 
 Files: src/components/SmsThread.jsx, DialRightPanel.jsx, DialView.jsx, DialQueuePanel.jsx, src/lib/toast.js (new), src/App.jsx.
+
+## v3.59 — Session 7c: Promise Window + 🔥 Hot Queue
+11/11 tests + clean build. Opens change VISIBILITY only — never schedules (doctrine intact).
+
+- **Promise window = priority 105.** A callback due within the next hour (or earlier today, unhandled) outranks everything — above no-sale. ⏰ time chip on queue rows in the window.
+- **GAP FIX:** a due callback now ALWAYS surfaces in the Today queue regardless of phase or a future next_dial — previously a P-phase lead's "call me at 2" vanished behind its own schedule.
+- **🔥 Hot Queue (on demand, never auto-merged):** new 🔥 filter in the dial sidebar — email openers from the last 48h, freshest first, terminal/booked/contacted-today excluded, M2/M3 included (heat beats spacing for VISIBILITY only). Count badge live; power-dial START runs the hot list when the filter's active. Jeremy summons it when he chooses — e.g., the half-hour after a morning send.
+- 🔥 chips on normal queue rows for recent openers + "🔥 Opened Xh ago" pill on the open lead in DialView.
+
+Files: src/lib/phaseEngine.js, src/components/DialQueuePanel.jsx, src/components/DialView.jsx.
+
+## v3.60 — Unsubscribe Fix (COMPLIANCE) + Screenshot-Audit Patch Batch
+- **🚨 UNSUBSCRIBE WAS A 404 SINCE LAUNCH.** Every sequence email's footer linked /functions/v1/unsubscribe — never built, never deployed (CAN-SPAM exposure; Mary G Davis clicked twice on 6/11 and got error pages). FIXED: unsubscribe fn v1 DEPLOYED (public, branded confirmation page, sets emailOptOut + seqPaused + note + in-blob _ts — and because the live cron already respects seqPaused, unsubscribes take effect IMMEDIATELY, before any redeploy). Lloyd Davis (Mary's household) opted out retroactively via SQL. process-sequence patched locally with belt-and-suspenders emailOptOut skip — ⚠ JEREMY: CLI deploy process-sequence.
+- **Pipeline lag (Jeremy report):** per-column render cap of 30 cards (+N more footer) — the 2,233-card New Lead column was the lag. True counts still in headers.
+- **Stale A2P banner (Jeremy report):** Templates view now says A2P Approved · Live + accurate description (manual sends live, automation off per deconfliction).
+- **ORDERS "UNKNOWN" labels:** order clustering now runs EVERY startup (idempotent) — labels re-cluster the moment sources arrive instead of freezing behind a one-time flag.
+- **Settings legacy phase panel DISARMED:** Activate/Reset buttons removed (they'd fight the v3.44 calendar engine); panel now documents that phases run automatically. Balance AM/PM kept.
+
+Files: supabase/functions/unsubscribe (new, deployed), supabase/functions/process-sequence, src/App.jsx, src/components/PipelineView.jsx, TemplatesView.jsx, SettingsView.jsx.
+
+## v3.61 — BUG: Sold clients stayed in the dial machine (the Lori Mills bug) + PD SKIP
+8/8 tests + clean build. Reported live by Jeremy mid-block: Lori Mills (sold 6/4, Issue Paid synced 6/10) showed "P2 · Day 16 · Due today" and got power-dialed.
+
+- **Root cause:** SOLD was never terminal to the dial engine. DNC wipes a schedule; buying a policy didn't. Her P2 schedule kept marching after the sync.
+- **retireSoldSchedule():** submitted disposition or client stages (app_submitted/underwriting/issued) → schedule wiped, phase EXIT. Fires at disposition time, at sync time (Issue Paid promote now wipes), and as an idempotent startup pass (retires Lori + every existing client on next refresh).
+- **UW check-ins preserved:** isDueToday reordered — a due nextCallback (promise) now beats the EXIT guard, so retired clients' 14-day UW check-in callbacks still surface. Terminal dispositions still excluded first (dnc + stale callback ≠ due).
+- **Clients excluded everywhere:** buildTodayQueue ghosts, hot queue, spillover — sold = served by appointments + 5 R's, never dial waves.
+- **PD SKIP button (Jeremy: "Lori is on screen and I can't move the queue forward"):** STOP and SKIP→ now sit side-by-side during power dial — skip advances without logging anything.
+- Email side confirmed safe: her sequence was already Paused (sync did that right); Jeremy CLI-deployed process-sequence so emailOptOut guard is live for tomorrow's 9AM run.
+
+Files: src/lib/phaseEngine.js, dispositionEngine.js, funnelSync.js, usePowerDialer.js, src/App.jsx, src/components/DialView.jsx, DialQueuePanel.jsx.
+
+## v3.62 — END-while-ringing fix + 🔥 Card Touch
+- **BUG (Jeremy report): no hang-up outside power dial.** END button armed only on 'connected' — ringing/misdialed manual calls had no way to end (PD's auto-hang masked it). Now arms on connecting OR connected.
+- **🔥 Card Touch chip (Jeremy: "opener sms is fire"):** in any SMS thread where the family opened an email ≤48h ago (and isn't opted out), a one-tap 🔥 Card chip fills the composer: warm intro + hihello digital business card + STOP language. Manual send only — deconfliction intact. Workflow: card → 2 min → dial, your name already on their screen. Auto version parked until Funnel cancels.
+- **Logged for design conversation (NOT built):** Jeremy's PD redesign — power dial should be an auto-advance TOGGLE over the one visible queue, not a mode that locks its own differently-filtered list. Touches usePowerDialer core; conversation first.
+
+Files: src/components/DialQueuePanel.jsx, src/components/SmsThread.jsx.

@@ -1,8 +1,9 @@
 import React from 'react';
 import { reconstructSeqSms } from '../lib/seqSmsBodies.js'; // v3.53 — real text for auto sends
-import { SMS_SEQUENCES, suggestSeqCat } from '../lib/phaseEngine.js';
+import { SMS_SEQUENCES, suggestSeqCat, hoursSinceOpen } from '../lib/phaseEngine.js'; // v3.62 card touch
 
 const CALENDLY = 'https://calendly.com/metkasolutions/20min';
+const HIHELLO  = 'https://hihello.me/p/6cc69b25-86ec-4c39-a45b-fd48bee85403'; // digital business card
 const SELF_APPLY = 'https://apply.quility.com/#/symmetry/raq/SFG0092434?redirect_url=https%3A%2F%2Fyourlivingbenefit.com%2F&leadtype=Life%20Insurance&producttype=Life%20Insurance';
 
 // ── SMS THREAD ────────────────────────────────────────────────────────────────
@@ -212,6 +213,20 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
         React.createElement('button', { onClick:()=>setTplOpen(v=>!v), style:{ fontSize:'11px', fontWeight:'700', padding:'4px 10px', borderRadius:'6px', border:'1px solid '+(tplOpen?'var(--blue)':'var(--border)'), background:tplOpen?'var(--blue)':'var(--surface-2)', color:tplOpen?'#fff':'var(--t2)', cursor:'pointer' } },
           '📋 ' + (tplOpen?'▲':'▾')
         ),
+        // v3.62 — 🔥 CARD TOUCH: one-tap warm intro for email openers. Manual
+        // send only (deconfliction intact) — fills the composer, you hit send,
+        // then dial them two minutes later with your name already on their phone.
+        (() => {
+          const h = hoursSinceOpen(open);
+          if (h == null || h > 48 || open.smsOptOut) return null;
+          const first = open.firstName || (open.name||'').split(' ')[0] || 'there';
+          const cardMsg = 'Hey ' + first + ', Jeremy Metka \u2014 saw you were looking over what I sent about your coverage options. Here\u2019s my card so you know who\u2019s calling: ' + HIHELLO + ' \u2014 talk soon. Reply STOP to opt out.';
+          return React.createElement('button', {
+            onClick: () => setMsgText(cardMsg),
+            title: 'They opened an email ' + h + 'h ago \u2014 send your card, then dial',
+            style:{ fontSize:'11px', fontWeight:'800', padding:'3px 9px', borderRadius:'6px', border:'1px solid rgba(239,68,68,0.5)', background:'rgba(239,68,68,0.10)', color:'#EF4444', cursor:'pointer' }
+          }, '\ud83d\udd25 Card');
+        })(),
         [['Name', open.firstName||(open.name||'').split(' ')[0]||'there'], ['Cal', CALENDLY], ['Apply', SELF_APPLY]].map(([lbl, val]) =>
           React.createElement('button', { key:lbl, onClick:()=>insertVar(val), style:{ fontSize:'10px', fontWeight:'700', padding:'3px 7px', borderRadius:'6px', border:'1px solid var(--border)', background:'var(--surface-2)', color:'var(--t3)', cursor:'pointer' } }, '{'+lbl+'}')
         ),

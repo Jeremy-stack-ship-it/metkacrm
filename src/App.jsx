@@ -71,7 +71,7 @@ import { STATE_TZ, STAGES, DISPS, BC, BL, NC, FIELD_MAP_DEFS,
   fmt, fmtDate, currency, chip, inp } from './constants.js';
 // ── Library Modules (v3.6) ───────────────────────────────────────
 import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity, sbLoadSeqStats, sbBeaconFlush, sbSendSms } from './lib/supabaseSync.js';
-import { backfillLead, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, migrateAgedPhases, processMissedSlots, dryRunAgeRebase, RESURRECTION_ACTIVE, resurrectBucketC, dryRunResurrection, buildTodayQueue, extendSessionWithSpillover, getActiveSession } from './lib/phaseEngine.js'; // v3.44-48 + v3.57 queue brain
+import { backfillLead, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, migrateAgedPhases, processMissedSlots, dryRunAgeRebase, RESURRECTION_ACTIVE, resurrectBucketC, dryRunResurrection, buildTodayQueue, extendSessionWithSpillover, getActiveSession, retireSoldSchedule } from './lib/phaseEngine.js'; // v3.44-61 queue brain
 import { buildDispositionPatch } from './lib/dispositionEngine.js'; // v3.43 — F3 unified disposition logic
 import { toast } from './lib/toast.js'; // v3.58 — non-blocking dial-flow notifications
 import { assignLeadOrders, orderRollup, medianDaysToBE } from './lib/leadOrders.js'; // v3.51 — economics
@@ -395,6 +395,17 @@ function MetkaCRM(){
           _res.clients + ' clients excluded (5 R\'s track)');
       }
 
+      // v3.61 — retire dial schedules on existing SOLD/client leads (one pass,
+      // idempotent): they exit the dial machine; UW check-in callbacks survive.
+      let _retiredCount = 0;
+      initialLeads = initialLeads.map(l => {
+        const p = retireSoldSchedule(l);
+        if (!p) return l;
+        _retiredCount++; _changedIds.add(l.id);
+        return { ...l, ...p, _ts: _tsNow };
+      });
+      if (_retiredCount) console.log('[CRM v3.61] Retired dial schedules on ' + _retiredCount + ' sold/client leads');
+
       let _agedCount = 0;
       initialLeads = initialLeads.map(l => {
         const p = migrateAgedPhases(l);
@@ -430,17 +441,18 @@ function MetkaCRM(){
 
       // v3.51 — one-time lead-order clustering: every historical lead gets a
       // leadOrderId (source + level + assign-week). Economics needs cohorts.
-      const LS_ORDER_BACKFILL = 'metka-order-backfill-v2'; // v3.52 — re-cluster after field-map bug fix
-      if (!localStorage.getItem(LS_ORDER_BACKFILL)) {
+      // v3.60 — order clustering runs EVERY startup (idempotent; UNKNOWN-source
+      // orders re-cluster the moment a sync delivers real sources — the one-time
+      // flag froze labels that synced AFTER the flag was consumed)
+      {
         const _ord = assignLeadOrders(initialLeads);
         if (_ord.changed > 0) {
           initialLeads = _ord.leads;
           try {
             localStorage.setItem(LS_LEADS, LZString.compressToUTF16(JSON.stringify(initialLeads)));
-          } catch(e) { console.warn('[CRM v3.51] order backfill persist failed:', e); }
-          console.log(`[CRM v3.51] Lead-order backfill: ${_ord.changed} leads clustered into orders`);
+          } catch(e) { console.warn('[CRM v3.60] order re-cluster persist failed:', e); }
+          console.log(`[CRM v3.60] Lead orders: ${_ord.changed} leads (re)clustered`);
         }
-        localStorage.setItem(LS_ORDER_BACKFILL, '1');
       }
 
       // v3.47 — S3b age re-base DRY-RUN (re-base is OFF until Jeremy approves).
