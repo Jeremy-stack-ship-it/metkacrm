@@ -87,3 +87,35 @@ Awaiting: Jeremy's resurrection split numbers → flip approval.
 - [x] LeadOrdersView + ORDERS nav entry + startup backfill (one-time flag)
 - [x] 17/17 math checks, build clean
 - [x] Corrected mid-build App.jsx string corruption (heredoc escape) — verify-after-insert saved it
+
+
+# Session 6 — SMS tabs + F8 (2026-06-12)
+- [x] MessagesView tabs w/ counts (all/unread/awaiting/optout)
+- [x] F8 read-only forensic: 4 shared-phone groups, 1 real household intact — CLOSED, no recovery needed
+- [!] Jeremy action: re-run Funnel sync (v3.52 fix live, data not loaded)
+
+
+# Audit v2 Patch (2026-06-12)
+- [x] funnelSync disarm-only (5/5 tests)
+- [x] sendSmsGuarded hoist (3 dupes removed, optOut block)
+- [x] send-sms v10 deployed (server-side optOut 403)
+- [x] receive-sms v12 deployed (mandatory fail-closed signature)
+- [x] beacon notes strip
+- [!] Jeremy: send a test text inbound to verify signature validation passes
+
+
+# Session 7a — Queue transplant (2026-06-12)
+- [x] buildTodayQueue pure fn; all launch paths swapped off legacy priority()
+- [x] Fixed hidden isDueToday ReferenceError in slot launches
+- [x] extendSessionWithSpillover + confirm continuation
+- [x] SessionStrip (LIVE/PAUSED · label · X/Y · elapsed)
+- [x] 12/12 tests, build clean. App.jsx 1391→1398 (+7, UX only; 7b nets negative)
+
+
+# Session 7b — Adoption + demolition (2026-06-12)
+- [x] Ladder position memory + auto-advance on real send (SmsThread, all surfaces)
+- [x] Dead SmsTab excised (9.6KB)
+- [x] Truth chips: DialView pill + sidebar rows (buckets retired from queue UI)
+- [x] Toasts replace dial-flow alerts (lib/toast.js)
+- [x] TodaysBlock wiring removed; App.jsx 1391→1384 (net −7)
+- [!] JEREMY: del src\components\TodaysBlock.jsx + git ritual (v3.55-58)

@@ -9,6 +9,7 @@ import SmsThread from './SmsThread.jsx';
 export default function MessagesView({ leads, sendSms, upd, setView, setOpenId, setPrevView, onRefresh }) {
   const [selectedId, setSelectedId] = React.useState(null);
   const [search,     setSearch]     = React.useState('');
+  const [tab,        setTab]        = React.useState('all'); // v3.55 — all | unread | awaiting | optout
 
   // Build conversation list — leads with ANY SMS activity
   const conversations = React.useMemo(() => {
@@ -23,8 +24,12 @@ export default function MessagesView({ leads, sendSms, upd, setView, setOpenId, 
           )
         );
         if (smsNotes.length === 0) return null;
-        const latest = smsNotes.sort((a,b) => new Date(b.ts)-new Date(a.ts))[0];
-        return { lead, latest, count: smsNotes.length, hasUnread: !!lead.smsUnread };
+        const sorted = [...smsNotes].sort((a,b) => new Date(b.ts)-new Date(a.ts));
+        const latest = sorted[0];
+        // v3.55 — awaiting my reply: the FAMILY spoke last (latest is inbound)
+        const awaitingReply = latest.type === 'sms_inbound';
+        return { lead, latest, count: smsNotes.length, hasUnread: !!lead.smsUnread,
+                 awaitingReply, optedOut: lead.smsOptOut === true };
       })
       .filter(Boolean)
       .sort((a, b) => {
@@ -35,12 +40,27 @@ export default function MessagesView({ leads, sendSms, upd, setView, setOpenId, 
       });
   }, [leads]);
 
+  // v3.55 — filter tabs (Jeremy request 2026-06-11)
+  const tabCounts = React.useMemo(() => ({
+    all:      conversations.length,
+    unread:   conversations.filter(c => c.hasUnread).length,
+    awaiting: conversations.filter(c => c.awaitingReply && !c.optedOut).length,
+    optout:   conversations.filter(c => c.optedOut).length,
+  }), [conversations]);
+
+  const byTab = conversations.filter(c => {
+    if (tab === 'unread')   return c.hasUnread;
+    if (tab === 'awaiting') return c.awaitingReply && !c.optedOut;
+    if (tab === 'optout')   return c.optedOut;
+    return true;
+  });
+
   const filtered = search.trim()
-    ? conversations.filter(c =>
+    ? byTab.filter(c =>
         (c.lead.name || '').toLowerCase().includes(search.toLowerCase()) ||
         (c.lead.phone || '').includes(search)
       )
-    : conversations;
+    : byTab;
 
   const selectedLead = selectedId ? (leads || []).find(l => l.id === selectedId) : null;
 
@@ -89,14 +109,35 @@ export default function MessagesView({ leads, sendSms, upd, setView, setOpenId, 
           value:search, onChange:e=>setSearch(e.target.value),
           placeholder:'Search leads…',
           style:{ width:'100%', padding:'7px 10px', fontSize:'12px', borderRadius:'7px', border:'1px solid var(--border)', background:'var(--surface-2)', color:'var(--t1)', boxSizing:'border-box', fontFamily:"'Inter',sans-serif" }
-        })
+        }),
+        // v3.55 — filter tabs: All · Unread · Awaiting My Reply · Opted Out
+        React.createElement('div', { style:{ display:'flex', gap:'4px', marginTop:'8px' } },
+          [['all','All'],['unread','Unread'],['awaiting','📥 Awaiting'],['optout','⛔']].map(([id, label]) =>
+            React.createElement('button', {
+              key:id, onClick:()=>setTab(id),
+              title: id==='awaiting' ? 'Family spoke last — needs your reply' : id==='optout' ? 'Texted STOP — calls only' : '',
+              style:{
+                flex: id==='optout' ? '0 0 auto' : 1, padding:'5px 6px', fontSize:'10px', fontWeight:'800',
+                borderRadius:'6px', cursor:'pointer', letterSpacing:'0.3px', whiteSpace:'nowrap',
+                border:'1px solid ' + (tab===id ? (id==='optout'?'var(--red)':'var(--blue)') : 'var(--border)'),
+                background: tab===id ? (id==='optout'?'var(--red-dim)':'var(--blue)') : 'transparent',
+                color: tab===id ? (id==='optout'?'var(--red)':'#fff') : 'var(--t3)',
+              }
+            }, label + (tabCounts[id] > 0 ? ' ' + tabCounts[id] : ''))
+          )
+        )
       ),
 
       // List
       filtered.length === 0
         ? React.createElement('div', { style:{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:'var(--t4)', fontSize:'12px', textAlign:'center', padding:'24px', flexDirection:'column', gap:'8px' } },
             React.createElement('div', { style:{ fontSize:'32px' } }, '💬'),
-            React.createElement('div', { style:{ fontWeight:'700', color:'var(--t3)' } }, conversations.length === 0 ? 'No messages yet' : 'No results'),
+            React.createElement('div', { style:{ fontWeight:'700', color:'var(--t3)' } },
+              conversations.length === 0 ? 'No messages yet'
+                : tab === 'awaiting' ? 'Inbox zero — every family answered ✊'
+                : tab === 'unread' ? 'All caught up'
+                : tab === 'optout' ? 'No opt-outs in view'
+                : 'No results'),
             conversations.length === 0 && React.createElement('div', { style:{ fontSize:'11px', lineHeight:'1.5' } }, "Open any lead's contact card,\nclick the SMS tab, and send the first message.\nReplies will appear here automatically."),
             onRefresh && React.createElement('button', { onClick:onRefresh, style:{ marginTop:'8px', fontSize:'11px', fontWeight:'700', padding:'5px 12px', borderRadius:'6px', border:'1px solid var(--border)', background:'var(--surface)', color:'var(--t2)', cursor:'pointer' } }, '🔄 Refresh from cloud')
           )

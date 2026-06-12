@@ -635,6 +635,32 @@ export const dryRunResurrection = (leads) => {
   return r;
 };
 
+// ── TODAY QUEUE BUILDER (v3.57 — Session 7a) ────────────────────────────────
+// THE queue brain, transplanted from TodaysBlock (now pure + shared).
+// Doctrine order: ghosts out → due today → slot → masterQueueSort →
+// recovery cap (no_sale/no_show ≤ ~37.5%) → session capacity.
+export const buildTodayQueue = (leads, opts = {}) => {
+  const sess = opts.session !== undefined ? opts.session : getActiveSession();
+  const slot = opts.slot !== undefined ? opts.slot : (sess ? sess.slot : null);
+  const capacity = opts.capacity ?? (sess ? sess.capacity : 80);
+  const maxRecovery = opts.maxRecovery ?? Math.min(15, Math.round(capacity * 0.375));
+  const GHOST_DISP  = ['dnc', 'not_interested', 'withdrawn', 'chargeback', 'appointment_booked', 'invalid', 'archive'];
+  const GHOST_STAGE = ['removed', 'dnc', 'issued', 'app_submitted', 'underwriting'];
+  const eligible = (leads || []).filter(l => {
+    if (!l) return false;
+    if (GHOST_DISP.includes(l.disposition)) return false;
+    if (GHOST_STAGE.includes(l.stage)) return false;
+    if (slot && (l.slot || 'AM') !== slot) return false;
+    return isDueToday(l);
+  }).sort(masterQueueSort);
+  let rec = 0;
+  return eligible.filter(l => {
+    const isRec = ['no_sale', 'no_show'].includes(l.disposition);
+    if (isRec) { if (rec >= maxRecovery) return false; rec++; }
+    return true;
+  }).slice(0, capacity);
+};
+
 // ── M2/M3 SPILLOVER (v3.46 — Session 3) ─────────────────────────────────────
 // Fills SPARE dial-block capacity with aged leads. M1 is never interrupted —
 // spillover is bonus work with zero guaranteed time (docs: Machine 2 addendum).
@@ -671,6 +697,17 @@ export const buildSpillover = (leads, remainingCapacity, now = new Date()) => {
   const m2 = m2pool.slice(0, remainingCapacity);
   const m3 = m3pool.slice(0, Math.max(0, remainingCapacity - m2.length));
   return { m2, m3 };
+};
+
+// v3.57 — 7a: extend a completed M1 session with M2/M3 spillover ids.
+// Returns the updated session (idx pointing at the first aged lead) or null
+// when no eligible spillover exists.
+export const extendSessionWithSpillover = (session, leads, capacity = 40) => {
+  if (!session || !session.ids) return null;
+  const spill = buildSpillover(leads, capacity);
+  const extra = [...spill.m2, ...spill.m3].map(l => l.id).filter(id => !session.ids.includes(id));
+  if (extra.length === 0) return null;
+  return { ...session, ids: [...session.ids, ...extra], idx: session.idx + 1, total: session.ids.length + extra.length, spillCount: extra.length };
 };
 
 // ── PHASE DATE NORMALIZATION (v3.15) ─────────────────────────────────────────

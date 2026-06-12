@@ -8,6 +8,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const CORS = {
   "Access-Control-Allow-Origin":  "*",
@@ -28,6 +29,27 @@ serve(async (req) => {
         JSON.stringify({ error: "Missing required fields: to, body" }),
         { status: 400, headers: { ...CORS, "Content-Type": "application/json" } }
       );
+    }
+
+    // v3.56 — SERVER-SIDE OPT-OUT GUARD (audit V2-3b, defense in depth).
+    // Every caller — UI, cron, future code — is checked here, at the wire.
+    if (leadId) {
+      try {
+        const sb = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+        );
+        const { data: row } = await sb.from("leads").select("data").eq("id", leadId).single();
+        if (row?.data?.smsOptOut === true) {
+          console.warn(`[send-sms] BLOCKED opted-out lead ${leadId}`);
+          return new Response(
+            JSON.stringify({ error: "Lead has opted out (STOP). Send blocked.", code: "OPTED_OUT" }),
+            { status: 403, headers: { ...CORS, "Content-Type": "application/json" } }
+          );
+        }
+      } catch (e) {
+        console.warn("[send-sms] optOut lookup failed (continuing):", (e as Error).message);
+      }
     }
 
     const accountSid  = Deno.env.get("TWILIO_ACCOUNT_SID");
@@ -81,7 +103,7 @@ serve(async (req) => {
   } catch (err) {
     console.error("send-sms error:", err);
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ error: (err as Error).message }),
       { status: 500, headers: { ...CORS, "Content-Type": "application/json" } }
     );
   }

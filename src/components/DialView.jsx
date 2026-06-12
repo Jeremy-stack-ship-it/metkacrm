@@ -3,7 +3,7 @@ import { BC, BL, NC, fmt, inp, isUWStuck, daysInUW } from '../constants.js';
 import { usePowerDialer } from '../lib/usePowerDialer.js';
 import { getNextTouchDate } from '../lib/sequenceEngine.js';
 import { getTrackLength } from '../lib/sequenceTemplates.js';
-import { PHASE_DEFS } from '../lib/phaseEngine.js';
+import { PHASE_DEFS, buildTodayQueue, effectivePhase, leadAgeDays } from '../lib/phaseEngine.js'; // v3.57-58 queue brain + truth chips
 
 
 // ── Script token renderer — module scope (no per-render redefinition) ──────
@@ -75,9 +75,10 @@ export default function DialView({
     setSelectedSlot(pendingDialSlot);
     // Small delay so React re-renders selectedSlot into pdQueue before pdStart runs
     const t = setTimeout(() => {
-        const slotLeads = (queue || []).filter(l => {
-        try { return isDueToday(l) && (l.slot || 'AM') === pendingDialSlot; } catch { return false; }
-      });
+      // v3.57 — 7a: slot tiles launch the PHASE ENGINE queue (caps + recovery
+      // limit + doctrine order) instead of an uncapped inline filter.
+      let slotLeads = [];
+      try { slotLeads = buildTodayQueue(leads, { slot: pendingDialSlot }); } catch { slotLeads = []; }
       pdStartRef.current(slotLeads.length > 0 ? slotLeads : undefined);
       if (clearPendingDialSlot) clearPendingDialSlot();
     }, 120);
@@ -169,8 +170,11 @@ export default function DialView({
 
           // Pill 1 — Phase + next dial
           (function() {
-            var phaseDef = PHASE_DEFS[open.phase] || null;
+            // v3.58 — 7b: CALENDAR-derived phase + day count (stored label retired from UI)
+            var effPhase = effectivePhase(open);
+            var phaseDef = PHASE_DEFS[effPhase] || null;
             var phaseColor = phaseDef ? phaseDef.color : "var(--t4)";
+            var ageDays = leadAgeDays(open);
             var nd = open.next_dial ? new Date(open.next_dial) : null;
             var today0 = new Date(); today0.setHours(0,0,0,0);
             var dialLabel;
@@ -191,9 +195,9 @@ export default function DialView({
                 padding:"3px 9px", borderRadius:"20px",
                 background: phaseColor + "18", color: phaseColor, border:"1px solid " + phaseColor + "44" }
             },
-              open.phase || "—",
+              (effPhase || "\u2014") + " \u00b7 Day " + ageDays,
               React.createElement("span", { style: { fontWeight:"500", color: isDue ? "var(--green)" : "inherit" } },
-                " · " + dialLabel
+                " \u00b7 " + dialLabel
               )
             );
           })(),

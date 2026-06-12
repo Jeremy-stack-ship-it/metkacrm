@@ -151,7 +151,10 @@ export const sbBeaconFlush = (leads) => {
   if (!leads || leads.length === 0) return;
   const rows = leads.map(l => ({
     id:           l.id,
-    data:         l,
+    // v3.56 — AUDIT V2-8: keepalive cap is ~64KB; full note histories (up to
+    // 10KB/lead) limited the flush to ~6 leads. Notes are already persisted by
+    // normal saves — the beacon only needs the latest field changes + 1 note.
+    data:         { ...l, notes: (l.notes || []).slice(0, 1) },
     updated_at:   new Date().toISOString(),
     slot:         l.slot         || null,
     bucket:       l.bucket       || null,

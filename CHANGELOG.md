@@ -407,3 +407,46 @@ process-sequence type-checked clean (deno check); quiet-hours logic 5/5 node tes
 - Cron plan: re-enable at 0 14 * * * UTC (9AM CDT — was 9 UTC/4AM, the incident hour) AFTER Jeremy deploys.
 
 Files: supabase/functions/process-sequence/index.ts, src/components/SmsThread.jsx.
+
+## v3.55 — Session 6: SMS Filter Tabs + F8 Spouse-Recovery Check
+- **MessagesView filter tabs:** All · Unread · 📥 Awaiting (family spoke last, no reply yet — the money filter) · ⛔ (opted-out, calls only). Live count badges, tab-aware empty states. Pure filtering on existing data.
+- **F8 CLOSED — zero spouses lost.** Forensic: only 4 shared-phone/different-name groups in the full Funnel export; 3 were typo-duplicates of one person; the one real household (Scott + Quentin Dressler) both survive in M3 on distinct numbers. v3.38 dedup harmed nobody.
+- Finding: leadCode null across checked leads → post-v3.52 Funnel re-sync NOT yet run — Jeremy must re-run sync to load costs/sources/leadCodes (ORDERS still $0 until then).
+
+Files: src/components/MessagesView.jsx.
+
+## v3.56 — Audit v2 Patch Session (5 fixes, 2 deploys)
+Tests: 5/5 funnelSync arm/disarm + beacon strip + clean builds (vite + deno check).
+
+- **V2-2 (HIGH):** Funnel sync may DISARM sequences (DNC/terminal must stop the drip — cron filters on seqPaused only) but NEVER ARMS one. Re-arming with stale clocks was the 6/11 barrage shape. Doctrine (Jeremy): enrollment is deliberate, never a sync side effect.
+- **V2-1+V2-5 (HIGH):** single `sendSmsGuarded` in App.jsx replaces 3 pasted wrappers — opted-out leads blocked with alert at the one chokepoint every view uses.
+- **V2-3b:** send-sms v10 DEPLOYED — server-side opt-out rejection (403 OPTED_OUT) for every caller, forever.
+- **V2-3a:** receive-sms v12 DEPLOYED — signature validation now MANDATORY and fail-closed (missing secret or invalid/erroring signature → 403). Forged-STOP attack closed.
+- **V2-8:** sbBeaconFlush strips notes to latest-1 — close-the-laptop flush no longer capped at ~6 fat leads.
+
+⚠ Verify inbound still works: text the Twilio number, confirm it lands in Messages (signature validation is URL-sensitive — if 403s appear in receive-sms logs, the webhook URL needs exact-match alignment).
+Files: src/lib/funnelSync.js, src/App.jsx, src/lib/supabaseSync.js, supabase/functions/send-sms, supabase/functions/receive-sms.
+
+## v3.57 — Session 7a: DialView adopts the queue brain
+12/12 tests + clean build. DialView's CALL FLOW untouched — all changes land around it.
+
+- **buildTodayQueue() in phaseEngine** — the Block's queue logic, now pure + shared: ghosts out → isDueToday → slot → masterQueueSort → recovery cap → capacity.
+- **All session launch paths now phase-engine fed:** startDialSession default, refreshQueueOrder (legacy priority() retired from queue building), dashboard slot tiles.
+- **HIDDEN BUG FIXED:** DialView's slot-launch filter referenced isDueToday WITHOUT importing it — the try/catch swallowed the ReferenceError, so slot tiles had been silently launching unfiltered queues. Now they launch the doctrine queue with caps.
+- **Spillover continuation:** M1 list completes mid-session → one confirm ("N aged reactivation leads ready — keep dialing?") → same session rolls into M2/M3 (extendSessionWithSpillover in lib).
+- **SessionStrip in the dial sidebar:** ● LIVE / ⏸ PAUSED · real session label · worked X/Y · ticking elapsed. Renders only during a locked session.
+- App.jsx: +7 lines (session-extension UX next to setSession; math in lib). 7b demolition takes App.jsx net negative.
+
+Files: src/lib/phaseEngine.js, src/App.jsx, src/components/DialView.jsx, src/components/DialQueuePanel.jsx.
+
+## v3.58 — Session 7b: Full adoption + DEMOLITION
+Clean builds throughout. App.jsx 1391 → 1384 (net −7, Session 7 promise honored).
+
+- **SMS ladder, fully alive in every thread:** SmsThread's drawer now carries position memory — sent steps show ✓ dimmed, the next step glows NEXT, and a REAL successful send of a ladder step auto-advances smsSeq/smsStep (TodaysBlock's manual "mark sent" made obsolete by actual sending). Works in the dialer SMS tab, Messages view, and contact card alike.
+- **Dead code excised:** DialRightPanel's SmsTab component (9.6KB) was never rendered — the SMS tab renders SmsThread. Deleted.
+- **Truth chips:** DialView's phase pill now shows CALENDAR-derived phase + day count ("P3 · Day 41 · Due today"); queue sidebar rows swap the legacy bucket badge for the derived-phase chip (M2 rows show tier: "M2·T1"). Buckets retired from queue UI per doctrine.
+- **Toasts replace alerts in the dial flow:** session complete, empty queue, SMS blocked (⛔ STOP), SMS failure — all non-blocking bottom toasts (lib/toast.js, framework-free). Delete confirm stays a confirm (destructive).
+- **DEMOLITION:** TodaysBlock import, render block, and handleTodayDispose removed from App.jsx. File fully orphaned — ⚠ JEREMY: `del src\components\TodaysBlock.jsx` (sandbox can't delete Windows-owned files), then the git ritual.
+- Sidebar last-contact stamps: already existed (recencyLabel) — verified, no work needed.
+
+Files: src/components/SmsThread.jsx, DialRightPanel.jsx, DialView.jsx, DialQueuePanel.jsx, src/lib/toast.js (new), src/App.jsx.

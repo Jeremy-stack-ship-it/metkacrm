@@ -19,6 +19,9 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
   const [sendResult, setSendResult] = React.useState(null);
   const [tplOpen,    setTplOpen]    = React.useState(false);
   const [tplCat,     setTplCat]     = React.useState('cat1');
+  // v3.58 — 7b: ladder position memory. When a drawer step fills the composer,
+  // a successful SEND auto-advances smsSeq/smsStep — no manual mark needed.
+  const [filledStep, setFilledStep] = React.useState(null);
   const bottomRef = React.useRef(null);
 
   const MAX = 160;
@@ -70,6 +73,8 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
     setSending(true); setSendResult(null);
     try {
       await sendSms(open.phone, msgText.trim(), open.id);
+      // v3.58 — 7b: real send of a ladder step advances the position memory
+      if (filledStep) { upd && upd(open.id, { smsSeq: filledStep.cat, smsStep: filledStep.step }); setFilledStep(null); }
       setSendResult('ok');
       setMsgText('');
       setTimeout(() => setSendResult(null), 2500);
@@ -185,14 +190,17 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
           (SMS_SEQUENCES[tplCat] && SMS_SEQUENCES[tplCat].texts || []).map(step => {
             const fn = open ? (open.firstName || (open.name||'').split(' ')[0] || 'there') : 'there';
             const preview = step.body(fn, CALENDLY).slice(0, 90) + '…';
+            const sentUpTo = (open && open.smsSeq === tplCat) ? (open.smsStep || 0) : 0;
+            const isNext = step.step === sentUpTo + 1;
+            const isSent = step.step <= sentUpTo;
             return React.createElement('div', {
               key: step.step,
-              onClick: () => fill(step.body(fn, CALENDLY)),
-              style:{ padding:'7px 10px', marginBottom:'3px', borderRadius:'7px', border:'1px solid var(--border)', cursor:'pointer', background:'var(--surface-2)', fontSize:'11px' },
+              onClick: () => { fill(step.body(fn, CALENDLY)); setFilledStep({ cat: tplCat, step: step.step }); },
+              style:{ padding:'7px 10px', marginBottom:'3px', borderRadius:'7px', border:'1px solid '+(isNext?'var(--blue)':'var(--border)'), cursor:'pointer', background: isNext?'var(--blue-dim)':'var(--surface-2)', fontSize:'11px', opacity: isSent?0.5:1 },
               onMouseEnter: e => e.currentTarget.style.background='var(--blue-dim)',
               onMouseLeave: e => e.currentTarget.style.background='var(--surface-2)',
             },
-              React.createElement('span', { style:{ fontSize:'10px', fontWeight:'800', color:'var(--t3)', marginRight:'6px' } }, 'Step '+step.step),
+              React.createElement('span', { style:{ fontSize:'11px', fontWeight:'800', color: isNext?'var(--blue)':'var(--t3)', marginRight:'6px' } }, (isSent?'\u2713 ':'') + 'Step '+step.step + (isNext?' \u2022 NEXT':'')),
               React.createElement('span', { style:{ color:'var(--t2)', lineHeight:'1.4' } }, preview)
             );
           })

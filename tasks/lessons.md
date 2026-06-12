@@ -12,3 +12,7 @@
 ## 2026-06-11 — New parser fields must be added to the field-map whitelist
 **What happened:** v3.45 added 9 fields to autoDetectMapping + parseCSV, but confirmFieldMapping's allKeys whitelist in useImportHandlers rebuilds the idxMap from scratch — unlisted keys are silently dropped on every modal-confirmed import. All money/source data lost until Jeremy's ORDERS screenshot exposed it.
 **How to apply:** parseCSV fields have THREE registration points: autoDetectMapping, the lead object in parseCSV, AND allKeys in useImportHandlers. Touch all three or the field doesn't exist. End-to-end test imports must go through the MODAL path (customIdxMap), not bare parseCSV — my S2.5 tests called parseCSV directly and missed this.
+
+## 2026-06-12 — Proposed merging the tool Jeremy loves into the tool he doesn't use for dialing
+**What happened:** Specced "Block absorbs DialView" + mockup. Jeremy: scared, then veto — "I like my DialView far more for seamless dialer uses." He was right: DialView is a refined cockpit (Twilio, scripts, auto-advance) shaped by real use; the Block is a planner that drifted.
+**How to apply:** When two surfaces overlap, the one shaped by daily USE wins; feed it data, don't replace it. Never propose retiring a tool the user reaches for under pressure. Mock up BEFORE speccing retirement language — "DialView retires" caused the fear, not the architecture.

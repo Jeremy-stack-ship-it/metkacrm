@@ -36,7 +36,7 @@ async function validateTwilioSignature(
     const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(toSign));
     const expected = btoa(String.fromCharCode(...new Uint8Array(sig)));
     return expected === signature;
-  } catch { return true; } // fail open if crypto error — don't block messages
+  } catch { return false; } // v3.56 — FAIL CLOSED (audit V2-3a): crypto error = reject
 }
 
 serve(async (req) => {
@@ -61,14 +61,20 @@ serve(async (req) => {
     const messageSid = params["MessageSid"] || "";
     const numMedia   = parseInt(params["NumMedia"] || "0", 10);
 
-    // Optional signature validation
-    if (authToken) {
+    // v3.56 — MANDATORY signature validation (audit V2-3a). This URL is public;
+    // without verification anyone could forge inbound texts — including mass
+    // fake-STOP flags that would poison the entire marketing list.
+    if (!authToken) {
+      console.error("[receive-sms] TWILIO_AUTH_TOKEN secret not set — REJECTING (fail closed)");
+      return new Response("Forbidden", { status: 403 });
+    }
+    {
       const sig = req.headers.get("X-Twilio-Signature") || "";
       const url = `${supabaseUrl}/functions/v1/receive-sms`;
       const valid = await validateTwilioSignature(authToken, sig, url, params);
       if (!valid) {
-        console.warn("[receive-sms] Invalid Twilio signature");
-        return new Response("<Response/>", { headers: { "Content-Type": "text/xml" } });
+        console.warn("[receive-sms] Invalid Twilio signature — rejected");
+        return new Response("Forbidden", { status: 403 });
       }
     }
 

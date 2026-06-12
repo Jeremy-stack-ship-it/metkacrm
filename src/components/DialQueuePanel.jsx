@@ -1,8 +1,29 @@
 import React from 'react';
 import { BC, isUWStuck } from '../constants.js';
-import { getPhasePriority, isDueToday, getActiveSession, getNextSession, SESSIONS, masterQueueSort } from '../lib/phaseEngine';
+import { getPhasePriority, isDueToday, getActiveSession, getNextSession, SESSIONS, masterQueueSort, effectivePhase, PHASE_DEFS } from '../lib/phaseEngine'; // v3.58 truth chips
 
 const LS_SESSION = 'metka-session-v1';
+
+// ── SESSION TRUTH STRIP (v3.57 — 7a, transplanted from TodaysBlock) ────────
+// Live locked-session readout: LIVE/PAUSED · real session label · worked X/Y ·
+// ticking elapsed. Renders only while a session is active. Purely additive.
+const SessionStrip = ({ session, sessionPaused }) => {
+  const [, tick] = React.useState(0);
+  React.useEffect(() => {
+    const iv = setInterval(() => tick(t => t + 1), 1000);
+    return () => clearInterval(iv);
+  }, []);
+  if (!session) return null;
+  const elapsed = session.startedAt ? Math.max(0, Math.floor((Date.now() - new Date(session.startedAt)) / 1000)) : null;
+  const fmtE = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  const sess = getActiveSession();
+  return React.createElement('div', { style: { padding: '7px 12px', background: sessionPaused ? 'rgba(245,158,11,0.12)' : 'rgba(37,99,235,0.15)', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
+    React.createElement('span', { style: { fontSize: '11px', fontWeight: '800', color: sessionPaused ? '#FCD34D' : '#93C5FD', letterSpacing: '0.5px', flexShrink: 0 } }, sessionPaused ? '⏸ PAUSED' : '● LIVE'),
+    React.createElement('span', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.78)', fontWeight: '700', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+      (sess ? sess.label : 'Session') + ' · ' + Math.min((session.idx || 0) + 1, session.total) + '/' + session.total),
+    elapsed != null && React.createElement('span', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.55)', fontFamily: "'JetBrains Mono',monospace", flexShrink: 0 } }, fmtE(elapsed))
+  );
+};
 
 // ── DialQueuePanel — LEFT sidebar (dark, 240px) ───────────────────────────
 // Owns: call control panel, PD controls, queue filter/sort, lead list
@@ -112,6 +133,9 @@ export default function DialQueuePanel({
         )
       )
     ),
+
+    // v3.57 — 7a: live session truth (only while a locked session runs)
+    React.createElement(SessionStrip, { session, sessionPaused }),
 
     // ── SECTION 1.5: Today Panel ──────────────────────────────────────────────
     // v3.12 — Two-block daily overview: AM + PM sessions, lead/callback counts
@@ -484,7 +508,13 @@ export default function DialQueuePanel({
               React.createElement('span', { 'aria-hidden': 'true', style: { fontSize: '11px', color: 'rgba(255,255,255,0.5)', minWidth: '15px', fontFamily: "'JetBrains Mono',monospace", lineHeight: 1 } }, idx + 1),
               React.createElement('span', { style: { fontSize: '12px', fontWeight: '700', color: isActive ? '#5DCAA5' : 'rgba(255,255,255,0.88)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, lead.name),
               calledToday && React.createElement('span', { title: 'Already worked today', style: { fontSize: '10px', padding: '1px 4px', borderRadius: '4px', background: 'rgba(93,202,165,0.15)', color: '#5DCAA5', fontWeight: '800', flexShrink: 0, marginRight: '3px' } }, '✓'),
-              React.createElement('span', { 'aria-hidden': 'true', style: { fontSize: '11px', padding: '1px 5px', borderRadius: '8px', background: BC[lead.bucket] + '28', color: BC[lead.bucket], fontWeight: '800', flexShrink: 0 } }, lead.bucket)
+              // v3.58 — 7b: derived-phase chip (bucket = legacy label, retired from queue UI)
+              (() => {
+                const eff = effectivePhase(lead);
+                const pc = (PHASE_DEFS[eff] || {}).color || '#94A3B8';
+                return React.createElement('span', { 'aria-hidden': 'true', style: { fontSize: '11px', padding: '1px 6px', borderRadius: '8px', background: pc + '28', color: pc, fontWeight: '800', flexShrink: 0 } },
+                  eff + (eff === 'M2' && lead.m2_tier ? '\u00b7T' + lead.m2_tier : ''));
+              })()
             ),
             React.createElement('div', { style: { paddingLeft: '20px', display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'nowrap', overflow: 'hidden' } },
               React.createElement('span', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.45)', fontFamily: "'JetBrains Mono',monospace", fontWeight: '500', flexShrink: 0 } }, lead.phone),

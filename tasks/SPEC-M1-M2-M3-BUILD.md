@@ -69,3 +69,36 @@ Goal: per-lead-order P&L — never blended averages. "Razor Ridge numbers ≠ DL
 5. Commission calc aware of 85% contract + advance rate; chargebacks subtract (UHL precedent).
 6. Projection: median days-to-BE by level/source → forecast for sizing future orders (Derick's exact use case).
 Depends on: Session 2.5 sync (cost+provenance fields), Session 4 flags (sat/set for funnel-stage rates).
+
+## SESSION 7 — FINAL (Jeremy, 2026-06-12): TODAY'S BLOCK DIES, DIALVIEW ADOPTS EVERYTHING
+"Today Block needs to go — I want it fully adopted by DialView." DialView's dialing flow remains sacred; it GAINS the Block's organs, then the Block is deleted (code — git resurrects if ever needed).
+
+### 7.1 — Queue transplant (the brain)
+DialView sessions draw from the PHASE ENGINE queue: isDueToday + slot filter + masterQueueSort + session capacity + 15-recovery cap (today this logic lives only in TodaysBlock's todayListComputed; DialView's refreshQueueOrder still uses legacy priority() scoring — replace). M1 exhausted mid-session → inline offer: "M1 done — N M2/M3 reactivation leads ready, continue?" → buildSpillover continuation, same flow.
+
+### 7.2 — Session truth + block timer (the header)
+getActiveSession() label + cap + worked/contacts/appts counts + elapsed timer in DialView header. START/END BLOCK lives here now. Kills UI#4's fake hardcoded times.
+
+### 7.3 — SMS ladder transplant
+TodaysBlock's sequence-ladder modal (SMS_SEQUENCES cat1/2/3 stepper, suggestSeqCat, mark-sent smsSeq/smsStep tracking, copy-templates) moves into DialRightPanel's SMS tab. Guarded sender already central.
+
+### 7.4 — Truth chips + sidebar stamps
+effectivePhase + day count on open-lead header and queue sidebar rows ("P1 · Day 4", "M2 · T1") replacing stale lead.phase reads (UI#3). Last-contacted stamp per sidebar row (Funnel pattern Jeremy lives with).
+
+### 7.5 — Flow polish on the cockpit
+alert() → inline toast strip (session complete, SMS result) (UI#6). Readability pass ≥11px + touch targets on DialView only (UI#7).
+
+### 7.6 — Demolition
+Delete TodaysBlock.jsx · remove 'today' nav/view (view==='today' redirects to dial for one release) · dashboard AM/PM session tiles start DIAL sessions directly · PHASE_DEFS duplicate dies with the file · move any orphan exports.
+
+Scope: 2 build sessions (7a = 7.1+7.2 queue/header; 7b = 7.3-7.6 transplant/polish/demolition). DialView call flow untouched throughout — additions around it, never inside the dial loop.
+
+## FUNNEL-DELETION READINESS (the checklist that ends the $59.99/mo)
+- [ ] Unified dialer battle-tested: Jeremy runs FULL production days in Metka for 2+ weeks without reaching for Funnel
+- [ ] Fresh-lead intake: lead drops (John/Michelle DLHA, vendor) route into Metka directly (CSV import day-of, or vendor delivery email→parser) — TODAY they land in Funnel first
+- [x] Email drip owned (process-sequence cron, guarded)
+- [x] SMS machinery owned (send/receive/guards; enable = SMS_ENABLED flip — deconfliction constraint DIES with the Funnel subscription)
+- [x] Inbound SMS + STOP compliance
+- [x] Economics / system of record
+- [ ] Pre-deletion: export everything from Funnel one final time (leads + whatever they'll give)
+- [ ] If Metka ever leaves localhost: RLS/auth first (V2-4)

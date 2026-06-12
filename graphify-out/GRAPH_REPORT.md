@@ -1,16 +1,16 @@
 # Graph Report - metka-crm  (2026-06-11)
 
 ## Corpus Check
-- 78 files · ~108,189 words
+- 81 files · ~112,987 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 466 nodes · 845 edges · 33 communities (23 shown, 10 thin omitted)
+- 498 nodes · 891 edges · 35 communities (26 shown, 9 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f97432e6`
+- Built from commit: `27784453`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -47,11 +47,13 @@
 - [[_COMMUNITY_Community 30|Community 30]]
 - [[_COMMUNITY_Community 31|Community 31]]
 - [[_COMMUNITY_Community 32|Community 32]]
+- [[_COMMUNITY_Community 33|Community 33]]
+- [[_COMMUNITY_Community 34|Community 34]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `MetkaCRM()` - 34 edges
+1. `MetkaCRM()` - 35 edges
 2. `inp()` - 22 edges
-3. `Changelog — Metka Field Ops CRM` - 13 edges
+3. `Changelog — Metka Field Ops CRM` - 16 edges
 4. `isUWStuck()` - 13 edges
 5. `dayKey()` - 12 edges
 6. `applyPhaseTransition()` - 9 edges
@@ -67,32 +69,32 @@
   src/App.jsx → src/lib/ccIntegration.js
 - `MetkaCRM()` --calls--> `buildDispositionPatch()`  [EXTRACTED]
   src/App.jsx → src/lib/dispositionEngine.js
+- `MetkaCRM()` --calls--> `assignLeadOrders()`  [EXTRACTED]
+  src/App.jsx → src/lib/leadOrders.js
 - `MetkaCRM()` --calls--> `autoFollowUp()`  [EXTRACTED]
   src/App.jsx → src/lib/leadScoring.js
-- `MetkaCRM()` --calls--> `priority()`  [EXTRACTED]
-  src/App.jsx → src/lib/leadScoring.js
 
-## Communities (33 total, 10 thin omitted)
+## Communities (35 total, 9 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.08
 Nodes (41): StageStepper(), useAuth(), ACTIVITY_TYPES, aggregateActivity(), computeActivityQueue(), CONTACT_DISPS, dayKey(), DEFAULT_GOALS (+33 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.11
-Nodes (34): AddLeadForm(), AppointmentConfirmModal(), ContactDetail(), UnderwritingCard(), ContactsView(), DialRightPanel(), renderLiveTokens(), TOKEN_FIELDS (+26 more)
+Cohesion: 0.10
+Nodes (36): AddLeadForm(), AppointmentConfirmModal(), APP_STATUSES, ContactDetail(), ECON_STAGES, UnderwritingCard(), ContactsView(), DialRightPanel() (+28 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.05
-Nodes (35): active, activityNotes, allRows, archived, archiveNote, base64urlEncode(), bdayHtml, bdayNote (+27 more)
+Cohesion: 0.04
+Nodes (41): active, activityNotes, allRows, archived, archiveNote, base64urlEncode(), bdayHtml, bdayNote (+33 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.08
-Nodes (23): INNER_TABS, SequenceTab(), TC, TD_STYLE, TH_STYLE, advanceSequence(), getTodayCallList(), initSequence() (+15 more)
+Nodes (22): INNER_TABS, SequenceTab(), TC, TD_STYLE, TH_STYLE, advanceSequence(), getTodayCallList(), PAUSE_DISPS (+14 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.07
-Nodes (41): DashboardTab(), PHASE_DEFS, QUICK_DISPS, SMS_SEQUENCES, AUTO_CALLBACKS, buildDispositionPatch(), DISP_NOTE_TEXT, DISP_STAGE_MAP (+33 more)
+Cohesion: 0.08
+Nodes (40): DashboardTab(), PHASE_DEFS, QUICK_DISPS, SMS_SEQUENCES, AUTO_CALLBACKS, buildDispositionPatch(), DISP_NOTE_TEXT, DISP_STAGE_MAP (+32 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.10
@@ -135,8 +137,8 @@ Cohesion: 0.15
 Nodes (12): 3.1 — phaseEngine: buildSpillover(leads, remainingCapacity, now), 3.2 — dispositionEngine: M2/M3 outcome branches (inside buildDispositionPatch), 3.3 — UI wiring, 3.4 — Verification, BUILD SPEC — Machine Doctrine Implementation (M1 hardening + M2 + M3), DOCTRINE (one paragraph, memorize), SESSION 1 — Correctness (audit fixes, no new features), SESSION 2 — Calendar phase engine (G1, F4) (+4 more)
 
 ### Community 15 - "Community 15"
-Cohesion: 0.08
-Nodes (25): [2026-04-01] v1.0.0 — Initial Build, [2026-05-01] v2.0.0 — Ministry Lead Operating System, [2026-05-13] v3.6 — Modular Architecture Refactor, [2026-05-14] v3.6.1 — Power Dialer + Audit Fixes, Added, Added, Added, Added (+17 more)
+Cohesion: 0.07
+Nodes (28): [2026-04-01] v1.0.0 — Initial Build, [2026-05-01] v2.0.0 — Ministry Lead Operating System, [2026-05-13] v3.6 — Modular Architecture Refactor, [2026-05-14] v3.6.1 — Power Dialer + Audit Fixes, Added, Added, Added, Added (+20 more)
 
 ### Community 17 - "Community 17"
 Cohesion: 0.40
@@ -147,8 +149,8 @@ Cohesion: 1.00
 Nodes (4): Dashboard Tab, Queue Tab, Settings Tab, Today's Block Tab
 
 ### Community 27 - "Community 27"
-Cohesion: 0.17
-Nodes (11): Review, Review S2, Review S2.5, Review S3, Session 1 — Correctness Fixes (2026-06-10), Session 2.5 — Funnel CSV Sync (2026-06-10), Session 2 — Calendar Phase Engine (2026-06-10), Session 3 — M2/M3 Spillover (2026-06-10) (+3 more)
+Cohesion: 0.15
+Nodes (12): Review, Review S2, Review S2.5, Review S3, Session 1 — Correctness Fixes (2026-06-10), Session 2.5 — Funnel CSV Sync (2026-06-10), Session 2 — Calendar Phase Engine (2026-06-10), Session 3 — M2/M3 Spillover (2026-06-10) (+4 more)
 
 ### Community 28 - "Community 28"
 Cohesion: 0.22
@@ -158,29 +160,41 @@ Nodes (9): autoFollowUp(), openCalendlyPopup(), priority(), a, assignDate, b, le
 Cohesion: 0.38
 Nodes (5): DRAFT_OPTS, draftPrompt(), GEMINI_URL(), geminiCall(), leadCtx()
 
+### Community 30 - "Community 30"
+Cohesion: 0.50
+Nodes (3): 2026-06-11 — Heredoc escape corrupted an insert (caught same-minute), 2026-06-11 — New parser fields must be added to the field-map whitelist, 2026-06-11 — Specced from stale backlog instead of reading code
+
 ### Community 32 - "Community 32"
 Cohesion: 0.60
 Nodes (4): BUSINESS_HOURS, dayKey(), fmtHour(), HourlyStats()
 
+### Community 33 - "Community 33"
+Cohesion: 0.22
+Nodes (9): fmt$(), LeadOrdersView(), r0(), assignLeadOrders(), leadMoneyIn(), medianDaysToBE(), money(), orderRollup() (+1 more)
+
+### Community 34 - "Community 34"
+Cohesion: 0.22
+Nodes (5): SMS_SEQUENCES, suggestSeqCat(), reconstructSeqSms(), SMS, TRACK_LABEL_TO_ID
+
 ## Knowledge Gaps
-- **188 isolated node(s):** `Added`, `Changed`, `Fixed`, `Dependencies`, `Notes` (+183 more)
+- **202 isolated node(s):** `Added`, `Changed`, `Fixed`, `Dependencies`, `Notes` (+197 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `inp()` connect `Community 1` to `Community 0`, `Community 7`?**
-  _High betweenness centrality (0.015) - this node is a cross-community bridge._
+  _High betweenness centrality (0.014) - this node is a cross-community bridge._
 - **Why does `priority()` connect `Community 28` to `Community 0`, `Community 1`, `Community 4`?**
-  _High betweenness centrality (0.006) - this node is a cross-community bridge._
+  _High betweenness centrality (0.005) - this node is a cross-community bridge._
 - **Why does `autoFollowUp()` connect `Community 28` to `Community 0`, `Community 4`?**
   _High betweenness centrality (0.005) - this node is a cross-community bridge._
 - **What connects `Added`, `Changed`, `Fixed` to the rest of the system?**
-  _188 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _202 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.07704918032786885 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07595628415300547 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.11054421768707483 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09643605870020965 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.047619047619047616 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.04251700680272109 - nodes in this community are weakly interconnected._

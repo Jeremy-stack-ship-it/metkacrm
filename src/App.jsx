@@ -54,7 +54,6 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import LZString from 'lz-string';
 import { createClient } from '@supabase/supabase-js';
 // Device imported inside lib/useTwilioDevice.js
-import TodaysBlock from './components/TodaysBlock';
 import DashboardTab from './components/DashboardTab';
 import CallBar from './components/CallBar';
 import HourlyStats from './components/HourlyStats';
@@ -72,8 +71,9 @@ import { STATE_TZ, STAGES, DISPS, BC, BL, NC, FIELD_MAP_DEFS,
   fmt, fmtDate, currency, chip, inp } from './constants.js';
 // ── Library Modules (v3.6) ───────────────────────────────────────
 import { sbUpsertLead, sbUpsertAll, sbDeleteLead, sbReconcileDeletes, sbLoadAll, sbSaveActivity, sbAppendActivity, sbLoadActivity, sbLoadSeqStats, sbBeaconFlush, sbSendSms } from './lib/supabaseSync.js';
-import { backfillLead, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, migrateAgedPhases, processMissedSlots, dryRunAgeRebase, RESURRECTION_ACTIVE, resurrectBucketC, dryRunResurrection } from './lib/phaseEngine.js'; // v3.44-48 phase machine
+import { backfillLead, getPhasePriority, isDueToday, SCHED_COLS, assignSlot, normalizePhaseSchedule, migrateAgedPhases, processMissedSlots, dryRunAgeRebase, RESURRECTION_ACTIVE, resurrectBucketC, dryRunResurrection, buildTodayQueue, extendSessionWithSpillover, getActiveSession } from './lib/phaseEngine.js'; // v3.44-48 + v3.57 queue brain
 import { buildDispositionPatch } from './lib/dispositionEngine.js'; // v3.43 — F3 unified disposition logic
+import { toast } from './lib/toast.js'; // v3.58 — non-blocking dial-flow notifications
 import { assignLeadOrders, orderRollup, medianDaysToBE } from './lib/leadOrders.js'; // v3.51 — economics
 import { DEFAULT_GOALS, CONTACT_DISPS, ACTIVITY_TYPES, dayKey, TODAY_KEY, lastNDays, weekKeys, monthKeys, aggregateActivity, fmtTime, goalTone, makeActivityManager } from './lib/activityLog.js';
 import { makeLeadManager } from './lib/leads.js';
@@ -675,6 +675,28 @@ const saveLeads = useCallback((next, opts = {}) => {
   const { undoLastActivity, logActivity } = activityMgr;
   const { upd, addNote, logDial, lockCB, deleteLead, addLead } = leadMgr;
 
+  // ── v3.56 — SINGLE GUARDED SMS SENDER (audit V2-1 + V2-5) ──────────────────
+  // Every view sends through here. Opted-out families are BLOCKED before the
+  // wire — texting a STOP'd lead is a willful TCPA violation ($500-1,500/text).
+  // Previously this wrapper was pasted 3x inline (drift risk — how F3 happened).
+  const sendSmsGuarded = useCallback(async (phone, body, leadId) => {
+    const all = dirtyLeadsRef.current || [];
+    const digits = (phone || '').replace(/\D/g, '');
+    const lead = all.find(l => l.id === leadId) ||
+                 all.find(l => (l.phone || '').replace(/\D/g, '') === digits);
+    if (lead && lead.smsOptOut === true) {
+      toast('\u26d4 BLOCKED \u2014 ' + (lead.name || 'this family') + ' texted STOP. Calls only.', 'err', 6000);
+      return;
+    }
+    try {
+      await sbSendSms(phone, body, leadId);
+      upd(leadId, (fresh) => ({
+        notes: [{ ts: new Date().toISOString(), type: 'note', text: '\ud83d\udcf1 SMS sent: ' + body.slice(0, 80) + (body.length > 80 ? '\u2026' : '') }, ...(fresh.notes || [])]
+      }));
+    } catch (e) { toast('SMS failed: ' + e.message, 'err', 5000); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [upd]);
+
   // v4.0 — Twilio Voice SDK (extracted → lib/useTwilioDevice.js)
   // Called here so upd + logDial are already resolved from leadMgr above.
   const {
@@ -762,11 +784,8 @@ const saveLeads = useCallback((next, opts = {}) => {
   // No session: queue is already live-sorted — just flashes the count as confirmation.
   // Active session: re-sorts all leads fresh, updates session.ids, keeps current lead at top.
   const refreshQueueOrder = () => {
-    const freshSorted = [...leads]
-      .filter(l => l.stage !== 'removed' && !['dnc','not_interested','withdrawn','chargeback'].includes(l.disposition))
-      .sort((a, b) => priority(b) - priority(a))
-      .slice(0, ITEMS_PER_PAGE)
-      .map(l => l.id);
+    // v3.57 — 7a: refresh from the phase-engine queue (was legacy priority())
+    const freshSorted = buildTodayQueue(leads, { capacity: ITEMS_PER_PAGE }).map(l => l.id);
 
     if (session) {
       const currentId = session.ids[session.idx] || null;
@@ -831,9 +850,17 @@ const saveLeads = useCallback((next, opts = {}) => {
     // v3.4 — advance to next lead (nextId captured pre-upd, no index-jump risk)
     if (inDialer) {
       if (sessionComplete) {
+        // v3.57 — 7a: M1 done → one confirm rolls the session into the aged waves
+        const _ext = extendSessionWithSpillover(session, leads, getActiveSession()?.capacity || 40);
+        if (_ext && window.confirm('M1 list complete (' + session.total + ' worked). ' + _ext.spillCount + ' aged reactivation leads (M2/M3) ready \u2014 keep dialing?')) {
+          setSession(_ext);
+          try { localStorage.setItem(LS_SESSION, JSON.stringify(_ext)); } catch {}
+          setTimeout(() => { setOpenId(_ext.ids[_ext.idx]); setNoteText(''); setDetailTab('live'); }, 150);
+          return;
+        }
         setSession(null);
         try{localStorage.removeItem(LS_SESSION);}catch{}
-        setTimeout(()=>{ setOpenId(null); setDialSessionActive(false); alert("✅ Session complete! "+session.total+" leads worked."); }, 150);
+        setTimeout(()=>{ setOpenId(null); setDialSessionActive(false); toast('\u2705 Session complete \u2014 ' + session.total + ' families worked.', 'ok', 5000); }, 150);
         return;
       }
       if (nextId) {
@@ -844,15 +871,6 @@ const saveLeads = useCallback((next, opts = {}) => {
     }
   };
 // ── Named callbacks hoisted out of JSX (v3.14 cleanup) ──────────────────────
-  // TodaysBlock — phase-aware disposition handler
-  // v3.39 — functional updater: phasePatch computed from freshest lead state inside setLeads(prev=>)
-  const handleTodayDispose = useCallback((id, dispId) => {
-    // v3.43 — F3: identical patch to the dial view. TodaysBlock dispositions now
-    // get auto-callbacks (no_show 24h, follow-up 96h), disposition notes, and
-    // direct-VM handling they previously silently lost.
-    upd(id, (freshLead) => buildDispositionPatch(freshLead, dispId));
-  }, [upd]); // eslint-disable-line react-hooks/exhaustive-deps
-
   // DashboardTab — start a locked dial session from the priority queue widget
 const queue = useMemo(() => {
   // During an active session, keep all session leads visible regardless of calledToday.
@@ -977,8 +995,10 @@ const queue = useMemo(() => {
   }, [leads]);
 
   const startDialSession = useCallback((orderedIds) => {
-    const ids = (orderedIds && orderedIds.length > 0) ? orderedIds : queue.map(l => l.id);
-    if (ids.length === 0) { alert('No priority leads in queue right now.'); return; }
+    // v3.57 — 7a: default sessions draw from the PHASE ENGINE queue (doctrine
+    // order + caps), not legacy priority() scoring.
+    const ids = (orderedIds && orderedIds.length > 0) ? orderedIds : buildTodayQueue(leads).map(l => l.id);
+    if (ids.length === 0) { toast('No leads due right now \u2014 the schedule is clear.', 'info'); return; }
     const s = { ids, idx: 0, total: ids.length, startedAt: new Date().toISOString() };
     setSession(s); setSessionPaused(false);
     try { localStorage.setItem(LS_SESSION, JSON.stringify(s)); } catch {}
@@ -1174,14 +1194,9 @@ const queue = useMemo(() => {
       // ── VIEW ROUTER ──
       React.createElement("div",{style:{flex:1,display:"flex",overflow:"hidden"}},
 
-        // ── TODAY'S BLOCK VIEW (v3.1 — Phase Lifecycle Engine) ──
-        view==="today" && !dialSessionActive && React.createElement(TodaysBlock, {
-          leads,
-          onDispose: handleTodayDispose,
-          onOpen: (id) => { setOpenId(id); setPrevView("today"); setView("contact"); setDetailTab("activity"); },
-          onUpdate: upd,
-          calendlyUrl,
-        }),
+        // (v3.58 — TodaysBlock DEMOLISHED per Jeremy 2026-06-12: "fully adopted by
+        //  DialView." Queue brain → phaseEngine.buildTodayQueue; session strip,
+        //  spillover continuation, SMS ladder, truth chips all live in the dialer.)
 
         // ── DASHBOARD VIEW ──
         view==="dashboard" && React.createElement(DashboardTab, {
@@ -1237,14 +1252,7 @@ const queue = useMemo(() => {
           scripts, scriptType, setScriptType, scriptSection, setScriptSection,
           templates, calendlyUrl, setCalendlyTargetId,
           refreshQueueOrder, openCalendlyPopup, logActivity,
-          sendSms: async (phone, body, leadId) => {
-            try {
-              await sbSendSms(phone, body, leadId);
-              upd(leadId, (fresh) => ({
-                notes: [{ ts: new Date().toISOString(), type: 'note', text: '📱 SMS sent: ' + body.slice(0, 80) + (body.length > 80 ? '\u2026' : '') }, ...(fresh.notes || [])]
-              }));
-            } catch(e) { alert('SMS failed: ' + e.message); }
-          },
+          sendSms: sendSmsGuarded,
           todayCount:
           setView, setPrevView,
           callbackPresets, setCallbackPresets,
@@ -1286,28 +1294,14 @@ const queue = useMemo(() => {
           openCalendlyPopup, calendlyUrl, setCalendlyTargetId,
           newReqText, setNewReqText,
           initUWReqs, toggleUWReq, removeUWReq, addUWReq,
-          sendSms: async (phone, body, leadId) => {
-            try {
-              await sbSendSms(phone, body, leadId);
-              upd(leadId, (fresh) => ({
-                notes: [{ ts: new Date().toISOString(), type: 'note', text: '📱 SMS sent: ' + body.slice(0, 80) + (body.length > 80 ? '\u2026' : '') }, ...(fresh.notes || [])]
-              }));
-            } catch(e) { alert('SMS failed: ' + e.message); }
-          },
+          sendSms: sendSmsGuarded,
           selfApplyUrl: 'https://apply.quility.com/#/symmetry/raq/SFG0092434?redirect_url=https%3A%2F%2Fyourlivingbenefit.com%2F&leadtype=Life%20Insurance&producttype=Life%20Insurance',
         }),
 
         // ── MESSAGES VIEW ──
         view==="messages" && React.createElement(MessagesView, {
           leads,
-          sendSms: async (phone, body, leadId) => {
-            try {
-              await sbSendSms(phone, body, leadId);
-              upd(leadId, (fresh) => ({
-                notes: [{ ts: new Date().toISOString(), type: 'note', text: '📱 SMS sent: ' + body.slice(0, 80) + (body.length > 80 ? '\u2026' : '') }, ...(fresh.notes || [])]
-              }));
-            } catch(e) { alert('SMS failed: ' + e.message); }
-          },
+          sendSms: sendSmsGuarded,
           upd,
           setView, setOpenId,
           setPrevView,

@@ -111,8 +111,15 @@ export const syncFromCsv = (csvLeads, currentLeads) => {
       if (isDnc || (toRank > fromRank && !fencedNI)) {
         patch.disposition = toDisp;
         if (f.stage) patch.stage = f.stage;
-        patch.seqTrack = f.seqTrack; patch.seqStep = f.seqStep;
-        patch.seqPaused = f.seqPaused; patch.seqExitReason = f.seqExitReason;
+        // v3.56 — AUDIT V2-2: sync may DISARM a sequence (terminal statuses must
+        // stop the drip — the cron filters on seqPaused only, not disposition)
+        // but NEVER ARM one. Re-arming with stale seqStartDate caused the 6/11
+        // barrage shape. Enrollment is a deliberate act in the CRM, never a
+        // side effect of a Funnel status. Doctrine: Jeremy, 2026-06-12.
+        if (f.seqPaused === true) {
+          patch.seqTrack = f.seqTrack; patch.seqStep = f.seqStep;
+          patch.seqPaused = true; patch.seqExitReason = f.seqExitReason;
+        }
         if (['dnc', 'not_interested'].includes(toDisp)) {
           // terminal → EXIT wipe per doctrine
           patch.phase = 'EXIT';
