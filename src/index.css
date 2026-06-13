@@ -36,3 +36,29 @@ button{font-family:'Inter',system-ui,sans-serif}
 
 /* DialQueuePanel icon buttons — hover state in CSS (not inline JS) */
 .dqp-icon-btn:hover { color: rgba(255,255,255,0.85) !important; }
+
+
+/* ── S8a: Day/Night theme faces ──────────────────────────────────────────── */
+/* Default = day (existing :root values). Night face for dark dialing. */
+[data-theme="night"] {
+  --bg: #0D1117;
+  --surface: #161B22;
+  --surface-2: #1C2433;
+  --surface-3: #21293A;
+  --border: #2D3748;
+  --border-2: #3D4F6B;
+  --t1: #E6EDF3;
+  --t2: #8B949E;
+  --t3: #6E7681;
+  --t4: #3D444D;
+  --sidebar: #0D1117;
+  --sidebar-hover: #161B22;
+  --sidebar-active: #1C2433;
+  --blue-dim: rgba(37,99,235,0.12);
+  --blue-mid: rgba(37,99,235,0.25);
+  --green-dim: rgba(5,150,105,0.12);
+  --amber-dim: rgba(217,119,6,0.12);
+  --red-dim: rgba(185,28,28,0.12);
+  --sky-dim: rgba(14,165,233,0.12);
+}
+

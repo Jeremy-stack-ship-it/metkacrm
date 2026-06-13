@@ -117,7 +117,7 @@ export default function MessagesView({ leads, sendSms, upd, setView, setOpenId, 
               key:id, onClick:()=>setTab(id),
               title: id==='awaiting' ? 'Family spoke last — needs your reply' : id==='optout' ? 'Texted STOP — calls only' : '',
               style:{
-                flex: id==='optout' ? '0 0 auto' : 1, padding:'5px 6px', fontSize:'10px', fontWeight:'800',
+                flex: id==='optout' ? '0 0 auto' : 1, padding:'5px 6px', fontSize:'11px', fontWeight:'800',
                 borderRadius:'6px', cursor:'pointer', letterSpacing:'0.3px', whiteSpace:'nowrap',
                 border:'1px solid ' + (tab===id ? (id==='optout'?'var(--red)':'var(--blue)') : 'var(--border)'),
                 background: tab===id ? (id==='optout'?'var(--red-dim)':'var(--blue)') : 'transparent',
@@ -159,11 +159,11 @@ export default function MessagesView({ leads, sendSms, upd, setView, setOpenId, 
                   React.createElement('div', { style:{ fontSize:'13px', fontWeight: hasUnread?'800':'600', color: hasUnread?'var(--t1)':'var(--t2)', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginRight:'6px' } }, lead.name || lead.phone || 'Unknown'),
                   React.createElement('div', { style:{ display:'flex', alignItems:'center', gap:'5px', flexShrink:0 } },
                     hasUnread && React.createElement('div', { style:{ width:'8px', height:'8px', borderRadius:'50%', background:'var(--blue)', flexShrink:0 } }),
-                    React.createElement('span', { style:{ fontSize:'10px', color:'var(--t4)', fontWeight:'500' } }, fmtTime(latest.ts))
+                    React.createElement('span', { style:{ fontSize:'11px', color:'var(--t4)', fontWeight:'500' } }, fmtTime(latest.ts))
                   )
                 ),
                 React.createElement('div', { style:{ fontSize:'11px', color:'var(--t3)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' } }, previewText(latest)),
-                React.createElement('div', { style:{ fontSize:'10px', color:'var(--t4)', marginTop:'3px' } }, lead.phone || '')
+                React.createElement('div', { style:{ fontSize:'11px', color:'var(--t4)', marginTop:'3px' } }, lead.phone || '')
               )
             )
           )

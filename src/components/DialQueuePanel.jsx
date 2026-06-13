@@ -203,11 +203,11 @@ export default function DialQueuePanel({
             },
               // Slot label + state indicator
               React.createElement('div', {
-                style: { fontSize: '10px', fontWeight: '800', color: tileColor, letterSpacing: '0.07em', marginBottom: '1px' }
+                style: { fontSize: '11px', fontWeight: '800', color: tileColor, letterSpacing: '0.07em', marginBottom: '1px' }
               }, (isActive ? '⚡ ' : isUserSelected ? '✦ ' : '') + sess.slot),
               // Time range
               React.createElement('div', {
-                style: { fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginBottom: '6px', whiteSpace: 'nowrap' }
+                style: { fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginBottom: '6px', whiteSpace: 'nowrap' }
               }, fmtT(sess.startH, sess.startM) + '–' + fmtT(sess.endH, sess.endM)),
               // Big lead count
               React.createElement('div', {
@@ -215,14 +215,14 @@ export default function DialQueuePanel({
               }, leadCount),
               // Subtext: leads · N cb
               React.createElement('div', {
-                style: { fontSize: '10px', color: '#94a3b8', fontWeight: '600', marginBottom: '6px' }
+                style: { fontSize: '11px', color: '#94a3b8', fontWeight: '600', marginBottom: '6px' }
               }, 'leads' + (cbCount > 0 ? ' · ' + cbCount + ' cb' : '')),
               // Action: START/STOP on every tile (v3.23 — no longer time-gated)
               React.createElement('button', {
                 onClick: e => { e.stopPropagation(); isPdThisSlot ? pdStop() : handleTileStart(); },
                 disabled: btnDisabled,
                 title: btnDisabled ? 'Stop the current session first' : isPdThisSlot ? 'Stop Power Dial' : 'Start Power Dial for this session slot',
-                style: { width: '100%', minHeight: '28px', background: btnDisabled ? 'rgba(255,255,255,0.05)' : btnBg, color: btnDisabled ? 'rgba(255,255,255,0.2)' : btnColor, border: btnDisabled ? '1px solid rgba(255,255,255,0.07)' : btnBorder, borderRadius: '5px', fontSize: '10px', fontWeight: '800', cursor: btnDisabled ? 'not-allowed' : 'pointer', letterSpacing: '0.03em' }
+                style: { width: '100%', minHeight: '28px', background: btnDisabled ? 'rgba(255,255,255,0.05)' : btnBg, color: btnDisabled ? 'rgba(255,255,255,0.2)' : btnColor, border: btnDisabled ? '1px solid rgba(255,255,255,0.07)' : btnBorder, borderRadius: '5px', fontSize: '11px', fontWeight: '800', cursor: btnDisabled ? 'not-allowed' : 'pointer', letterSpacing: '0.03em' }
               }, isPdThisSlot ? '⏹ STOP' : '▶ START')
             );
           })
@@ -322,7 +322,7 @@ export default function DialQueuePanel({
           return React.createElement('button', {
             onClick: () => window.open(gcalUrl, '_blank'),
             title: 'Log this dial session to Google Calendar',
-            style: { width: '100%', minHeight: '30px', padding: '0 8px', fontSize: '10px', fontWeight: '800', letterSpacing: '0.5px', background: 'rgba(66,133,244,0.15)', color: '#93C5FD', border: '1px solid rgba(66,133,244,0.35)', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', marginBottom: '4px' }
+            style: { width: '100%', minHeight: '30px', padding: '0 8px', fontSize: '11px', fontWeight: '800', letterSpacing: '0.5px', background: 'rgba(66,133,244,0.15)', color: '#93C5FD', border: '1px solid rgba(66,133,244,0.35)', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', marginBottom: '4px' }
           },
             '📅',
             React.createElement('span', null, 'LOG SESSION TO CALENDAR'),
@@ -385,7 +385,7 @@ export default function DialQueuePanel({
           onClick: rebalanceSession,
           'aria-label': 'Rebalance session — inject fresh leads into remaining slots',
           title: 'Inject fresh high-priority leads not yet dialed into remaining session slots',
-          style: { minHeight: '30px', padding: '0 7px', fontSize: '10px', fontWeight: '800', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.35)', color: '#93C5FD', borderRadius: '4px', cursor: 'pointer', letterSpacing: '0.3px', whiteSpace: 'nowrap' }
+          style: { minHeight: '30px', padding: '0 7px', fontSize: '11px', fontWeight: '800', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.35)', color: '#93C5FD', borderRadius: '4px', cursor: 'pointer', letterSpacing: '0.3px', whiteSpace: 'nowrap' }
         }, '⚡ +'),
         React.createElement('button', {
           onClick: refreshQueueOrder, 'aria-label': 'Refresh queue order', title: 'Re-sort by live priority',
@@ -528,7 +528,7 @@ export default function DialQueuePanel({
             React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2px' } },
               React.createElement('span', { 'aria-hidden': 'true', style: { fontSize: '11px', color: 'rgba(255,255,255,0.5)', minWidth: '15px', fontFamily: "'JetBrains Mono',monospace", lineHeight: 1 } }, idx + 1),
               React.createElement('span', { style: { fontSize: '12px', fontWeight: '700', color: isActive ? '#5DCAA5' : 'rgba(255,255,255,0.88)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, lead.name),
-              calledToday && React.createElement('span', { title: 'Already worked today', style: { fontSize: '10px', padding: '1px 4px', borderRadius: '4px', background: 'rgba(93,202,165,0.15)', color: '#5DCAA5', fontWeight: '800', flexShrink: 0, marginRight: '3px' } }, '✓'),
+              calledToday && React.createElement('span', { title: 'Already worked today', style: { fontSize: '11px', padding: '1px 4px', borderRadius: '4px', background: 'rgba(93,202,165,0.15)', color: '#5DCAA5', fontWeight: '800', flexShrink: 0, marginRight: '3px' } }, '✓'),
               // v3.59 — 7c: promise + heat chips
               inPromiseWindow(lead) && React.createElement('span', { title: 'Promised callback — due now', style: { fontSize: '11px', padding: '1px 5px', borderRadius: '8px', background: 'rgba(245,158,11,0.25)', color: '#FCD34D', fontWeight: '800', flexShrink: 0 } },
                 '\u23f0 ' + new Date(lead.nextCallback).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })),
@@ -543,11 +543,11 @@ export default function DialQueuePanel({
             ),
             React.createElement('div', { style: { paddingLeft: '20px', display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'nowrap', overflow: 'hidden' } },
               React.createElement('span', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.45)', fontFamily: "'JetBrains Mono',monospace", fontWeight: '500', flexShrink: 0 } }, lead.phone),
-              (dispIcon || recency) && React.createElement('span', { style: { fontSize: '10px', color: 'rgba(255,255,255,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 } },
+              (dispIcon || recency) && React.createElement('span', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 } },
                 (dispIcon ? dispIcon + ' ' : '') + (recency || '')
               ),
               (isOD || isCbToday) && React.createElement('span', {
-                style: { fontSize: '10px', fontWeight: '800', flexShrink: 0, marginLeft: 'auto', color: isOD ? '#EF4444' : '#34D399', background: isOD ? 'rgba(239,68,68,0.12)' : 'rgba(52,211,153,0.12)', padding: '1px 5px', borderRadius: '4px' }
+                style: { fontSize: '11px', fontWeight: '800', flexShrink: 0, marginLeft: 'auto', color: isOD ? '#EF4444' : '#34D399', background: isOD ? 'rgba(239,68,68,0.12)' : 'rgba(52,211,153,0.12)', padding: '1px 5px', borderRadius: '4px' }
               }, (isOD ? 'OD ' : 'CB ') + (fmtCbTime(lead.nextCallback) || '')),
               stuck && React.createElement('span', { style: { fontSize: '11px', color: '#FBBF24', fontWeight: '800', flexShrink: 0 } }, 'UW')
             )

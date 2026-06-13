@@ -177,6 +177,12 @@ function MetkaCRM(){
   const [newTemplateName,setNewTemplateName]=useState("");
   const [newTemplateText,setNewTemplateText]=useState("");
   const [notificationsEnabled,setNotificationsEnabled]=useState(true);
+  // S8a — day/night theme
+  const [theme, setTheme] = useState(() => localStorage.getItem('metka-theme') || 'day');
+  React.useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('metka-theme', theme);
+  }, [theme]);
   const [newReqText,setNewReqText]=useState(""); // v2.2 — scratch input for adding custom reqs
   // v3.7 — Appointment Show Confirmation (inline gate in LIVE tab)
   const [confirmReschedule, setConfirmReschedule] = useState(false);
@@ -1163,6 +1169,45 @@ const queue = useMemo(() => {
   // UnderwritingCard ← moved to components/ContactDetail.jsx
 
   // ── APP RENDER ───────────────────────────────────────────────────
+
+  // ── S8a: Quiet set-ring — soft ping when a callback is due ────────────────
+  React.useEffect(() => {
+    if (!dirtyLeadsRef.current) return;
+    const leads_snap = dirtyLeadsRef.current;
+    const now_ms = Date.now();
+    const RING_KEY = 'metka-rung-cbs';
+    let rung;
+    try { rung = new Set(JSON.parse(sessionStorage.getItem(RING_KEY) || '[]')); }
+    catch(e) { rung = new Set(); }
+
+    const due = Object.values(leads_snap).filter(l => {
+      if (!l.nextCallback || rung.has(l.id)) return false;
+      const diff = new Date(l.nextCallback).getTime() - now_ms;
+      return diff >= -60000 && diff <= 60000; // within ±60s of now
+    });
+
+    if (due.length === 0) return;
+    due.forEach(l => rung.add(l.id));
+    sessionStorage.setItem(RING_KEY, JSON.stringify([...rung]));
+
+    // Soft two-tone ping via Web Audio API — no file needed
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [[880, 0, 0.08], [1108, 0.12, 0.08]].forEach(([freq, delay, dur]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+        gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + delay + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + dur + 0.05);
+      });
+    } catch(e) { /* audio blocked — silent fallback */ }
+  }, [leads]); // re-runs on any lead update; gated by sessionStorage ring-once
+
   return React.createElement("div",{style:{display:"flex",height:"100vh",background:"var(--bg)",color:"var(--t1)",fontFamily:"'Inter',system-ui,sans-serif",overflow:"hidden"}},
 
     // ── 1. DARK SIDEBAR (hamburger-controlled on dial view) ──
@@ -1177,6 +1222,7 @@ const queue = useMemo(() => {
         activityStats, goals, stats,
         supaStatus, setView,
         setAddForm, fileRef, handleFile,
+        theme, setTheme,
       }),
 
       // ── ADD FORM BAR ──

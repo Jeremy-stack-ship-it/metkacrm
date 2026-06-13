@@ -1,5 +1,5 @@
 import React from 'react';
-import { isDueToday } from '../lib/phaseEngine';
+import { isDueToday, hoursSinceOpen } from '../lib/phaseEngine';
 import { dayKey } from '../lib/activityLog.js';
 import { priority } from '../lib/leadScoring';
 import { getSequenceStatus, getSequenceBadgeColor } from '../lib/sequenceEngine.js';
@@ -158,6 +158,41 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
     ? Math.min(Math.round((estWeekCommission / WEEKLY_TARGET) * 100), 100)
     : 0;
 
+  // ── S8a: Metka-machine truth KPIs ────────────────────────────────────────
+  // These reflect what Metka CRM actually knows — not Funnel-blind totals.
+  // machineDials = dials logged in this CRM (rolling 7d)
+  const D7_KEYS = (() => {
+    const keys = []; const pad2 = n => String(n).padStart(2,'0');
+    for (let i = 0; i < 7; i++) {
+      const dd = new Date(now); dd.setDate(now.getDate() - i);
+      keys.push(dd.getFullYear()+'-'+pad2(dd.getMonth()+1)+'-'+pad2(dd.getDate()));
+    }
+    return keys;
+  })();
+  const machineDials7  = countEvents(D7_KEYS, 'dial');
+  const machineApps7   = activeLeads.filter(l => l.submittedDate && D7_KEYS.includes(dayKey(l.submittedDate))).length;
+  // Awaiting reply: latest SMS note is inbound (family spoke last)
+  const awaitingReply  = activeLeads.filter(l => {
+    const notes = (l.notes||[]).filter(n => n && (n.type==='sms_inbound' || (n.text||'').startsWith('📱 SMS sent:') || (n.text||'').startsWith('[SEQ] SMS sent')));
+    if (!notes.length) return false;
+    const latest = notes.reduce((a,b) => new Date(a.ts||0) > new Date(b.ts||0) ? a : b, notes[0]);
+    return latest.type === 'sms_inbound' && !l.smsOptOut;
+  }).length;
+  // 🔥 Openers: email opened within 48h
+  const openersNow = activeLeads.filter(l => { const h = hoursSinceOpen(l); return h !== null && h <= 48 && !l.smsOptOut; }).length;
+  // Odds meter: dials per app (rolling 7d) — "you book every ~N dials"
+  const oddsRate  = machineApps7 > 0 ? Math.round(machineDials7 / machineApps7) : null;
+  // Streak: dials since last app this week
+  const dialsSinceApp = (() => {
+    const appDates = activeLeads
+      .filter(l => l.submittedDate && WEEK_KEYS.includes(dayKey(l.submittedDate)))
+      .map(l => new Date(l.submittedDate).getTime())
+      .sort((a,b) => b - a);
+    if (!appDates.length) return weekDials; // no apps yet this week — all dials are "since last"
+    const lastApp = appDates[0];
+    return activity.filter(e => e && e.type==='dial' && new Date(e.ts||0).getTime() > lastApp).length;
+  })();
+
   function progressColor(p) {
     if (p >= 100) return 'var(--green)';
     if (p >= 60)  return 'var(--amber)';
@@ -210,9 +245,9 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
         display:'flex', alignItems:'center', gap:'0.85rem'
       }}>
         <div style={{flex:1}}>
-          <div style={{fontSize:'0.65rem',color:'#64748b',textTransform:'uppercase',letterSpacing:'0.07em',marginBottom:'0.2rem',fontWeight:700}}>{label}</div>
+          <div style={{fontSize:'0.688rem',color:'#64748b',textTransform:'uppercase',letterSpacing:'0.07em',marginBottom:'0.2rem',fontWeight:700}}>{label}</div>
           {target !== null && (
-            <div style={{fontSize:'0.65rem',color:'#94a3b8',marginTop:'0.15rem'}}>
+            <div style={{fontSize:'0.688rem',color:'#94a3b8',marginTop:'0.15rem'}}>
               Target {target}%{prevValue !== null ? ` · Last wk ${prevValue}%` : ''}
             </div>
           )}
@@ -279,7 +314,7 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
           const Meter = ({ label, val, goal, p }) => (
             <div style={{flex:1,minWidth:0}}>
               <div style={{display:'flex',justifyContent:'space-between',marginBottom:'5px'}}>
-                <span style={{fontSize:'10px',fontWeight:'700',color:'rgba(255,255,255,0.45)',letterSpacing:'0.07em'}}>{label}</span>
+                <span style={{fontSize:'11px',fontWeight:'700',color:'rgba(255,255,255,0.45)',letterSpacing:'0.07em'}}>{label}</span>
                 <span style={{fontSize:'12px',fontWeight:'800',color: p >= 100 ? 'var(--green)' : p >= 60 ? 'var(--amber)' : 'rgba(255,255,255,0.75)'}}>{val}<span style={{fontWeight:'400',color:'rgba(255,255,255,0.25)'}}>/{goal}</span></span>
               </div>
               <div style={{height:'8px',background:'rgba(255,255,255,0.07)',borderRadius:'4px',overflow:'hidden',boxShadow:'inset 0 1px 2px rgba(0,0,0,0.3)'}}>
@@ -298,9 +333,9 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
               boxShadow:'0 2px 12px rgba(0,0,0,0.3)'
             }}>
               <div style={{flexShrink:0}}>
-                <div style={{fontSize:'10px',fontWeight:'800',color:'rgba(255,255,255,0.35)',letterSpacing:'0.1em',marginBottom:'3px'}}>TODAY\'S PACE</div>
+                <div style={{fontSize:'11px',fontWeight:'800',color:'rgba(255,255,255,0.35)',letterSpacing:'0.1em',marginBottom:'3px'}}>TODAY'S PACE</div>
                 <div style={{fontSize:'24px',fontWeight:'800',color:paceColor,fontFamily:"'Syne',sans-serif",lineHeight:1}}>{paceLabel}</div>
-                <div style={{fontSize:'10px',color:'rgba(255,255,255,0.3)',marginTop:'4px'}}>{hLeftStr}</div>
+                <div style={{fontSize:'11px',color:'rgba(255,255,255,0.3)',marginTop:'4px'}}>{hLeftStr}</div>
               </div>
               <div style={{width:'1px',height:'44px',background:'rgba(255,255,255,0.07)',flexShrink:0}} />
               <div style={{flex:1,display:'flex',gap:'18px',minWidth:0}}>
@@ -309,9 +344,9 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
                 <Meter label="APPTS"    val={todayAppts}    goal={dailyApptGoal}    p={apptPct} />
               </div>
               <div style={{flexShrink:0,textAlign:'right'}}>
-                <div style={{fontSize:'10px',color:'rgba(255,255,255,0.35)',marginBottom:'3px',letterSpacing:'0.05em'}}>TIME USED</div>
+                <div style={{fontSize:'11px',color:'rgba(255,255,255,0.35)',marginBottom:'3px',letterSpacing:'0.05em'}}>TIME USED</div>
                 <div style={{fontSize:'20px',fontWeight:'800',color:'rgba(255,255,255,0.8)'}}>{timePct}%</div>
-                <div style={{fontSize:'10px',color:'rgba(255,255,255,0.25)'}}>of work day</div>
+                <div style={{fontSize:'11px',color:'rgba(255,255,255,0.25)'}}>of work day</div>
               </div>
             </div>
           );
@@ -345,6 +380,49 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
           );
         })()}
 
+
+        {/* ── S8a: MACHINE TRUTH STRIP + ODDS METER ─────────────────── */}
+        {(() => {
+          const kpis = [
+            { label: 'MACHINE DIALS', value: machineDials7, sub: '7 days · this CRM', color: 'var(--blue)', icon: '📞' },
+            { label: 'AUDITS HELD', value: weekAuditsRan, sub: 'this week', color: 'var(--green)', icon: '✅' },
+            { label: 'AWAITING REPLY', value: awaitingReply, sub: 'family spoke last', color: awaitingReply > 0 ? 'var(--amber)' : 'var(--t3)', icon: '📥' },
+            { label: '🔥 OPENERS', value: openersNow, sub: 'opened < 48h', color: openersNow > 0 ? '#F97316' : 'var(--t3)', icon: '🔥' },
+            { label: 'APPS / WEEK', value: weekSubmitted + ' / ' + APPS_GOAL_WEEK, sub: weekSubmitted >= APPS_GOAL_WEEK ? '🎯 mission hit' : (APPS_GOAL_WEEK - weekSubmitted) + ' to go', color: weekSubmitted >= APPS_GOAL_WEEK ? 'var(--green)' : weekSubmitted >= 3 ? 'var(--amber)' : 'var(--red)', icon: '📋' },
+          ];
+          return (
+            <div style={{display:'flex',gap:'8px',marginBottom:'12px',flexWrap:'wrap'}}>
+              {kpis.map(k =>
+                <div key={k.label} style={{flex:'1 1 140px',minWidth:'120px',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:8,padding:'10px 14px',display:'flex',flexDirection:'column',gap:'2px'}}>
+                  <div style={{fontSize:'11px',fontWeight:'800',color:'var(--t3)',letterSpacing:'0.08em'}}>{k.label}</div>
+                  <div style={{fontSize:'22px',fontWeight:900,color:k.color,fontFamily:"'Syne',sans-serif",lineHeight:1.1}}>{k.value}</div>
+                  <div style={{fontSize:'11px',color:'var(--t3)'}}>{k.sub}</div>
+                </div>
+              )}
+              {/* Odds Meter — the variable-ratio truth */}
+              <div style={{flex:'1 1 180px',minWidth:'160px',background:'var(--surface)',border:'2px solid var(--blue)',borderRadius:8,padding:'10px 14px',display:'flex',flexDirection:'column',gap:'4px'}}>
+                <div style={{fontSize:'11px',fontWeight:'800',color:'var(--blue)',letterSpacing:'0.08em'}}>⚡ ODDS METER</div>
+                {oddsRate ? (
+                  <>
+                    <div style={{fontSize:'13px',fontWeight:'700',color:'var(--t1)',lineHeight:1.3}}>
+                      You book every <span style={{color:'var(--blue)',fontWeight:900,fontSize:'16px'}}>{oddsRate}</span> dials
+                    </div>
+                    <div style={{fontSize:'13px',color:'var(--t2)'}}>
+                      You're on <span style={{color: dialsSinceApp >= oddsRate ? 'var(--green)' : 'var(--amber)',fontWeight:800}}>{dialsSinceApp}</span> since last app
+                    </div>
+                    {dialsSinceApp >= oddsRate && (
+                      <div style={{fontSize:'11px',color:'var(--green)',fontWeight:700,marginTop:'2px'}}>🎯 Statistically due — keep dialing</div>
+                    )}
+                  </>
+                ) : (
+                  <div style={{fontSize:'12px',color:'var(--t3)'}}>Submit an app to calibrate your rate</div>
+                )}
+                <div style={{fontSize:'11px',color:'var(--t4)',marginTop:'2px'}}>rolling 7-day · Metka dials only</div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* ── TODAY'S ACTIVITY CARD ───────────────────────────────── */}
         <div style={{
           background:'linear-gradient(135deg, rgba(15,23,42,0.8) 0%, rgba(30,41,59,0.5) 100%)',
@@ -356,7 +434,7 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
             <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
               <span style={{fontWeight:700,fontSize:'0.9rem',color:'#e2e8f0'}}>Today's Activity</span>
             </div>
-            <span style={{fontSize:'0.7rem',color:'#94a3b8',background:'rgba(255,255,255,0.04)',padding:'0.2rem 0.6rem',borderRadius:6,border:'1px solid rgba(255,255,255,0.06)'}}>{TODAY_KEY} · ${weeklyDialGoal} dials/wk target</span>
+            <span style={{fontSize:'0.7rem',color:'#94a3b8',background:'rgba(255,255,255,0.04)',padding:'0.2rem 0.6rem',borderRadius:6,border:'1px solid rgba(255,255,255,0.06)'}}>{TODAY_KEY} · {weeklyDialGoal} dials/wk target</span>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'1.5rem'}}>
             <ProgressBar value={todayDials}    goal={dailyDialGoal}    label="Dials" />
@@ -394,7 +472,7 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
             ))}
 
             <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:'0.7rem',marginTop:'0.6rem'}}>
-              <div style={{fontSize:'0.63rem',color:'#94a3b8',marginBottom:'0.6rem',textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700}}>Today's Queue</div>
+              <div style={{fontSize:'0.688rem',color:'#94a3b8',marginBottom:'0.6rem',textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700}}>Today's Queue</div>
               {/* Total due today */}
               <div style={{
                 display:'flex', justifyContent:'space-between', alignItems:'center',
@@ -424,10 +502,10 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
                     onMouseEnter={e => { if (onStartDialSlot && count > 0) e.currentTarget.style.opacity='0.8'; }}
                     onMouseLeave={e => { e.currentTarget.style.opacity='1'; }}
                   >
-                    <div style={{fontSize:'0.6rem',color:'#64748b',fontWeight:700,letterSpacing:'0.06em',marginBottom:'2px'}}>{slot} SESSION</div>
+                    <div style={{fontSize:'0.688rem',color:'#64748b',fontWeight:700,letterSpacing:'0.06em',marginBottom:'2px'}}>{slot} SESSION</div>
                     <div style={{fontSize:'1.2rem',fontWeight:900,color,fontFamily:"'Syne',sans-serif"}}>{count}</div>
                     {onStartDialSlot && count > 0 && (
-                      <div style={{fontSize:'0.58rem',color,opacity:0.6,marginTop:'2px'}}>tap to start ▶</div>
+                      <div style={{fontSize:'0.688rem',color,opacity:0.6,marginTop:'2px'}}>tap to start ▶</div>
                     )}
                   </div>
                 ))}
@@ -447,7 +525,7 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
             </div>
 
             <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:'0.7rem',marginTop:'0.6rem'}}>
-              <div style={{fontSize:'0.63rem',color:'#94a3b8',marginBottom:'0.5rem',textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700}}>Pipeline Stage</div>
+              <div style={{fontSize:'0.688rem',color:'#94a3b8',marginBottom:'0.5rem',textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700}}>Pipeline Stage</div>
               {[
                 ['New', stageCounts.new, '#64748b'],
                 ['Contacted', stageCounts.contacted, 'var(--blue)'],
@@ -496,7 +574,7 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
                     <div style={{marginBottom:'1rem'}}>
                       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'0.5rem'}}>
                         <SectionHeader label="Recent SMS" accent="var(--blue)" />
-                        <button onClick={()=>setView('messages')} style={{fontSize:'10px',fontWeight:'700',color:'var(--blue)',background:'var(--blue-dim)',border:'1px solid var(--blue-mid)',borderRadius:'6px',padding:'3px 10px',cursor:'pointer'}}>
+                        <button onClick={()=>setView('messages')} style={{fontSize:'11px',fontWeight:'700',color:'var(--blue)',background:'var(--blue-dim)',border:'1px solid var(--blue-mid)',borderRadius:'6px',padding:'3px 10px',cursor:'pointer'}}>
                           {unreadCount>0 ? unreadCount+' unread →' : 'View all →'}
                         </button>
                       </div>
@@ -514,7 +592,7 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
                                 <div style={{fontSize:'12px',fontWeight:unread?'800':'600',color:'var(--t1)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{lead.name||lead.phone||'Unknown'}</div>
                                 <div style={{fontSize:'11px',color:'var(--t3)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{preview}</div>
                               </div>
-                              <div style={{fontSize:'10px',color:'var(--t4)',flexShrink:0}}>{time}</div>
+                              <div style={{fontSize:'11px',color:'var(--t4)',flexShrink:0}}>{time}</div>
                             </div>
                           );
                         })}
@@ -537,11 +615,11 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
                 display:'flex', alignItems:'center', gap:'1rem'
               }}>
                 <div style={{flexShrink:0}}>
-                  <div style={{fontSize:'0.62rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700,marginBottom:'2px'}}>Week Dials</div>
+                  <div style={{fontSize:'0.688rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700,marginBottom:'2px'}}>Week Dials</div>
                   <div style={{fontSize:'2rem',fontWeight:900,color:weekDials>=weeklyDialGoal?'var(--green)':'var(--amber)',fontFamily:"'Syne',sans-serif",lineHeight:1}}>
-                    {weekDials}<span style={{fontSize:'1rem',color:'rgba(255,255,255,0.2)',fontWeight:400}}>/weeklyDialGoal</span>
+                    {weekDials}<span style={{fontSize:'1rem',color:'rgba(255,255,255,0.2)',fontWeight:400}}>/{weeklyDialGoal}</span>
                   </div>
-                  <div style={{fontSize:'0.65rem',color:'#94a3b8',marginTop:'2px'}}>{weekDials>=weeklyDialGoal?'✓ Weekly goal hit':`${weeklyDialGoal-weekDials} remaining`}</div>
+                  <div style={{fontSize:'0.688rem',color:'#94a3b8',marginTop:'2px'}}>{weekDials>=weeklyDialGoal?'✓ Weekly goal hit':`${weeklyDialGoal-weekDials} remaining`}</div>
                 </div>
                 <div style={{flex:1}}>
                   <div style={{height:14,background:'rgba(255,255,255,0.05)',borderRadius:7,overflow:'hidden',boxShadow:'inset 0 2px 4px rgba(0,0,0,0.3)'}}>
@@ -576,9 +654,9 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
                     background:'rgba(255,255,255,0.03)', borderRadius:10, padding:'0.75rem 0.85rem',
                     border:'1px solid rgba(255,255,255,0.06)'
                   }}>
-                    <div style={{fontSize:'0.63rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700,marginBottom:'4px'}}>{label}</div>
+                    <div style={{fontSize:'0.688rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700,marginBottom:'4px'}}>{label}</div>
                     <div style={{fontSize:'1.5rem',fontWeight:900,color,fontFamily:"'Syne',sans-serif",lineHeight:1}}>{val}</div>
-                    <div style={{fontSize:'0.63rem',color:'#64748b',marginTop:'3px'}}>{sub}</div>
+                    <div style={{fontSize:'0.688rem',color:'#64748b',marginTop:'3px'}}>{sub}</div>
                   </div>
                 ))}
               </div>
@@ -603,7 +681,7 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
                   flex:1, background:'rgba(255,255,255,0.02)', borderRadius:8, padding:'0.55rem 0.75rem',
                   border:`1px solid ${weekSubmitted>=APPS_GOAL_WEEK?'rgba(16,185,129,0.25)':'rgba(255,255,255,0.18)'}`
                 }}>
-                  <div style={{fontSize:'0.62rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.06em',fontWeight:700,marginBottom:'3px'}}>Apps Goal</div>
+                  <div style={{fontSize:'0.688rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.06em',fontWeight:700,marginBottom:'3px'}}>Apps Goal</div>
                   <div style={{fontSize:'1.1rem',fontWeight:800,color:weekSubmitted>=APPS_GOAL_WEEK?'var(--green)':'var(--amber)'}}>
                     {weekSubmitted} <span style={{color:'#64748b',fontWeight:400,fontSize:'0.85rem'}}>/ {APPS_GOAL_WEEK}</span>
                   </div>
@@ -612,14 +690,14 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
                   flex:1, background:'rgba(255,255,255,0.02)', borderRadius:8, padding:'0.55rem 0.75rem',
                   border:'1px solid rgba(255,255,255,0.05)'
                 }}>
-                  <div style={{fontSize:'0.62rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.06em',fontWeight:700,marginBottom:'3px'}}>Contract</div>
+                  <div style={{fontSize:'0.688rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.06em',fontWeight:700,marginBottom:'3px'}}>Contract</div>
                   <div style={{fontSize:'1rem',fontWeight:800,color:'var(--amber)'}}>{CONTRACT_LEVEL} → {CONTRACT_TARGET}</div>
                 </div>
                 <div style={{
                   flex:1, background:'rgba(255,255,255,0.02)', borderRadius:8, padding:'0.55rem 0.75rem',
                   border:'1px solid rgba(255,255,255,0.05)'
                 }}>
-                  <div style={{fontSize:'0.62rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.06em',fontWeight:700,marginBottom:'3px'}}>APV (wk)</div>
+                  <div style={{fontSize:'0.688rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.06em',fontWeight:700,marginBottom:'3px'}}>APV (wk)</div>
                   <div style={{fontSize:'1rem',fontWeight:800,color:'var(--green)'}}>${Math.round(weekAPV).toLocaleString()}</div>
                 </div>
               </div>
@@ -652,7 +730,7 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
               <thead>
                 <tr>
                   {['Name','Lead Type','Carrier','Premium','Submitted','Days','Pending Reqs'].map(h => (
-                    <th key={h} style={{padding:'0.4rem 0.7rem',borderBottom:'1px solid rgba(255,255,255,0.07)',textAlign:'left',fontWeight:700,fontSize:'0.67rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.06em'}}>{h}</th>
+                    <th key={h} style={{padding:'0.4rem 0.7rem',borderBottom:'1px solid rgba(255,255,255,0.07)',textAlign:'left',fontWeight:700,fontSize:'0.688rem',color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.06em'}}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -751,13 +829,13 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
         }}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.75rem'}}>
             <span style={{fontWeight:700,fontSize:'0.85rem',color:'#64748b'}}>Downline Pipeline</span>
-            <span style={{fontSize:'0.67rem',color:'#1e293b',background:'rgba(255,255,255,0.03)',borderRadius:10,padding:'0.18rem 0.6rem',border:'1px solid rgba(255,255,255,0.04)'}}>Activate when first agent contracts</span>
+            <span style={{fontSize:'0.688rem',color:'#1e293b',background:'rgba(255,255,255,0.03)',borderRadius:10,padding:'0.18rem 0.6rem',border:'1px solid rgba(255,255,255,0.04)'}}>Activate when first agent contracts</span>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'0.75rem'}}>
             {[1,2,3].map(n => (
               <div key={n} style={{background:'rgba(255,255,255,0.02)',borderRadius:8,padding:'0.75rem',border:'1px dashed rgba(255,255,255,0.04)'}}>
-                <div style={{fontSize:'0.68rem',fontWeight:700,color:'#1e293b',marginBottom:'0.3rem'}}>AGENT {n}</div>
-                <div style={{fontSize:'0.68rem',color:'#0f172a'}}>— open slot —</div>
+                <div style={{fontSize:'0.688rem',fontWeight:700,color:'#1e293b',marginBottom:'0.3rem'}}>AGENT {n}</div>
+                <div style={{fontSize:'0.688rem',color:'#0f172a'}}>— open slot —</div>
               </div>
             ))}
           </div>
@@ -778,7 +856,7 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
           borderTop:`3px solid ${confirmSlot === 'AM' ? '#93c5fd' : '#a5b4fc'}`,
           maxWidth:380, width:'90%', boxShadow:'0 24px 60px rgba(0,0,0,0.6)'
         }} onClick={e => e.stopPropagation()}>
-          <div style={{marginBottom:'0.4rem',fontSize:'0.65rem',color:'#64748b',fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase'}}>Launch Dial Session</div>
+          <div style={{marginBottom:'0.4rem',fontSize:'0.688rem',color:'#64748b',fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase'}}>Launch Dial Session</div>
           <div style={{fontSize:'1.6rem',fontWeight:900,color:'#e2e8f0',fontFamily:"'Syne',sans-serif",marginBottom:'0.25rem'}}>
             {confirmSlot} Session
           </div>

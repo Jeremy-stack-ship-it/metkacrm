@@ -94,9 +94,9 @@ export function mapFunnelStatus(s) {
   if (l.includes("call again"))
     return { disposition:"callback",      seqTrack:"re-engage",  seqStep:0, seqPaused:false, seqExitReason:null };
   if (l.includes("contact attempted"))
-    return { disposition:"callback",      seqTrack:"re-engage",  seqStep:0, seqPaused:false, seqExitReason:null };
+    return { disposition:"no_answer",     seqTrack:"ghost",      seqStep:0, seqPaused:false, seqExitReason:null };
   if (l.includes("active") || l.includes("contacting"))
-    return { disposition:"callback",      seqTrack:"re-engage",  seqStep:1, seqPaused:false, seqExitReason:null };
+    return { disposition:"follow_up",     seqTrack:"re-engage",  seqStep:1, seqPaused:false, seqExitReason:null };
   // "New Lead" and anything unrecognised → fresh, never touched
   return { disposition:"not_called",      seqTrack:"new",        seqStep:0, seqPaused:false, seqExitReason:null };
 }

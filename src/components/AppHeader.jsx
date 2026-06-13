@@ -6,6 +6,7 @@ export default function AppHeader({
   activityStats, goals, stats,
   supaStatus, setView,
   setAddForm, fileRef, handleFile,
+  theme, setTheme,
 }) {
   const todayDials = activityStats?.today?.dials || 0;
   const dialGoal   = goals?.dials || 30; // v3.40 — matches DEFAULT_GOALS and DashboardTab
@@ -189,6 +190,11 @@ export default function AppHeader({
               }
             }, supaStatus === "ok" ? "OK" : supaStatus === "syncing" ? "SYNC…" : "CLOUD")
           ),
+      React.createElement("button", {
+        onClick: () => setTheme && setTheme(t => t === 'night' ? 'day' : 'night'),
+        title: (theme === 'night' ? 'Switch to Day mode' : 'Switch to Night mode'),
+        style: { padding: "6px 10px", fontSize: "14px", background: "transparent", border: "1.5px solid var(--border)", borderRadius: "7px", cursor: "pointer", lineHeight: 1 }
+      }, theme === 'night' ? '☀️' : '🌙'),
       React.createElement("button", {
         onClick: () => setAddForm(v => !v),
         title: "Add lead manually",

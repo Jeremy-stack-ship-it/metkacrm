@@ -199,6 +199,12 @@ REVERT: Remove appointment_booked entry from secondaryDisps. Add
   'appointment_booked' back to KEEP_CALL_DISPS in usePowerDialer.js.
 COMMIT: 2db7fcc
 
+## [3.50] — 2026-06-13
+
+### Fixed
+- **Contact Attempted → no_answer** (`csvParser.js`): Funnel status "Contact Attempted" was incorrectly mapped to `callback` disposition + re-engage track. A dial attempt with no contact is *not* a callback promise. Corrected to `no_answer` + ghost track. Also fixed "Active/Contacting" → `follow_up` (was: callback).
+- **Database repair** (Supabase): 67 leads with phantom `callback` disposition — set solely by the bad "Contact Attempted" Funnel sync note, no real call-type notes — reset to `no_answer`. Surgical: leaves any lead with actual call notes untouched.
+- **EXIT sweep**: Shamsuddin Thalho had `interested` disposition parked in EXIT (assigned 2026-03-16, ~88 days old). Corrected phase to M2.
 ## [2026-05-13] v3.6 — Modular Architecture Refactor
 
 ### Added
@@ -488,3 +494,39 @@ Files: src/lib/phaseEngine.js, dispositionEngine.js, funnelSync.js, usePowerDial
 - **Logged for design conversation (NOT built):** Jeremy's PD redesign — power dial should be an auto-advance TOGGLE over the one visible queue, not a mode that locks its own differently-filtered list. Touches usePowerDialer core; conversation first.
 
 Files: src/components/DialQueuePanel.jsx, src/components/SmsThread.jsx.
+
+## v3.63 — Session 8a: Truth Dashboard + Day/Night + Font Pass + Contact Attempted Fix
+Build clean: 168 modules. DB surgical via Supabase MCP.
+
+**Supabase data repairs:**
+- **67 phantom callback leads repaired:** `mapFunnelStatus` in csvParser.js was returning `{disposition:"callback"}` for Funnel's "Contact Attempted" status — which means a dial attempt with no answer, NOT a callback promise. Fixed: "contact attempted" now maps to `{disposition:"no_answer", seqTrack:"ghost", seqStep:0, seqPaused:false}`. The 67 leads that had only a Funnel "Contact Attempted" sync note (no real call-type notes) were reset to `no_answer` via surgical SQL UPDATE.
+- **EXIT sweep — Shamsuddin Thalho:** Had `interested` disposition trapped in EXIT phase (assigned 2026-03-16, ~88 days old). Promoted to M2 via SQL UPDATE.
+
+**DashboardTab.jsx — Truth KPI strip + Odds Meter:**
+- 5 truth KPI cards inserted before TODAY'S ACTIVITY: MACHINE DIALS (7d) | AUDITS HELD (week) | AWAITING REPLY | 🔥 OPENERS | APPS/WEEK
+- Odds Meter widget: rolling 7-day dials-per-app ratio. Shows "You book every ~N dials · You're on X since last app." Blue border turns green with "🎯 Statistically due" when dialsSinceApp ≥ oddsRate.
+- `awaitingReply`: leads where latest SMS is sms_inbound (someone replied, hasn't been answered)
+- `openersNow`: leads where hoursSinceOpen ≤ 48h and not smsOptOut
+- 3 dashboard code artifacts fixed: escaped apostrophe in TODAY'S PACE, stray dollar sign in weeklyDialGoal chip, missing JSX braces on /weeklyDialGoal
+
+**index.css — Night theme:**
+- Full `[data-theme="night"]` token block: dark bg (#0D1117), surface layers, border shades, text tiers, sidebar variants, status rgba dims
+
+**AppHeader.jsx + App.jsx — Day/Night toggle:**
+- ☀️/🌙 toggle button in header (before + ADD)
+- Theme state in App.jsx persisted to localStorage (`metka-theme`), applied via `data-theme` on `document.documentElement`
+- `theme, setTheme` props wired from App → AppHeader
+
+**DialView.jsx — ISO date chip fix:**
+- `fmtAssignDate(raw)` helper: formats raw ISO assign date to "Jun 3" style. Chip previously showed raw ISO string.
+
+**Quiet ring — App.jsx:**
+- useEffect fires on `leads` change; finds any lead where `nextCallback` is within ±60s of now
+- One-ring-per-session guard via sessionStorage (`metka-rung-cbs` Set)
+- Web Audio API: two-tone soft ping (880Hz + 1108Hz), 0.18 gain, exponential fade — no file dependency
+
+**Font pass — 41 sizes raised across 4 files:**
+- DialView.jsx (1), DashboardTab.jsx (28), MessagesView.jsx (3), DialQueuePanel.jsx (9)
+- Minimum floor: 0.688rem / 11px. No sub-11px font sizes remain in these files.
+
+Files: src/components/DashboardTab.jsx, DialView.jsx, MessagesView.jsx, DialQueuePanel.jsx, AppHeader.jsx, App.jsx, src/index.css, src/lib/csvParser.js, Supabase leads table (SQL direct).

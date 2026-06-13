@@ -10,6 +10,17 @@ import { PHASE_DEFS, buildTodayQueue, effectivePhase, leadAgeDays, hoursSinceOpe
 import DialQueuePanel from './DialQueuePanel';
 import DialRightPanel from './DialRightPanel';
 
+// S8a — human-readable assign date chip ("May 29" / "Jun 13")
+function fmtAssignDate(raw) {
+  if (!raw) return null;
+  try {
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return raw;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch(e) { return raw; }
+}
+
+
 export default function DialView({
   leads, queue, session, setSession, sessionPaused, setSessionPaused, setDialSessionActive,
   dialSortMode, setDialSortMode,
@@ -160,7 +171,7 @@ export default function DialView({
             React.createElement("span", { style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: BC[open.bucket] + "18", color: BC[open.bucket], fontWeight: "800" } }, BL[open.bucket]),
             open.leadType && React.createElement("span", { style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--blue-mid)", color: "#1D4ED8", fontWeight: "700" } }, open.leadType),
             open.city && open.state && React.createElement("span", { style: { fontSize: "11px", color: "var(--t3)" } }, "📍 " + open.city + ", " + open.state),
-            open.assignDate && React.createElement("span", { title: "Assign date — lead received", style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--surface-2)", color: "var(--t3)", fontWeight: "600", border: "1px solid var(--border)" } }, "📋 " + open.assignDate),
+            open.assignDate && React.createElement("span", { title: "Assign date — lead received", style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--surface-2)", color: "var(--t3)", fontWeight: "600", border: "1px solid var(--border)" } }, "📋 " + fmtAssignDate(open.assignDate)),
             isUWStuck(open) && React.createElement("span", { className: "pulse-red", style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--red-dim)", color: "var(--red)", fontWeight: "800", border: "1px solid #FCA5A5" } }, "⚠ UW " + daysInUW(open) + "d")
           )
         ),
@@ -631,7 +642,7 @@ export default function DialView({
                         }
                       },
                         vmCount > 0 && React.createElement("span", {
-                          style: { position: "absolute", top: "4px", right: "5px", fontSize: "9px", fontWeight: "800",
+                          style: { position: "absolute", top: "4px", right: "5px", fontSize: "11px", fontWeight: "800",
                             background: isActive ? "rgba(255,255,255,0.25)" : "#ea580c", color: "#fff",
                             borderRadius: "8px", padding: "1px 5px", lineHeight: 1.4 }
                         }, vmCount + "/5"),
