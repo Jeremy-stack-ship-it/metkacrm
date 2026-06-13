@@ -90,7 +90,7 @@ export default function SequenceRunsTab({ leads = [], seqStats = null }) {
               <div style={{ fontSize: '0.85rem', fontWeight: 700, color: hasErrors ? 'var(--red)' : 'var(--green)' }}>
                 {fmtRunTime(lastRun.ran_at)}
               </div>
-              <div style={{ fontSize: '0.68rem', color: '#475569' }}>{fmtRelative(lastRun.ran_at)}</div>
+              <div style={{ fontSize: '0.688remrem', color: '#475569' }}>{fmtRelative(lastRun.ran_at)}</div>
             </div>
           )}
         </div>
@@ -123,11 +123,11 @@ export default function SequenceRunsTab({ leads = [], seqStats = null }) {
 
                 {hasErrors && (
                   <div style={{ marginTop: '0.75rem', padding: '0.65rem 0.75rem', background: 'rgba(239,68,68,0.1)', borderRadius: 7, border: '1px solid rgba(239,68,68,0.35)' }}>
-                    <div style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--red)', marginBottom: '0.4rem' }}>
+                    <div style={{ fontSize: '0.688remrem', fontWeight: 800, color: 'var(--red)', marginBottom: '0.4rem' }}>
                       ⚠ {errCount} ERROR{errCount > 1 ? 'S' : ''} — review and fix before next run
                     </div>
                     {(lastRun.errors || []).map((e, i) => (
-                      <div key={i} style={{ fontSize: '0.65rem', color: '#fca5a5', fontFamily: "'JetBrains Mono',monospace", marginBottom: '0.2rem', wordBreak: 'break-all', lineHeight: 1.4 }}>
+                      <div key={i} style={{ fontSize: '0.688remrem', color: '#fca5a5', fontFamily: "'JetBrains Mono',monospace", marginBottom: '0.2rem', wordBreak: 'break-all', lineHeight: 1.4 }}>
                         {i + 1}. {e}
                       </div>
                     ))}
@@ -143,7 +143,7 @@ export default function SequenceRunsTab({ leads = [], seqStats = null }) {
               LIVE SEQUENCE STATE
             </div>
 
-            <div style={{ marginBottom: '0.5rem', fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Active Tracks</div>
+            <div style={{ marginBottom: '0.5rem', fontSize: '0.688remrem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Active Tracks</div>
             {TRACKS.map(({ key, label, color }) => {
               const arr = trackCounts[key];
               return (
@@ -151,7 +151,7 @@ export default function SequenceRunsTab({ leads = [], seqStats = null }) {
                   <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{label}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {arr.length > 0 && (
-                      <span style={{ fontSize: '0.65rem', color: '#64748b' }}>
+                      <span style={{ fontSize: '0.688remrem', color: '#64748b' }}>
                         step {[...new Set(arr.map(l => l.seqStep || 0))].sort((a,b)=>a-b).join('/')}
                       </span>
                     )}
@@ -164,7 +164,7 @@ export default function SequenceRunsTab({ leads = [], seqStats = null }) {
             })}
 
             <div style={{ height: '1px', background: 'var(--navy-3)', margin: '0.6rem 0' }} />
-            <div style={{ marginBottom: '0.4rem', fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Other States</div>
+            <div style={{ marginBottom: '0.4rem', fontSize: '0.688remrem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Other States</div>
 
             {[
               { label: 'Paused',          val: seqPaused.length,  color: 'var(--amber)' },
@@ -190,7 +190,7 @@ export default function SequenceRunsTab({ leads = [], seqStats = null }) {
         {/* Run History Table */}
         <div style={{ background: 'var(--navy-2)', borderRadius: 10, padding: '1.25rem', border: '1px solid var(--navy-3)' }}>
           <div style={{ fontWeight: 800, fontSize: '0.82rem', color: '#e2e8f0', marginBottom: '0.9rem', letterSpacing: '0.04em' }}>
-            RUN HISTORY <span style={{ fontSize: '0.65rem', color: '#475569', fontWeight: 400 }}>(last 14 runs)</span>
+            RUN HISTORY <span style={{ fontSize: '0.688remrem', color: '#475569', fontWeight: 400 }}>(last 14 runs)</span>
           </div>
 
           {loading ? (
@@ -216,7 +216,7 @@ export default function SequenceRunsTab({ leads = [], seqStats = null }) {
                     <tr key={run.id} style={{ borderBottom: '1px solid rgba(51,59,84,0.5)', background: isLatest ? 'rgba(99,102,241,0.06)' : 'transparent' }}>
                       <td style={{ padding: '0.45rem 0.6rem', color: isLatest ? '#e2e8f0' : '#94a3b8', fontWeight: isLatest ? 700 : 400, whiteSpace: 'nowrap' }}>
                         {fmtRunTime(run.ran_at)}
-                        {isLatest && <span style={{ marginLeft: '0.5rem', fontSize: '0.6rem', background: 'rgba(99,102,241,0.3)', color: '#a5b4fc', borderRadius: 3, padding: '1px 5px', fontWeight: 700 }}>LATEST</span>}
+                        {isLatest && <span style={{ marginLeft: '0.5rem', fontSize: '0.688remrem', background: 'rgba(99,102,241,0.3)', color: '#a5b4fc', borderRadius: 3, padding: '1px 5px', fontWeight: 700 }}>LATEST</span>}
                       </td>
                       {[run.total, run.active, run.processed, run.emails_sent, run.sms_sent, run.skipped, run.archived].map((val, i) => (
                         <td key={i} style={{ padding: '0.45rem 0.6rem', textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", color: '#94a3b8', fontWeight: 600 }}>{val ?? '—'}</td>

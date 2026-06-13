@@ -80,7 +80,7 @@ export default function ActivityDashboard({
         React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px", marginBottom: "14px" } },
           [{ key: "dials", label: "Dials / day" }, { key: "contacts", label: "Contacts / day" }, { key: "appointments", label: "Appointments / day" }].map(f =>
             React.createElement("div", { key: f.key },
-              React.createElement("label", { style: { fontSize: "10px", fontWeight: "700", color: "var(--t3)", letterSpacing: "0.6px", display: "block", marginBottom: "6px" } }, f.label),
+              React.createElement("label", { style: { fontSize: "11pxpx", fontWeight: "700", color: "var(--t3)", letterSpacing: "0.6px", display: "block", marginBottom: "6px" } }, f.label),
               React.createElement("input", {
                 type: "number", min: "0",
                 value: goalsDraft[f.key],
@@ -103,8 +103,8 @@ export default function ActivityDashboard({
           const pct  = t.goal > 0 ? Math.min(100, Math.round((t.val / t.goal) * 100)) : 0;
           return React.createElement("div", { key: t.key, style: { background: "var(--surface)", border: `1px solid ${tone.border}`, borderRadius: "14px", padding: "20px 22px", boxShadow: "0 4px 16px rgba(0,0,0,0.03)" } },
             React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" } },
-              React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.2px" } }, t.icon + " " + t.label),
-              React.createElement("div", { style: { fontSize: "10px", fontWeight: "700", color: tone.c, letterSpacing: "0.5px", padding: "2px 8px", borderRadius: "20px", background: tone.bg, border: `1px solid ${tone.border}` } }, pct + "%")
+              React.createElement("div", { style: { fontSize: "11pxpx", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.2px" } }, t.icon + " " + t.label),
+              React.createElement("div", { style: { fontSize: "11pxpx", fontWeight: "700", color: tone.c, letterSpacing: "0.5px", padding: "2px 8px", borderRadius: "20px", background: tone.bg, border: `1px solid ${tone.border}` } }, pct + "%")
             ),
             React.createElement("div", { style: { display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "12px" } },
               React.createElement("div", { style: { fontSize: "42px", fontWeight: "800", color: tone.c, fontFamily: "'Syne',sans-serif", lineHeight: 1 } }, "" + t.val),
@@ -125,7 +125,7 @@ export default function ActivityDashboard({
           { label: "SET RATE",     val: activityStats.setRate,     sub: "appointments ÷ contacts (today)" },
         ].map(r => React.createElement("div", { key: r.label, style: { flex: 1, minWidth: "200px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 2px 8px rgba(0,0,0,0.03)" } },
           React.createElement("div", null,
-            React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1px", marginBottom: "4px" } }, r.label),
+            React.createElement("div", { style: { fontSize: "11pxpx", fontWeight: "800", color: "var(--t3)", letterSpacing: "1px", marginBottom: "4px" } }, r.label),
             React.createElement("div", { style: { fontSize: "11px", color: "var(--t3)", fontWeight: "500" } }, r.sub)
           ),
           React.createElement("div", { style: { fontSize: "24px", fontWeight: "800", color: r.val >= 30 ? "var(--green)" : r.val >= 15 ? "var(--blue)" : r.val > 0 ? "var(--amber)" : "var(--t3)", fontFamily: "'Syne',sans-serif" } }, r.val + "%")
@@ -136,7 +136,7 @@ export default function ActivityDashboard({
       React.createElement("div", { style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", padding: "20px 22px", marginBottom: "18px", boxShadow: "0 4px 16px rgba(0,0,0,0.03)" } },
         React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" } },
           React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t2)", letterSpacing: "1px" } }, "7-DAY TREND"),
-          React.createElement("div", { style: { display: "flex", gap: "14px", fontSize: "10px", fontWeight: "700" } },
+          React.createElement("div", { style: { display: "flex", gap: "14px", fontSize: "11pxpx", fontWeight: "700" } },
             ACTIVITY_TYPES.map(t => React.createElement("div", { key: t.id, style: { display: "flex", alignItems: "center", gap: "5px", color: "var(--t3)" } },
               React.createElement("span", { style: { width: "10px", height: "10px", borderRadius: "3px", background: t.color, display: "inline-block" } }),
               React.createElement("span", null, t.label.toUpperCase())
@@ -149,13 +149,13 @@ export default function ActivityDashboard({
             const total = a.dials + a.contacts + a.appointments;
             const isToday = d.key === TODAY_KEY();
             return React.createElement("div", { key: d.key, style: { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" } },
-              React.createElement("div", { style: { fontSize: "10px", fontWeight: "700", color: total > 0 ? "var(--t2)" : "var(--t4)", fontFamily: "'JetBrains Mono',monospace" } }, total > 0 ? total : ""),
+              React.createElement("div", { style: { fontSize: "11pxpx", fontWeight: "700", color: total > 0 ? "var(--t2)" : "var(--t4)", fontFamily: "'JetBrains Mono',monospace" } }, total > 0 ? total : ""),
               React.createElement("div", { style: { width: "100%", height: "110px", display: "flex", flexDirection: "column", justifyContent: "flex-end", borderRadius: "6px 6px 0 0", overflow: "hidden", background: "var(--surface-2)", border: `1px solid ${isToday ? "var(--blue)" : "var(--border)"}` } },
                 a.appointments > 0 && React.createElement("div", { style: { height: `${(a.appointments / max7) * 100}%`, background: "var(--green)", minHeight: "3px" } }),
                 a.contacts > 0     && React.createElement("div", { style: { height: `${(a.contacts / max7) * 100}%`,     background: "var(--sky)",   minHeight: "3px" } }),
                 a.dials > 0        && React.createElement("div", { style: { height: `${(a.dials / max7) * 100}%`,        background: "var(--blue)",  minHeight: "3px" } })
               ),
-              React.createElement("div", { style: { fontSize: "10px", fontWeight: isToday ? "800" : "600", color: isToday ? "var(--blue)" : "var(--t3)", letterSpacing: "0.4px" } }, isToday ? "TODAY" : d.label.toUpperCase())
+              React.createElement("div", { style: { fontSize: "11pxpx", fontWeight: isToday ? "800" : "600", color: isToday ? "var(--blue)" : "var(--t3)", letterSpacing: "0.4px" } }, isToday ? "TODAY" : d.label.toUpperCase())
             );
           })
         )
@@ -179,12 +179,12 @@ export default function ActivityDashboard({
               onClick: () => { if (e.leadId) { setOpenId(e.leadId); setView("dial"); setDetailTab("activity"); } },
               style: { display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", borderRadius: "8px", cursor: e.leadId ? "pointer" : "default", borderBottom: "1px solid var(--border)" }
             },
-              React.createElement("div", { style: { fontSize: "10px", fontWeight: "700", color: "var(--t3)", fontFamily: "'JetBrains Mono',monospace", minWidth: "68px" } }, fmtTime(e.ts)),
-              React.createElement("div", { style: { fontSize: "10px", fontWeight: "800", color: t.color, padding: "3px 10px", borderRadius: "20px", background: t.bg, border: `1px solid ${t.border}`, minWidth: "96px", textAlign: "center" } }, t.icon + " " + t.label.toUpperCase()),
+              React.createElement("div", { style: { fontSize: "11pxpx", fontWeight: "700", color: "var(--t3)", fontFamily: "'JetBrains Mono',monospace", minWidth: "68px" } }, fmtTime(e.ts)),
+              React.createElement("div", { style: { fontSize: "11pxpx", fontWeight: "800", color: t.color, padding: "3px 10px", borderRadius: "20px", background: t.bg, border: `1px solid ${t.border}`, minWidth: "96px", textAlign: "center" } }, t.icon + " " + t.label.toUpperCase()),
               React.createElement("div", { style: { flex: 1, fontSize: "13px", color: "var(--t1)", fontWeight: "500" } },
                 e.leadName || React.createElement("span", { style: { color: "var(--t3)", fontStyle: "italic" } }, "(unattached)")
               ),
-              e.source === "manual" && React.createElement("span", { style: { fontSize: "9px", fontWeight: "700", color: "var(--t3)", padding: "2px 8px", borderRadius: "20px", background: "var(--surface-2)", border: "1px dashed var(--border-2)", letterSpacing: "0.5px" } }, "MANUAL"),
+              e.source === "manual" && React.createElement("span", { style: { fontSize: "11pxpx", fontWeight: "700", color: "var(--t3)", padding: "2px 8px", borderRadius: "20px", background: "var(--surface-2)", border: "1px dashed var(--border-2)", letterSpacing: "0.5px" } }, "MANUAL"),
               React.createElement("button", {
                 onClick: ev => { ev.stopPropagation(); saveActivity(activity.filter(x => x.id !== e.id)); },
                 title: "Remove event",

@@ -112,7 +112,7 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
         React.createElement('div', { style:{ fontSize:'14px', fontWeight:'800', color:'var(--t1)' } }, open.name || 'Unknown'),
         React.createElement('div', { style:{ fontSize:'11px', color:'var(--t3)', fontFamily:"'JetBrains Mono',monospace", marginTop:'2px' } }, open.phone || '')
       ),
-      React.createElement('div', { style:{ fontSize:'10px', padding:'3px 8px', borderRadius:'12px', background: optedOut?'var(--red-dim)':'var(--green-dim)', color:optedOut?'var(--red)':'var(--green)', fontWeight:'800', border:'1px solid '+(optedOut?'#FCA5A5':'#6EE7B7') } },
+      React.createElement('div', { style:{ fontSize:'11pxpx', padding:'3px 8px', borderRadius:'12px', background: optedOut?'var(--red-dim)':'var(--green-dim)', color:optedOut?'var(--red)':'var(--green)', fontWeight:'800', border:'1px solid '+(optedOut?'#FCA5A5':'#6EE7B7') } },
         optedOut ? '🔴 STOP' : '✅ A2P'
       )
     ),
@@ -142,7 +142,7 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
             return React.createElement(React.Fragment, { key: msg.ts + i },
               showDiv && React.createElement('div', { style:{ display:'flex', alignItems:'center', gap:'8px', margin:'8px 0 4px' } },
                 React.createElement('div', { style:{ flex:1, height:'1px', background:'var(--border)' } }),
-                React.createElement('span', { style:{ fontSize:'10px', color:'var(--t4)', fontWeight:'600', whiteSpace:'nowrap' } }, msgDay),
+                React.createElement('span', { style:{ fontSize:'11pxpx', color:'var(--t4)', fontWeight:'600', whiteSpace:'nowrap' } }, msgDay),
                 React.createElement('div', { style:{ flex:1, height:'1px', background:'var(--border)' } })
               ),
               React.createElement('div', { style:{ display:'flex', justifyContent: isInbound?'flex-start':'flex-end', marginBottom:'2px' } },
@@ -157,7 +157,7 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
                   }
                 },
                   React.createElement('div', null, display),
-                  React.createElement('div', { style:{ fontSize:'9px', marginTop:'3px', opacity:0.55, textAlign: isInbound?'left':'right' } }, time + (isAuto?' · auto':''))
+                  React.createElement('div', { style:{ fontSize:'11pxpx', marginTop:'3px', opacity:0.55, textAlign: isInbound?'left':'right' } }, time + (isAuto?' · auto':''))
                 )
               )
             );
@@ -171,7 +171,7 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
     (open && open.smsOptOut === true)
       ? React.createElement('div', { style:{ borderTop:'1px solid #FCA5A5', background:'var(--red-dim)', padding:'14px 16px', flexShrink:0, textAlign:'center' } },
           React.createElement('div', { style:{ fontSize:'12px', fontWeight:'800', color:'var(--red)', letterSpacing:'0.5px' } }, '⛔ OPTED OUT — texted STOP'),
-          React.createElement('div', { style:{ fontSize:'10px', color:'var(--red)', marginTop:'4px', opacity:0.85 } }, 'Texting this family again is a TCPA violation. Phone calls only. (They can reply START to opt back in.)')
+          React.createElement('div', { style:{ fontSize:'11pxpx', color:'var(--red)', marginTop:'4px', opacity:0.85 } }, 'Texting this family again is a TCPA violation. Phone calls only. (They can reply START to opt back in.)')
         )
       : React.createElement('div', { style:{ borderTop:'1px solid var(--border)', background:'var(--surface)', padding:'10px 12px', flexShrink:0, position:'relative' } },
 
@@ -183,7 +183,7 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
           Object.entries(catLabels).map(([cat, lbl]) =>
             React.createElement('button', {
               key:cat, onClick:()=>setTplCat(cat),
-              style:{ flex:1, padding:'5px 4px', fontSize:'10px', fontWeight:'700', borderRadius:'6px', cursor:'pointer', border:'1px solid '+(tplCat===cat?'var(--blue)':'var(--border)'), background:tplCat===cat?'var(--blue)':'transparent', color:tplCat===cat?'#fff':'var(--t3)' }
+              style:{ flex:1, padding:'5px 4px', fontSize:'11pxpx', fontWeight:'700', borderRadius:'6px', cursor:'pointer', border:'1px solid '+(tplCat===cat?'var(--blue)':'var(--border)'), background:tplCat===cat?'var(--blue)':'transparent', color:tplCat===cat?'#fff':'var(--t3)' }
             }, (cat===sugCat?'⭐ ':'')+lbl)
           )
         ),
@@ -228,9 +228,9 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
           }, '\ud83d\udd25 Card');
         })(),
         [['Name', open.firstName||(open.name||'').split(' ')[0]||'there'], ['Cal', CALENDLY], ['Apply', SELF_APPLY]].map(([lbl, val]) =>
-          React.createElement('button', { key:lbl, onClick:()=>insertVar(val), style:{ fontSize:'10px', fontWeight:'700', padding:'3px 7px', borderRadius:'6px', border:'1px solid var(--border)', background:'var(--surface-2)', color:'var(--t3)', cursor:'pointer' } }, '{'+lbl+'}')
+          React.createElement('button', { key:lbl, onClick:()=>insertVar(val), style:{ fontSize:'11pxpx', fontWeight:'700', padding:'3px 7px', borderRadius:'6px', border:'1px solid var(--border)', background:'var(--surface-2)', color:'var(--t3)', cursor:'pointer' } }, '{'+lbl+'}')
         ),
-        React.createElement('div', { style:{ marginLeft:'auto', fontSize:'10px', fontWeight:'700', fontFamily:'monospace', color: chars>MAX?'var(--red)':chars>MAX*0.85?'var(--amber)':'var(--t4)' } },
+        React.createElement('div', { style:{ marginLeft:'auto', fontSize:'11pxpx', fontWeight:'700', fontFamily:'monospace', color: chars>MAX?'var(--red)':chars>MAX*0.85?'var(--amber)':'var(--t4)' } },
           chars+'/'+MAX+(segs>1?' ·'+segs+'seg':'')
         )
       ),

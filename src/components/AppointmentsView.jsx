@@ -141,7 +141,7 @@ export default function AppointmentsView({ leads, upd, logActivity, setOpenId, s
   const typeChip = lead => lead.apptType
     ? React.createElement('span', {
         style: {
-          fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em',
+          fontSize: '11pxpx', fontWeight: '700', letterSpacing: '0.05em',
           background: 'rgba(139,92,246,0.12)', color: '#7C3AED',
           borderRadius: '5px', padding: '2px 7px',
         },
@@ -151,7 +151,7 @@ export default function AppointmentsView({ leads, upd, logActivity, setOpenId, s
   // Bucket chip
   const bucketChip = lead => React.createElement('span', {
     style: {
-      fontSize: '10px', fontWeight: '800', letterSpacing: '0.05em',
+      fontSize: '11pxpx', fontWeight: '800', letterSpacing: '0.05em',
       color: lead.bucket === 'A' ? '#2563EB' : lead.bucket === 'B' ? '#10B981' : '#94A3B8',
       background: lead.bucket === 'A' ? 'rgba(37,99,235,0.1)' : lead.bucket === 'B' ? 'rgba(16,185,129,0.1)' : 'rgba(148,163,184,0.1)',
       borderRadius: '4px', padding: '1px 6px',
@@ -164,7 +164,7 @@ export default function AppointmentsView({ leads, upd, logActivity, setOpenId, s
       return React.createElement('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
         React.createElement('span', {
           style: {
-            fontSize: '10px', fontWeight: '800', color: '#D97706',
+            fontSize: '11pxpx', fontWeight: '800', color: '#D97706',
             background: '#FEF3C7', borderRadius: '6px', padding: '3px 9px', letterSpacing: '0.04em',
           },
         }, '⚠️ NEEDS CHECK-IN'),

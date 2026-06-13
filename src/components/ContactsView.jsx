@@ -162,7 +162,7 @@ export default function ContactsView({
                    const bg = due ? '#FEE2E2' : (lead.seqPaused ? '#FEF3C7' : '#EFF6FF');
                    const border = due ? '#FCA5A5' : (lead.seqPaused ? '#FCD34D' : '#BFDBFE');
                    const label = status.length > 20 ? status.slice(0, 18) + '…' : status;
-                   return React.createElement("span",{style:{marginLeft:"6px",fontSize:"10px",padding:"2px 7px",borderRadius:"var(--radius-pill)",background:bg,color:color,fontWeight:"800",border:"1px solid "+border,whiteSpace:"nowrap"}},label);
+                   return React.createElement("span",{style:{marginLeft:"6px",fontSize:"11pxpx",padding:"2px 7px",borderRadius:"var(--radius-pill)",background:bg,color:color,fontWeight:"800",border:"1px solid "+border,whiteSpace:"nowrap"}},label);
                  })()
                ),
                // Dial — Twilio if enabled, tel: fallback

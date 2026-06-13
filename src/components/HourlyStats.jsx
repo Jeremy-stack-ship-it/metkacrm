@@ -126,7 +126,7 @@ function HourlyStats({ activity = [] }) {
             onClick: () => setRange(r),
             style: {
               padding: '5px 14px',
-              fontSize: '10px',
+              fontSize: '11pxpx',
               fontWeight: '700',
               letterSpacing: '0.5px',
               borderRadius: '6px',
@@ -164,9 +164,9 @@ function HourlyStats({ activity = [] }) {
                 minWidth: '80px',
               }
             },
-              React.createElement('div', { style: { fontSize: '10px', fontWeight: '700', color: 'var(--t3)', letterSpacing: '0.8px', marginBottom: '3px' } }, tile.label.toUpperCase()),
+              React.createElement('div', { style: { fontSize: '11pxpx', fontWeight: '700', color: 'var(--t3)', letterSpacing: '0.8px', marginBottom: '3px' } }, tile.label.toUpperCase()),
               React.createElement('div', { style: { fontSize: '18px', fontWeight: '800', color: tile.color, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1.2 } }, tile.value),
-              React.createElement('div', { style: { fontSize: '10px', color: 'var(--t4)', marginTop: '2px' } }, tile.sub)
+              React.createElement('div', { style: { fontSize: '11pxpx', color: 'var(--t4)', marginTop: '2px' } }, tile.sub)
             )
           )
         )
@@ -218,7 +218,7 @@ function HourlyStats({ activity = [] }) {
                 rate !== null && rate > 0
                   ? React.createElement('div', {
                       style: {
-                        fontSize: '8px',
+                        fontSize: '11pxpx',
                         fontWeight: '800',
                         color: rate >= 20 ? 'var(--green)' : 'var(--t3)',
                         fontFamily: "'JetBrains Mono', monospace",
@@ -264,7 +264,7 @@ function HourlyStats({ activity = [] }) {
                       top: '-16px',
                       left: '50%',
                       transform: 'translateX(-50%)',
-                      fontSize: '8px',
+                      fontSize: '11pxpx',
                       color: 'var(--green)',
                       fontWeight: '800',
                     }
@@ -274,7 +274,7 @@ function HourlyStats({ activity = [] }) {
                 // Hour label
                 React.createElement('div', {
                   style: {
-                    fontSize: '9px',
+                    fontSize: '11pxpx',
                     fontWeight: isCurrent ? '800' : '600',
                     color: isCurrent ? 'var(--green)' : isPeak ? 'var(--blue)' : 'var(--t4)',
                     fontFamily: "'JetBrains Mono', monospace",
@@ -288,7 +288,7 @@ function HourlyStats({ activity = [] }) {
 
           // ── Legend ──
           React.createElement('div', {
-            style: { display: 'flex', gap: '16px', marginTop: '10px', fontSize: '10px', fontWeight: '700', color: 'var(--t3)' }
+            style: { display: 'flex', gap: '16px', marginTop: '10px', fontSize: '11pxpx', fontWeight: '700', color: 'var(--t3)' }
           },
             React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '5px' } },
               React.createElement('span', { style: { width: '10px', height: '10px', borderRadius: '2px', background: 'var(--blue-dim)', border: '1px solid var(--blue)', display: 'inline-block' } }),
@@ -299,11 +299,11 @@ function HourlyStats({ activity = [] }) {
               'CONTACTS'
             ),
             React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '5px' } },
-              React.createElement('span', { style: { fontSize: '9px', color: 'var(--green)', fontWeight: '800' } }, '▼'),
+              React.createElement('span', { style: { fontSize: '11pxpx', color: 'var(--green)', fontWeight: '800' } }, '▼'),
               'CURRENT HOUR'
             ),
             React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '5px' } },
-              React.createElement('span', { style: { fontSize: '9px', color: 'var(--t3)' } }, '%'),
+              React.createElement('span', { style: { fontSize: '11pxpx', color: 'var(--t3)' } }, '%'),
               'CONNECT RATE'
             ),
           )

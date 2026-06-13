@@ -82,7 +82,7 @@ export default function CallbackQueue({
           onClick: (e) => dismissCallback(lead, e),
           title: "Dismiss callback — returns lead to their track",
           style: {
-            marginTop: "4px", padding: "3px 9px", fontSize: "10px", fontWeight: "800",
+            marginTop: "4px", padding: "3px 9px", fontSize: "11pxpx", fontWeight: "800",
             border: "1px solid var(--border)", borderRadius: "5px", cursor: "pointer",
             background: "var(--surface-2)", color: "var(--t3)",
             letterSpacing: "0.04em", transition: "all 0.12s",

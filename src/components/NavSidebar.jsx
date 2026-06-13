@@ -7,6 +7,7 @@ const GROUPS = [
     icon:  '⚡',
     label: 'WORK',
     items: [
+      { id: 'today',        icon: '⚡', label: 'TODAY' },
       { id: 'dial',         icon: '🎙️', label: 'DIAL'  },
       { id: 'messages',     icon: '💬', label: 'SMS'   },
       { id: 'callbacks',    icon: '📞', label: 'CB'    },
@@ -18,6 +19,7 @@ const GROUPS = [
     icon:  '📊',
     label: 'INTEL',
     items: [
+      { id: 'campaign', icon: '📋', label: 'WEEK' },
       { id: 'activity',  icon: '🎯', label: 'ACC'  },
       { id: 'sequence',  icon: '🔁', label: 'SEQ'  },
       { id: 'cc',        icon: '📧', label: 'CC'   },
@@ -66,7 +68,7 @@ const NavBtn = ({ icon, label, active, onClick, badge }) =>
     React.createElement('span', { style: { fontSize: '14px', lineHeight: 1 } }, icon),
     React.createElement('span', { style: { fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em' } }, label),
     badge > 0 && React.createElement('span', {
-      style: { position: 'absolute', top: '3px', right: '6px', fontSize: '9px', fontWeight: '800', background: '#EF4444', color: '#fff', borderRadius: '8px', padding: '1px 4px', lineHeight: 1.4, minWidth: '14px', textAlign: 'center' }
+      style: { position: 'absolute', top: '3px', right: '6px', fontSize: '11pxpx', fontWeight: '800', background: '#EF4444', color: '#fff', borderRadius: '8px', padding: '1px 4px', lineHeight: 1.4, minWidth: '14px', textAlign: 'center' }
     }, badge > 99 ? '99+' : String(badge))
   );
 
@@ -156,7 +158,7 @@ export default function NavSidebar({ view, setView, navOpen, unreadSms = 0 }) {
           },
             React.createElement('span', { style: { fontSize: '13px', lineHeight: 1 } }, g.icon),
             React.createElement('span', { style: { fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em' } }, g.label),
-            React.createElement('span', { style: { fontSize: '9px', opacity: 0.5, lineHeight: 1 } }, isOpen ? '▲' : '▼'),
+            React.createElement('span', { style: { fontSize: '11pxpx', opacity: 0.5, lineHeight: 1 } }, isOpen ? '▲' : '▼'),
           ),
 
           // Collapsed items

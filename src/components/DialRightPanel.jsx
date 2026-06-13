@@ -193,7 +193,7 @@ export default function DialRightPanel({
               ['PRIMARY BENEFICIARY',  'beneficiary', 'Name & Relationship'],
             ].map(([label, field, placeholder]) =>
               React.createElement('div', { key: field },
-                React.createElement('label', { style: { fontSize: '10px', fontWeight: '800', color: 'var(--t3)', display: 'block', marginBottom: '3px' } }, label),
+                React.createElement('label', { style: { fontSize: '11pxpx', fontWeight: '800', color: 'var(--t3)', display: 'block', marginBottom: '3px' } }, label),
                 React.createElement('input', {
                   type: 'text', placeholder, defaultValue: open ? (open[field] || '') : '',
                   onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open[field] || '')) upd(open.id, { [field]: v }); } },
@@ -207,7 +207,7 @@ export default function DialRightPanel({
             ['FINANCIAL CONCERNS / GOALS', 'financialGoals', 'What do they want to address with this coverage?', true],
           ].map(([label, field, placeholder]) =>
             React.createElement('div', { key: field, style: { marginBottom: '8px' } },
-              React.createElement('label', { style: { fontSize: '10px', fontWeight: '800', color: 'var(--t3)', display: 'block', marginBottom: '3px' } }, label),
+              React.createElement('label', { style: { fontSize: '11pxpx', fontWeight: '800', color: 'var(--t3)', display: 'block', marginBottom: '3px' } }, label),
               React.createElement('textarea', {
                 placeholder, defaultValue: open ? (open[field] || '') : '',
                 onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open[field] || '')) upd(open.id, { [field]: v }); } },
@@ -247,7 +247,7 @@ export default function DialRightPanel({
                   style: { accentColor: 'var(--red)', cursor: 'pointer', marginTop: '2px' }
                 }),
                 React.createElement('span', {
-                  style: { fontSize: '10px', lineHeight: '1.3', color: checked ? 'var(--red)' : 'var(--t2)', fontWeight: checked ? '800' : '600' }
+                  style: { fontSize: '11pxpx', lineHeight: '1.3', color: checked ? 'var(--red)' : 'var(--t2)', fontWeight: checked ? '800' : '600' }
                 }, flag.label)
               );
             })
@@ -257,7 +257,7 @@ export default function DialRightPanel({
             ['HOSPITALIZATIONS / SURGERIES (PAST 5 YRS)', 'surgeries5yr', 'Dates and reasons...', '36px'],
           ].map(([label, field, placeholder, minH]) =>
             React.createElement('div', { key: field, style: { marginBottom: '8px' } },
-              React.createElement('label', { style: { fontSize: '10px', fontWeight: '800', color: 'var(--t3)', display: 'block', marginBottom: '3px' } }, label),
+              React.createElement('label', { style: { fontSize: '11pxpx', fontWeight: '800', color: 'var(--t3)', display: 'block', marginBottom: '3px' } }, label),
               React.createElement('textarea', {
                 placeholder, defaultValue: open ? (open[field] || '') : '',
                 onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open[field] || '')) upd(open.id, { [field]: v }); } },
@@ -276,7 +276,7 @@ export default function DialRightPanel({
             ['DRIVING RECORD (Valid license? DUIs?)', 'drivingRecord',  'License status, DUIs, suspensions...'],
           ].map(([label, field, placeholder]) =>
             React.createElement('div', { key: field, style: { marginBottom: '8px' } },
-              React.createElement('label', { style: { fontSize: '10px', fontWeight: '800', color: 'var(--t3)', display: 'block', marginBottom: '3px' } }, label),
+              React.createElement('label', { style: { fontSize: '11pxpx', fontWeight: '800', color: 'var(--t3)', display: 'block', marginBottom: '3px' } }, label),
               React.createElement('input', {
                 type: 'text', placeholder, defaultValue: open ? (open[field] || '') : '',
                 onBlur: e => { if (open) { const v = e.target.value.trim(); if (v !== (open[field] || '')) upd(open.id, { [field]: v }); } },

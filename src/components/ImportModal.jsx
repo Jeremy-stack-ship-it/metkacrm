@@ -33,7 +33,7 @@ export default function ImportModal({
         [["In File", importPreview.all.length, "var(--blue)"], ["New", importPreview.newLeads.length, "var(--green)"], ["Already Exist", importPreview.dupes.length, "var(--t3)"]].map(([l, v, c]) =>
           React.createElement("div", { key:l, style:{ textAlign:"center", padding:"14px 10px", background:"var(--surface-2)", borderRadius:"10px", border:"1px solid var(--border)" } },
             React.createElement("div", { style:{ fontSize:"24px", fontWeight:"800", color:c, fontFamily:"'Syne',sans-serif" } }, v),
-            React.createElement("div", { style:{ fontSize:"10px", color:"var(--t3)", marginTop:"4px", letterSpacing:"0.5px" } }, l)
+            React.createElement("div", { style:{ fontSize:"11pxpx", color:"var(--t3)", marginTop:"4px", letterSpacing:"0.5px" } }, l)
           )
         )
       ),
@@ -55,7 +55,7 @@ export default function ImportModal({
         onClick: () => confirmImport("sync"),
         style: { display:"block", width:"100%", padding:"13px", background:"var(--green)", color:"#fff", border:"none", borderRadius:"9px", fontSize:"14px", fontWeight:"700", cursor:"pointer", marginBottom:"6px" }
       }, "🔁 Sync from Funnel — update " + importPreview.dupes.length + " existing + add " + importPreview.newLeads.length + " new"),
-      importPreview.dupes.length > 0 && React.createElement("div", { style:{ fontSize:"10px", color:"var(--t3)", marginBottom:"16px", lineHeight:"1.5" } },
+      importPreview.dupes.length > 0 && React.createElement("div", { style:{ fontSize:"11pxpx", color:"var(--t3)", marginBottom:"16px", lineHeight:"1.5" } },
         "Promotes statuses only (never downgrades your work). DNC always applies. Conflicts kept + listed in console."),
 
       // Danger zone

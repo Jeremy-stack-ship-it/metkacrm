@@ -275,7 +275,7 @@ export default function AIPanel({ activeLead, aiConfig }) {
   };
 
   const LABEL = {
-    fontSize: '10px', fontWeight: '700', color: 'var(--t3)',
+    fontSize: '11pxpx', fontWeight: '700', color: 'var(--t3)',
     letterSpacing: '0.5px', display: 'block', marginBottom: '4px',
   };
 
@@ -444,7 +444,7 @@ export default function AIPanel({ activeLead, aiConfig }) {
       e('div', { style: HDR },
         e('span', { style: { flex: 1, fontSize: '13px', fontWeight: '800', color: '#fff', fontFamily: "'Syne',sans-serif" } }, '🤖 AI Assistant'),
         activeLead && e('span', {
-          style: { fontSize: '10px', fontWeight: '700', color: '#C4B5FD', background: 'rgba(255,255,255,0.15)', padding: '2px 8px', borderRadius: '10px', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+          style: { fontSize: '11pxpx', fontWeight: '700', color: '#C4B5FD', background: 'rgba(255,255,255,0.15)', padding: '2px 8px', borderRadius: '10px', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
         }, (activeLead.firstName || (activeLead.name && activeLead.name.split(' ')[0]) || 'Lead').slice(0, 16)),
         e('button', {
           style: { background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontSize: '12px', fontWeight: '700', padding: '4px 8px', marginLeft: '4px' },

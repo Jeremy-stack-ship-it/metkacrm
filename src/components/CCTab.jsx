@@ -225,7 +225,7 @@ export default function CCTab({ leads }) {
               },
             })
           ),
-          React.createElement('div', { style: { fontSize: '10px', color: 'var(--t3)', marginTop: '5px' } },
+          React.createElement('div', { style: { fontSize: '11pxpx', color: 'var(--t3)', marginTop: '5px' } },
             `${leads.length ? Math.round((emailLeads.length / leads.length) * 100) : 0}% of your database`)
         ),
 
@@ -385,7 +385,7 @@ export default function CCTab({ leads }) {
                 `${h.count} leads · ${new Date(h.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`)
             ),
             h.failed > 0 && React.createElement('span', {
-              style: { fontSize: '10px', fontWeight: '800', color: '#D97706', background: '#FEF3C7', borderRadius: '5px', padding: '2px 7px' },
+              style: { fontSize: '11pxpx', fontWeight: '800', color: '#D97706', background: '#FEF3C7', borderRadius: '5px', padding: '2px 7px' },
             }, `${h.failed} errors`)
           )
         )

@@ -36,7 +36,7 @@ export default function LoginGate({ onAuth }) {
     React.createElement("div", { style: { background: "var(--surface)", borderRadius: "16px", padding: "52px 44px 44px", width: "380px", boxShadow: "0 20px 60px rgba(0,0,0,0.08),0 4px 16px rgba(0,0,0,0.04)", border: "1px solid var(--border)" } },
       React.createElement("div", { style: { marginBottom: "40px", textAlign: "center" } },
         React.createElement("div", { style: { fontFamily: "'Syne',sans-serif", fontWeight: "800", fontSize: "26px", letterSpacing: "7px", color: "var(--navy)", marginBottom: "8px" } }, "METKA"),
-        React.createElement("div", { style: { fontSize: "10px", color: "var(--t3)", letterSpacing: "3px", fontWeight: "500" } }, "FIELD OPS CRM")
+        React.createElement("div", { style: { fontSize: "11pxpx", color: "var(--t3)", letterSpacing: "3px", fontWeight: "500" } }, "FIELD OPS CRM")
       ),
       React.createElement("div", { style: { marginBottom: "20px" } },
         React.createElement("label", { style: { fontSize: "11px", fontWeight: "600", color: "var(--t2)", letterSpacing: "1px", display: "block", marginBottom: "8px" } }, "PASSWORD"),
@@ -53,7 +53,7 @@ export default function LoginGate({ onAuth }) {
         error && React.createElement("div", { style: { fontSize: "11px", color: "var(--red)", marginTop: "6px", fontWeight: "600" } }, "Incorrect password. Try again.")
       ),
       React.createElement("button", { onClick: submit, className: "t", style: { width: "100%", padding: "13px", background: "var(--navy)", color: "#fff", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "600", cursor: "pointer", letterSpacing: "0.3px" } }, "Sign In →"),
-      React.createElement("div", { style: { marginTop: "28px", fontSize: "10px", color: "var(--t4)", textAlign: "center" } }, "Jeremy Metka · Senior Field Underwriter")
+      React.createElement("div", { style: { marginTop: "28px", fontSize: "11pxpx", color: "var(--t4)", textAlign: "center" } }, "Jeremy Metka · Senior Field Underwriter")
     )
   );
 }

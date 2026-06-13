@@ -27,7 +27,7 @@ export default function FieldMapModal({
 
       // Field rows
       React.createElement("div", { style:{ display:"flex", flexDirection:"column", gap:"6px", marginBottom:"20px" } },
-        React.createElement("div", { style:{ fontSize:"9px", fontWeight:"800", color:"var(--t4)", letterSpacing:"1.2px", marginBottom:"2px" } }, "REQUIRED"),
+        React.createElement("div", { style:{ fontSize:"11pxpx", fontWeight:"800", color:"var(--t4)", letterSpacing:"1.2px", marginBottom:"2px" } }, "REQUIRED"),
         ...FIELD_MAP_DEFS.filter(f => f.required).map(f =>
           React.createElement("div", { key:f.key, style:{ display:"grid", gridTemplateColumns:"160px 1fr", gap:"10px", alignItems:"center", padding:"8px 12px", background:"var(--blue-dim)", borderRadius:"8px", border:"1px solid var(--blue-mid)" } },
             React.createElement("div", { style:{ fontSize:"12px", fontWeight:"700", color:"var(--blue)" } }, "★ " + f.label),
@@ -41,7 +41,7 @@ export default function FieldMapModal({
             )
           )
         ),
-        React.createElement("div", { style:{ fontSize:"9px", fontWeight:"800", color:"var(--t4)", letterSpacing:"1.2px", marginTop:"10px", marginBottom:"2px" } }, "OPTIONAL"),
+        React.createElement("div", { style:{ fontSize:"11pxpx", fontWeight:"800", color:"var(--t4)", letterSpacing:"1.2px", marginTop:"10px", marginBottom:"2px" } }, "OPTIONAL"),
         ...FIELD_MAP_DEFS.filter(f => !f.required).map(f =>
           React.createElement("div", { key:f.key, style:{ display:"grid", gridTemplateColumns:"160px 1fr", gap:"10px", alignItems:"center", padding:"7px 12px", background:fieldMapDraft[f.key]>-1?"var(--surface-2)":"var(--surface)", borderRadius:"8px", border:"1px solid var(--border)" } },
             React.createElement("div", { style:{ fontSize:"12px", fontWeight:"600", color:fieldMapDraft[f.key]>-1?"var(--t1)":"var(--t3)" } }, f.label),
@@ -61,7 +61,7 @@ export default function FieldMapModal({
       React.createElement("label", { style:{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"20px", cursor:"pointer", fontSize:"12px", color:"var(--t2)", fontWeight:"600" } },
         React.createElement("input", { type:"checkbox", checked:saveMappingCb, onChange:e=>setSaveMappingCb(e.target.checked), style:{ width:"15px", height:"15px", accentColor:"var(--blue)", cursor:"pointer" } }),
         "Save this mapping — auto-apply next time I import a Quility CSV",
-        savedMapping.phone && React.createElement("span", { style:{ fontSize:"10px", color:"var(--green)", fontWeight:"700", marginLeft:"4px" } }, "(saved ✓)")
+        savedMapping.phone && React.createElement("span", { style:{ fontSize:"11pxpx", color:"var(--green)", fontWeight:"700", marginLeft:"4px" } }, "(saved ✓)")
       ),
 
       // Actions

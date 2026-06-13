@@ -18,7 +18,7 @@ import {
   pauseSequence, resumeSequence, advanceSequence,
 } from '../lib/sequenceEngine.js';
 import { getLBLDay1Opener } from '../lib/sequenceTemplates.js';
-import { SMS_SEQUENCES, suggestSeqCat } from '../lib/phaseEngine.js';
+import { SMS_SEQUENCES, suggestSeqCat, effectivePhase, leadAgeDays, PHASE_DEFS } from '../lib/phaseEngine.js';
 
 // ── STAGE STEPPER (local — only used in ContactDetail) ───────────
 const StageStepper = ({ stage, onSelect }) => {
@@ -60,7 +60,7 @@ const AppEconomicsCard = ({ lead, upd }) => {
   const show = ECON_STAGES.includes(lead.stage) || lead.appStatus || lead.apv;
   if (!show) return null;
   const numIn = (label, field, ph) => React.createElement("div", { style:{ flex:"1 1 110px", minWidth:"100px" } },
-    React.createElement("div", { style:{ fontSize:"9px", fontWeight:"800", color:"var(--t4)", letterSpacing:"0.8px", marginBottom:"4px" } }, label),
+    React.createElement("div", { style:{ fontSize:"11pxpx", fontWeight:"800", color:"var(--t4)", letterSpacing:"0.8px", marginBottom:"4px" } }, label),
     React.createElement("input", {
       type:"number", step:"0.01", placeholder: ph || "0",
       value: lead[field] ?? "",
@@ -85,7 +85,7 @@ const AppEconomicsCard = ({ lead, upd }) => {
       numIn("COMMISSION PAID", "commissionPaid"),
       numIn("ADVANCE PAID", "advancePaid"),
       React.createElement("div", { style:{ flex:"1 1 130px", minWidth:"120px" } },
-        React.createElement("div", { style:{ fontSize:"9px", fontWeight:"800", color:"var(--t4)", letterSpacing:"0.8px", marginBottom:"4px" } }, "PAYMENT DATE"),
+        React.createElement("div", { style:{ fontSize:"11pxpx", fontWeight:"800", color:"var(--t4)", letterSpacing:"0.8px", marginBottom:"4px" } }, "PAYMENT DATE"),
         React.createElement("input", {
           type:"date",
           value: lead.paymentDate ? lead.paymentDate.slice(0,10) : "",
@@ -326,12 +326,12 @@ function SmsThreadTab({ open, sendSms, selfApplyUrl }) {
     },
       React.createElement('div', { style: { flex: 1 } },
         React.createElement('div', { style: { fontSize: '13px', fontWeight: '800', color: 'var(--t1)', fontFamily: "'JetBrains Mono',monospace" } }, open.phone || 'No phone'),
-        React.createElement('div', { style: { fontSize: '10px', color: 'var(--t3)', marginTop: '2px' } },
+        React.createElement('div', { style: { fontSize: '11pxpx', color: 'var(--t3)', marginTop: '2px' } },
           smsMessages.length + ' messages · ' + (optedOut ? '🔴 Opted Out' : '✅ A2P Cleared')
         )
       ),
       optedOut && React.createElement('span', {
-        style: { fontSize: '10px', fontWeight: '800', padding: '3px 8px', borderRadius: '12px', background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid #FCA5A5' }
+        style: { fontSize: '11pxpx', fontWeight: '800', padding: '3px 8px', borderRadius: '12px', background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid #FCA5A5' }
       }, 'STOP RECEIVED')
     ),
 
@@ -365,7 +365,7 @@ function SmsThreadTab({ open, sendSms, selfApplyUrl }) {
                 style: { textAlign: 'center', margin: '8px 0 4px', display: 'flex', alignItems: 'center', gap: '8px' }
               },
                 React.createElement('div', { style: { flex: 1, height: '1px', background: 'var(--border)' } }),
-                React.createElement('span', { style: { fontSize: '10px', color: 'var(--t4)', fontWeight: '600', whiteSpace: 'nowrap' } }, msgDay),
+                React.createElement('span', { style: { fontSize: '11pxpx', color: 'var(--t4)', fontWeight: '600', whiteSpace: 'nowrap' } }, msgDay),
                 React.createElement('div', { style: { flex: 1, height: '1px', background: 'var(--border)' } })
               ),
               React.createElement('div', {
@@ -382,7 +382,7 @@ function SmsThreadTab({ open, sendSms, selfApplyUrl }) {
                 },
                   React.createElement('div', null, msgText),
                   React.createElement('div', {
-                    style: { fontSize: '9px', marginTop: '4px', opacity: 0.6, textAlign: isInbound ? 'left' : 'right' }
+                    style: { fontSize: '11pxpx', marginTop: '4px', opacity: 0.6, textAlign: isInbound ? 'left' : 'right' }
                   }, time + (isAuto ? ' · auto' : ''))
                 )
               )
@@ -411,7 +411,7 @@ function SmsThreadTab({ open, sendSms, selfApplyUrl }) {
               key: cat,
               onClick: () => setTplCategory(cat),
               style: {
-                flex: 1, padding: '5px 4px', fontSize: '10px', fontWeight: '700', borderRadius: '6px', cursor: 'pointer', border: '1px solid ' + (tplCategory === cat ? 'var(--blue)' : 'var(--border)'),
+                flex: 1, padding: '5px 4px', fontSize: '11pxpx', fontWeight: '700', borderRadius: '6px', cursor: 'pointer', border: '1px solid ' + (tplCategory === cat ? 'var(--blue)' : 'var(--border)'),
                 background: tplCategory === cat ? 'var(--blue)' : 'transparent',
                 color: tplCategory === cat ? '#fff' : 'var(--t3)'
               }
@@ -433,7 +433,7 @@ function SmsThreadTab({ open, sendSms, selfApplyUrl }) {
               onMouseEnter: e => e.currentTarget.style.background = 'var(--blue-dim)',
               onMouseLeave: e => e.currentTarget.style.background = 'var(--surface-2)',
             },
-              React.createElement('div', { style: { fontSize: '10px', fontWeight: '800', color: 'var(--t3)', marginBottom: '2px' } }, 'Step ' + step.step),
+              React.createElement('div', { style: { fontSize: '11pxpx', fontWeight: '800', color: 'var(--t3)', marginBottom: '2px' } }, 'Step ' + step.step),
               React.createElement('div', { style: { fontSize: '11px', color: 'var(--t2)', lineHeight: '1.4' } }, preview)
             );
           })
@@ -457,11 +457,11 @@ function SmsThreadTab({ open, sendSms, selfApplyUrl }) {
               key: v,
               onClick: () => insertVar(v),
               title: 'Insert ' + v,
-              style: { fontSize: '10px', fontWeight: '700', padding: '3px 7px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface-2)', color: 'var(--t3)', cursor: 'pointer' }
+              style: { fontSize: '11pxpx', fontWeight: '700', padding: '3px 7px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface-2)', color: 'var(--t3)', cursor: 'pointer' }
             }, '{' + lbl + '}')
           )
         ),
-        React.createElement('div', { style: { marginLeft: 'auto', fontSize: '10px', color: chars > MAX ? 'var(--red)' : chars > MAX * 0.85 ? 'var(--amber)' : 'var(--t4)', fontWeight: '700', fontFamily: 'monospace' } },
+        React.createElement('div', { style: { marginLeft: 'auto', fontSize: '11pxpx', color: chars > MAX ? 'var(--red)' : chars > MAX * 0.85 ? 'var(--amber)' : 'var(--t4)', fontWeight: '700', fontFamily: 'monospace' } },
           chars + '/' + MAX + (segs > 1 ? ' ·' + segs + 'seg' : '')
         )
       ),
@@ -549,6 +549,7 @@ export default function ContactDetail({
       React.createElement("div", { style:{ fontFamily:"'Syne',sans-serif", fontWeight:"800", fontSize:"15px", color:"var(--navy)", letterSpacing:"1px", flex:1 } }, open.name || "Contact"),
       React.createElement("div", { style:{ display:"flex", gap:"8px", alignItems:"center" } },
         React.createElement("span", { style:{ fontSize:"11px", padding:"4px 12px", borderRadius:"var(--radius-pill)", background:BC[open.bucket]+"18", color:BC[open.bucket], fontWeight:"800" } }, BL[open.bucket]),
+        (() => { const ep = effectivePhase(open); const pd = PHASE_DEFS[ep]; const age = leadAgeDays(open); return pd ? React.createElement("span", { style:{ fontSize:"11px", padding:"4px 10px", borderRadius:"var(--radius-pill)", background:pd.dim||"var(--surface-2)", color:pd.color||"var(--t2)", fontWeight:"800", border:"1px solid "+(pd.dim||"var(--border)") } }, ep + (age !== null ? " · Day " + age : "")) : null; })(),
         open.stage && React.createElement("span", { style:{ fontSize:"11px", padding:"4px 12px", borderRadius:"var(--radius-pill)", background:"var(--surface-2)", color:"var(--t2)", fontWeight:"700", border:"1px solid var(--border)" } }, (STAGES.find(s=>s.id===open.stage)||STAGES[0]).label),
         open.assignDate && React.createElement("span", { style:{ fontSize:"11px", color:"var(--t4)", fontWeight:"600", padding:"0 4px" } }, "📅 " + fmtDate(open.assignDate)),
         open.emailBounced && React.createElement("span", { style:{ fontSize:"11px", padding:"4px 12px", borderRadius:"var(--radius-pill)", background:"var(--red-dim)", color:"var(--red)", fontWeight:"800", border:"1px solid #FCA5A5" } }, "⚠ Email Bounced"),
@@ -595,7 +596,7 @@ export default function ContactDetail({
         open.leadType === "Living Benefits Lead" && React.createElement("div", { style:{ background:"var(--surface)", borderRadius:"12px", border:"1px solid #7C3AED55", padding:"20px 24px" } },
           React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"16px" } },
             React.createElement("div", { style:{ fontSize:"11px", fontWeight:"800", color:"#7C3AED", letterSpacing:"1.5px", flex:1 } }, "⚡ DAY 1 OPENER — COPY & SEND IN ORDER"),
-            React.createElement("div", { style:{ fontSize:"10px", color:"var(--t4)", fontWeight:"600" } }, "Manual send · TCPA compliant")
+            React.createElement("div", { style:{ fontSize:"11pxpx", color:"var(--t4)", fontWeight:"600" } }, "Manual send · TCPA compliant")
           ),
           (() => {
             const firstName = (open.firstName || open.name || "").split(" ")[0] || open.name || "there";
@@ -689,7 +690,7 @@ export default function ContactDetail({
                 type:"datetime-local", value:meetingTs, onChange:e=>setMeetingTs(e.target.value),
                 style:{ fontSize:"11px", padding:"6px 10px", borderRadius:"8px", border:"1px solid var(--border)", background:"var(--surface-2)", color:"var(--t2)", fontFamily:"inherit", flex:1 }
               }),
-              React.createElement("span", { style:{ fontSize:"10px", color:"var(--t4)", fontWeight:"500", whiteSpace:"nowrap" } }, "← blank = now")
+              React.createElement("span", { style:{ fontSize:"11pxpx", color:"var(--t4)", fontWeight:"500", whiteSpace:"nowrap" } }, "← blank = now")
             )
           ),
           React.createElement("div", { style:{ display:"flex", gap:"10px", marginBottom:"16px" } },
@@ -706,7 +707,7 @@ export default function ContactDetail({
               React.createElement("div", { style:{ flex:1, paddingBottom:"8px" } },
                 React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"6px" } },
                   React.createElement("span", { style:{ fontSize: "11px", fontWeight:"800", color:NC[n.type]||"var(--t3)", textTransform:"uppercase", letterSpacing:"0.8px" } }, n.type||"note"),
-                  n.outcome && React.createElement("span", { style:{ fontSize:"10px", fontWeight:"700", padding:"2px 7px", borderRadius:"10px", background: n.outcome==="Held" ? "rgba(16,185,129,0.12)" : n.outcome==="No Show" ? "rgba(239,68,68,0.12)" : "rgba(99,102,241,0.12)", color: n.outcome==="Held" ? "var(--green)" : n.outcome==="No Show" ? "var(--red)" : "var(--indigo, #6366f1)" } }, n.outcome),
+                  n.outcome && React.createElement("span", { style:{ fontSize:"11pxpx", fontWeight:"700", padding:"2px 7px", borderRadius:"10px", background: n.outcome==="Held" ? "rgba(16,185,129,0.12)" : n.outcome==="No Show" ? "rgba(239,68,68,0.12)" : "rgba(99,102,241,0.12)", color: n.outcome==="Held" ? "var(--green)" : n.outcome==="No Show" ? "var(--red)" : "var(--indigo, #6366f1)" } }, n.outcome),
                   React.createElement("span", { style:{ fontSize:"11px", color:"var(--t4)", fontWeight:"500" } }, n.ts?new Date(n.ts).toLocaleString():""),
                   React.createElement("button", { onClick:()=>{ const next=(open.notes||[]).filter((_,ni)=>ni!==i); upd(open.id,{notes:next}); }, title:"Remove", style:{ marginLeft:"auto", background:"none", border:"none", color:"var(--t4)", cursor:"pointer", fontSize:"14px", padding:"0 2px", lineHeight:1 } }, "−")
                 ),
@@ -843,11 +844,11 @@ export default function ContactDetail({
                 // Track + Step row
                 React.createElement("div", { style:{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"10px", marginBottom:"12px" } },
                   React.createElement("div", null,
-                    React.createElement("div", { style:{ fontSize:"10px", fontWeight:"700", color:"var(--t4)", letterSpacing:"0.6px", marginBottom:"4px" } }, "TRACK"),
+                    React.createElement("div", { style:{ fontSize:"11pxpx", fontWeight:"700", color:"var(--t4)", letterSpacing:"0.6px", marginBottom:"4px" } }, "TRACK"),
                     React.createElement("div", { style:{ fontSize:"13px", fontWeight:"700", color:"var(--t1)" } }, TRACK_LABELS[track] || track)
                   ),
                   React.createElement("div", null,
-                    React.createElement("div", { style:{ fontSize:"10px", fontWeight:"700", color:"var(--t4)", letterSpacing:"0.6px", marginBottom:"4px" } }, "STEP"),
+                    React.createElement("div", { style:{ fontSize:"11pxpx", fontWeight:"700", color:"var(--t4)", letterSpacing:"0.6px", marginBottom:"4px" } }, "STEP"),
                     React.createElement("div", { style:{ fontSize:"13px", fontWeight:"700", color:"var(--t1)", fontFamily:"'JetBrains Mono',monospace" } }, step)
                   )
                 ),
@@ -903,7 +904,7 @@ export default function ContactDetail({
 
                 // Change track
                 !isExited && React.createElement("div", { style:{ marginBottom:"12px" } },
-                  React.createElement("div", { style:{ fontSize:"10px", fontWeight:"700", color:"var(--t4)", letterSpacing:"0.6px", marginBottom:"6px" } }, "CHANGE TRACK"),
+                  React.createElement("div", { style:{ fontSize:"11pxpx", fontWeight:"700", color:"var(--t4)", letterSpacing:"0.6px", marginBottom:"6px" } }, "CHANGE TRACK"),
                   React.createElement("div", { style:{ display:"flex", gap:"6px" } },
                     ['new','re-engage','ghost'].map(t =>
                       React.createElement("button", {
@@ -928,7 +929,7 @@ export default function ContactDetail({
 
                 // Exit sequence dropdown
                 React.createElement("div", null,
-                  React.createElement("div", { style:{ fontSize:"10px", fontWeight:"700", color:"var(--t4)", letterSpacing:"0.6px", marginBottom:"6px" } }, "EXIT SEQUENCE"),
+                  React.createElement("div", { style:{ fontSize:"11pxpx", fontWeight:"700", color:"var(--t4)", letterSpacing:"0.6px", marginBottom:"6px" } }, "EXIT SEQUENCE"),
                   React.createElement("select", {
                     value: open.seqExitReason || '',
                     onChange: e => {

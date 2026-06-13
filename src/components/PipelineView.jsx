@@ -22,10 +22,10 @@ export default function PipelineView({
       const stuckCount = sl.filter(l=>isUWStuck(l)).length;
       return React.createElement("div",{key:stage.id,style:{minWidth:"230px",maxWidth:"230px",display:"flex",flexDirection:"column"}},
         React.createElement("div",{style:{padding:"14px 16px",background:"var(--surface)",borderTop:`4px solid ${stage.color}`,border:"1px solid var(--border)",borderTopWidth:"4px",borderRadius:"12px 12px 0 0",borderBottom:"none"}},
-          React.createElement("div",{style:{fontSize:"10px",fontWeight:"800",color:stage.color,letterSpacing:"1.2px",textTransform:"uppercase",marginBottom:"6px"}},""+stage.label),
+          React.createElement("div",{style:{fontSize:"11pxpx",fontWeight:"800",color:stage.color,letterSpacing:"1.2px",textTransform:"uppercase",marginBottom:"6px"}},""+stage.label),
           React.createElement("div",{style:{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:"8px"}},
             React.createElement("div",{style:{fontSize:"32px",fontWeight:"800",color:stage.color,lineHeight:1,fontFamily:"'Syne',sans-serif"}},""+sl.length),
-            stuckCount > 0 && React.createElement("div",{style:{fontSize:"10px",fontWeight:"800",padding:"3px 8px",borderRadius:"20px",background:"var(--red-dim)",color:"var(--red)",border:"1px solid #FCA5A5"}}, "⚠ " + stuckCount + " stuck")
+            stuckCount > 0 && React.createElement("div",{style:{fontSize:"11pxpx",fontWeight:"800",padding:"3px 8px",borderRadius:"20px",background:"var(--red-dim)",color:"var(--red)",border:"1px solid #FCA5A5"}}, "⚠ " + stuckCount + " stuck")
           )
         ),
         React.createElement("div",{style:{flex:1,overflowY:"auto",background:"#E9E7E1",border:"1px solid var(--border)",borderTop:"none",borderRadius:"0 0 12px 12px",padding:"10px"}},
@@ -50,21 +50,21 @@ export default function PipelineView({
                 onClick: e => { e.stopPropagation(); e.preventDefault(); dialLead(lead); },
                 style:{display:"block",textDecoration:"none",fontSize:"11px",color:"var(--blue)",marginBottom:"6px",fontFamily:"'JetBrains Mono',monospace",fontWeight:"500"}
               },""+lead.phone),
-              lead.leadType&&React.createElement("div",{style:{fontSize:"10px",color:"var(--t3)",marginBottom:"6px"}},""+lead.leadType+(currency(lead.loanAmount)?" · "+currency(lead.loanAmount):"")),
+              lead.leadType&&React.createElement("div",{style:{fontSize:"11pxpx",color:"var(--t3)",marginBottom:"6px"}},""+lead.leadType+(currency(lead.loanAmount)?" · "+currency(lead.loanAmount):"")),
               // UW details strip (only for UW-visible stages)
               showUW && (lead.carrier || lead.expectedPremium || reqs.hasAny || days !== null) && React.createElement("div",{
                 style:{marginTop:"6px",paddingTop:"6px",borderTop:"1px dashed var(--border)",display:"flex",flexDirection:"column",gap:"3px"}
               },
-                lead.carrier && React.createElement("div",{style:{fontSize:"10px",color:"var(--t2)",fontWeight:"700"}}, "🛡 " + lead.carrier + (lead.policyNumber?" · #"+lead.policyNumber:"")),
-                lead.expectedPremium && React.createElement("div",{style:{fontSize:"10px",color:"var(--t3)",fontFamily:"'JetBrains Mono',monospace"}}, "$" + lead.expectedPremium + "/mo"),
-                reqs.hasAny && React.createElement("div",{style:{fontSize:"10px",color:reqs.allDone?"var(--green)":"var(--amber)",fontWeight:"700"}}, (reqs.allDone?"✓ ":"") + reqs.done + "/" + reqs.total + " reqs"),
-                UW_ACTIVE_STAGES.includes(lead.stage) && days !== null && React.createElement("div",{style:{fontSize:"10px",color:stuck?"var(--red)":"var(--t3)",fontWeight:"700"}}, (stuck?"⚠ ":"⏱ ") + days + "d in UW")
+                lead.carrier && React.createElement("div",{style:{fontSize:"11pxpx",color:"var(--t2)",fontWeight:"700"}}, "🛡 " + lead.carrier + (lead.policyNumber?" · #"+lead.policyNumber:"")),
+                lead.expectedPremium && React.createElement("div",{style:{fontSize:"11pxpx",color:"var(--t3)",fontFamily:"'JetBrains Mono',monospace"}}, "$" + lead.expectedPremium + "/mo"),
+                reqs.hasAny && React.createElement("div",{style:{fontSize:"11pxpx",color:reqs.allDone?"var(--green)":"var(--amber)",fontWeight:"700"}}, (reqs.allDone?"✓ ":"") + reqs.done + "/" + reqs.total + " reqs"),
+                UW_ACTIVE_STAGES.includes(lead.stage) && days !== null && React.createElement("div",{style:{fontSize:"11pxpx",color:stuck?"var(--red)":"var(--t3)",fontWeight:"700"}}, (stuck?"⚠ ":"⏱ ") + days + "d in UW")
               ),
               React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginTop:"6px"}},
-                React.createElement("span",{style:{fontSize:"10px",color:BC[lead.bucket],fontWeight:"800"}},""+BL[lead.bucket]),
-                React.createElement("span",{style:{fontSize:"10px",color:disp.color,fontWeight:"700"}},""+disp.label)
+                React.createElement("span",{style:{fontSize:"11pxpx",color:BC[lead.bucket],fontWeight:"800"}},""+BL[lead.bucket]),
+                React.createElement("span",{style:{fontSize:"11pxpx",color:disp.color,fontWeight:"700"}},""+disp.label)
               ),
-              isOD&&React.createElement("div",{style:{marginTop:"8px",fontSize:"10px",padding:"4px 8px",borderRadius:"6px",background:"var(--red-dim)",color:"var(--red)",fontWeight:"700"}},"⚠ Overdue CB"),
+              isOD&&React.createElement("div",{style:{marginTop:"8px",fontSize:"11pxpx",padding:"4px 8px",borderRadius:"6px",background:"var(--red-dim)",color:"var(--red)",fontWeight:"700"}},"⚠ Overdue CB"),
               React.createElement("div",{style:{marginTop:"10px", borderTop:"1px solid var(--border)", paddingTop:"10px"}},
                 React.createElement("select",{
                   value: lead.stage,

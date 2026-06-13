@@ -81,17 +81,17 @@ export default function AppHeader({
           style: { position: "relative", display: "flex", flexDirection: "column", gap: "1px" }
         },
           React.createElement("span", {
-            style: { fontSize: "10px", fontWeight: "700", color: "var(--t3)", lineHeight: 1 }
+            style: { fontSize: "11pxpx", fontWeight: "700", color: "var(--t3)", lineHeight: 1 }
           }, "/" + dialGoal),
           React.createElement("span", {
-            style: { fontSize: "10px", fontWeight: "800", letterSpacing: "0.06em", color: barColor, lineHeight: 1 }
+            style: { fontSize: "11pxpx", fontWeight: "800", letterSpacing: "0.06em", color: barColor, lineHeight: 1 }
           }, "DIALS"),
         ),
         // Percentage badge — right edge
         React.createElement("span", {
           style: {
             position: "relative", marginLeft: "auto",
-            fontSize: "10px", fontWeight: "700",
+            fontSize: "11pxpx", fontWeight: "700",
             color: barColor, opacity: 0.85,
           }
         }, Math.round(dialPct * 100) + "%"),
@@ -120,10 +120,10 @@ export default function AppHeader({
             style: { fontSize: "14px", fontWeight: "800", color: tone.c, lineHeight: 1, fontFamily: "'JetBrains Mono',monospace" }
           }, "" + t.val),
           React.createElement("span", {
-            style: { fontSize: "10px", color: tone.c, fontWeight: "700", opacity: 0.65 }
+            style: { fontSize: "11pxpx", color: tone.c, fontWeight: "700", opacity: 0.65 }
           }, "/" + t.goal),
           React.createElement("span", {
-            style: { fontSize: "10px", color: tone.c, letterSpacing: "0.05em", fontWeight: "700" }
+            style: { fontSize: "11pxpx", color: tone.c, letterSpacing: "0.05em", fontWeight: "700" }
           }, t.label)
         );
       }),
@@ -148,7 +148,7 @@ export default function AppHeader({
             style: { fontSize: "14px", fontWeight: "800", color: c, lineHeight: 1, fontFamily: "'JetBrains Mono',monospace" }
           }, "" + v),
           React.createElement("span", {
-            style: { fontSize: "10px", color: c, letterSpacing: "0.05em", fontWeight: "700" }
+            style: { fontSize: "11pxpx", color: c, letterSpacing: "0.05em", fontWeight: "700" }
           }, l)
         )
       ),
@@ -170,7 +170,7 @@ export default function AppHeader({
           },
             React.createElement("span", { style: { fontSize: "11px" } }, "⚠️"),
             React.createElement("span", {
-              style: { fontSize: "10px", fontWeight: "800", color: "#EF4444", letterSpacing: "0.3px" }
+              style: { fontSize: "11pxpx", fontWeight: "800", color: "#EF4444", letterSpacing: "0.3px" }
             }, "SYNC FAILED — LOCAL ONLY")
           )
         : React.createElement("div", {
@@ -182,10 +182,10 @@ export default function AppHeader({
               border: `1px solid ${supaStatus === "ok" ? "#6EE7B7" : supaStatus === "syncing" ? "var(--blue-mid)" : "var(--border)"}`,
             }
           },
-            React.createElement("span", { style: { fontSize: "10px" } }, "☁"),
+            React.createElement("span", { style: { fontSize: "11pxpx" } }, "☁"),
             React.createElement("span", {
               style: {
-                fontSize: "10px", fontWeight: "700", letterSpacing: "0.3px",
+                fontSize: "11pxpx", fontWeight: "700", letterSpacing: "0.3px",
                 color: supaStatus === "ok" ? "var(--green)" : supaStatus === "syncing" ? "var(--blue)" : "var(--t3)",
               }
             }, supaStatus === "ok" ? "OK" : supaStatus === "syncing" ? "SYNC…" : "CLOUD")

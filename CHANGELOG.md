@@ -530,3 +530,30 @@ Build clean: 168 modules. DB surgical via Supabase MCP.
 - Minimum floor: 0.688rem / 11px. No sub-11px font sizes remain in these files.
 
 Files: src/components/DashboardTab.jsx, DialView.jsx, MessagesView.jsx, DialQueuePanel.jsx, AppHeader.jsx, App.jsx, src/index.css, src/lib/csvParser.js, Supabase leads table (SQL direct).
+
+
+# Session 8b — Weekly Campaign RPG + Settings Toggle (2026-06-12)
+- [x] WeeklyCampaignView.jsx (new, 360 lines) — Campaign Ledger RPG weekly production view
+  - Week structure: Sat→Fri (Symmetry week), per-day field log table
+  - Mission card: X/5 apps progress bar, status (COMPLETE / ON TRACK / BEHIND)
+  - XP system: dial=1, contact=5, appt=15, audit_ran=25, app=100
+  - Rank ladder: RECRUIT → FIELD AGENT → UNDERWRITER → SR. UNDERWRITER → PROTECTIVE STEWARD (LV.1–5)
+  - Rank XP progress bar (purple gradient)
+  - Streak: consecutive days with ≥1 dial (rolling backward up to 60 days)
+  - Odds Meter: same 7-day dials-per-app logic as DashboardTab; "STATISTICALLY DUE" badge
+  - Last week comparison strip with directional arrows
+- [x] NavSidebar.jsx — 📋 WEEK added to INTEL group (above ACC)
+- [x] App.jsx — WeeklyCampaignView import, 'campaign' added to both VALID sets, render block, theme/setTheme passed to SettingsView
+- [x] SettingsView.jsx — theme/setTheme props wired; Appearance card at top of Settings (☀️ DAY / 🌙 NIGHT toggle button group)
+- [x] 169 modules, 0 errors, build clean
+
+## v3.64 — Full font pass + TODAY nav + effectivePhase chips + Dial Sessions settings
+Build clean.
+
+- **Full app font pass:** 119 sub-11px sizes raised to 11px minimum across 22 remaining components (AIPanel, ActivityDashboard, AppHeader, AppointmentsView, CCTab, CallbackQueue, ContactDetail, ContactsView, DialRightPanel, FieldMapModal, HourlyStats, ImportModal, LeadOrdersView, LoginGate, NavSidebar, PipelineView, ScriptsView, SequenceRunsTab, SequenceTab, SettingsView, SmsThread, TemplatesView). All screens now meet the ≥11px readability floor.
+- **⚡ TODAY nav entry:** Added as first item in WORK group (NavSidebar.jsx). The primary operational screen now has a direct nav shortcut.
+- **effectivePhase chip in ContactDetail:** Header now shows derived phase + day count ("M2 · Day 88") alongside bucket badge. Import: effectivePhase, leadAgeDays, PHASE_DEFS from phaseEngine.
+- **Dial Sessions card in Settings:** After Appearance card. Shows all 11 configured block times (default 9:00 AM–10:30 AM for all AM slots). Each row is editable (hour/minute inputs). Changes persist to localStorage (`metka-dial-sessions-v1`). Reset defaults button. Reference display — phaseEngine queue logic uses its own SESSIONS table (already correct at 9:00–10:30).
+- **Hooks crash fixed (v3.63 regression):** Quiet ring useEffect was placed after `if(loading) return` early exit — React saw hook count mismatch between loading/loaded renders. Moved to before the loading guard.
+
+Files: src/components/* (22 files font pass), NavSidebar.jsx, ContactDetail.jsx, SettingsView.jsx, src/App.jsx (hooks fix).

@@ -22,7 +22,7 @@ const trackBadge = (track) => {
   const c = TC[track] || TC['new'];
   return React.createElement('span', {
     style: {
-      fontSize:'10px', fontWeight:'700', letterSpacing:'0.05em',
+      fontSize:'11pxpx', fontWeight:'700', letterSpacing:'0.05em',
       padding:'2px 7px', borderRadius:'4px',
       background:c.bg, border:`1px solid ${c.border}`, color:c.text,
     }
@@ -56,7 +56,7 @@ const INNER_TABS = [
 
 // ── TABLE HEADER STYLE ────────────────────────────────────────────────────────
 const TH_STYLE = {
-  padding:'8px 12px', textAlign:'left', fontSize:'10px',
+  padding:'8px 12px', textAlign:'left', fontSize:'11pxpx',
   fontWeight:'700', color:'var(--t3)', letterSpacing:'0.06em', whiteSpace:'nowrap',
 };
 const TD_STYLE = { padding:'10px 12px', fontSize:'12px' };
@@ -119,7 +119,7 @@ export default function SequenceTab({ leads, upd, setOpenId, setView, setPrevVie
               width:22, height:22, borderRadius:'50%', flexShrink:0,
               background: idx < 3 ? `${trackColor}22` : 'var(--panel)',
               color: idx < 3 ? trackColor : 'var(--t4)',
-              fontSize:'10px', fontWeight:'800',
+              fontSize:'11pxpx', fontWeight:'800',
               display:'flex', alignItems:'center', justifyContent:'center',
             }
           }, idx + 1),
@@ -131,10 +131,10 @@ export default function SequenceTab({ leads, upd, setOpenId, setView, setPrevVie
                 style:{ fontSize:'13px', fontWeight:'700', color:'var(--t1)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }
               }, l.name),
               React.createElement('span', {
-                style:{ fontSize:'10px', fontWeight:'700', padding:'1px 6px', borderRadius:'3px', background:`${trackColor}22`, color:trackColor, flexShrink:0 }
+                style:{ fontSize:'11pxpx', fontWeight:'700', padding:'1px 6px', borderRadius:'3px', background:`${trackColor}22`, color:trackColor, flexShrink:0 }
               }, `${trackLabel} · Step ${l.seqStep}`),
               dialCount > 0 && React.createElement('span', {
-                style:{ fontSize:'10px', fontWeight:'800', color:'#60a5fa', background:'rgba(59,130,246,0.15)', padding:'0 5px', borderRadius:'3px', flexShrink:0, fontFamily:"'JetBrains Mono',monospace" }
+                style:{ fontSize:'11pxpx', fontWeight:'800', color:'#60a5fa', background:'rgba(59,130,246,0.15)', padding:'0 5px', borderRadius:'3px', flexShrink:0, fontFamily:"'JetBrains Mono',monospace" }
               }, `📞${dialCount}`),
             ),
             React.createElement('div', {
@@ -154,7 +154,7 @@ export default function SequenceTab({ leads, upd, setOpenId, setView, setPrevVie
               style:{ fontSize:'11px', fontWeight:'700', color:'var(--green)', textDecoration:'none' }
             }, l.phone),
             l.emailBounced && React.createElement('span', {
-              style:{ fontSize:'9px', fontWeight:'700', color:'var(--red)', background:'rgba(239,68,68,0.1)', padding:'1px 5px', borderRadius:'3px' }
+              style:{ fontSize:'11pxpx', fontWeight:'700', color:'var(--red)', background:'rgba(239,68,68,0.1)', padding:'1px 5px', borderRadius:'3px' }
             }, '⚠ Bounced'),
           ),
         );
@@ -246,7 +246,7 @@ export default function SequenceTab({ leads, upd, setOpenId, setView, setPrevVie
     },
       React.createElement('div', { style:{ fontSize:'28px', fontWeight:'800', color:accent } }, value),
       React.createElement('div', { style:{ fontSize:'11px', fontWeight:'700', color:'var(--t2)', letterSpacing:'0.05em', marginTop:'2px' } }, label),
-      sub && React.createElement('div', { style:{ fontSize:'10px', color:'var(--t3)', marginTop:'4px' } }, sub),
+      sub && React.createElement('div', { style:{ fontSize:'11pxpx', color:'var(--t3)', marginTop:'4px' } }, sub),
     );
 
   const emptyState = (icon, msg) =>
@@ -440,7 +440,7 @@ export default function SequenceTab({ leads, upd, setOpenId, setView, setPrevVie
               React.createElement('td', { style:TD_STYLE },
                 React.createElement('span', {
                   style:{
-                    fontSize:'10px', fontWeight:'700', padding:'2px 7px', borderRadius:'4px',
+                    fontSize:'11pxpx', fontWeight:'700', padding:'2px 7px', borderRadius:'4px',
                     background:'#FFF7ED', border:'1px solid #FDB786', color:'#C2410C',
                   }
                 }, '👻 GHOST CANDIDATE')
@@ -490,7 +490,7 @@ export default function SequenceTab({ leads, upd, setOpenId, setView, setPrevVie
               React.createElement('td', { style:TD_STYLE },
                 React.createElement('span', {
                   style:{
-                    fontSize:'10px', fontWeight:'700', padding:'2px 8px', borderRadius:'4px',
+                    fontSize:'11pxpx', fontWeight:'700', padding:'2px 8px', borderRadius:'4px',
                     background:'#F5F3FF', border:'1px solid #DDD6FE', color:'#6D28D9',
                   }
                 }, REASON_LABEL[l.seqExitReason] || (l.seqExitReason ? l.seqExitReason : '⏸ Paused'))
@@ -534,7 +534,7 @@ export default function SequenceTab({ leads, upd, setOpenId, setView, setPrevVie
         React.createElement('td', {
           colSpan: 5,
           style:{
-            padding:'8px 12px', fontSize:'10px', fontWeight:'700',
+            padding:'8px 12px', fontSize:'11pxpx', fontWeight:'700',
             color:accent, letterSpacing:'0.06em',
             background:'var(--bg)', borderBottom:'1px solid var(--border)',
           }

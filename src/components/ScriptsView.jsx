@@ -13,7 +13,7 @@ export default function ScriptsView({
   return React.createElement("div", { style: { flex: 1, display: "flex", overflow: "hidden" } },
 
     React.createElement("div", { style: { width: "230px", borderRight: "1px solid var(--border)", background: "var(--surface-2)", overflowY: "auto", flexShrink: 0, display: "flex", flexDirection: "column" } },
-      React.createElement("div", { style: { padding: "16px 20px", borderBottom: "1px solid var(--border)", fontSize: "10px", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.5px" } }, "SCRIPT LIBRARY"),
+      React.createElement("div", { style: { padding: "16px 20px", borderBottom: "1px solid var(--border)", fontSize: "11pxpx", fontWeight: "800", color: "var(--t3)", letterSpacing: "1.5px" } }, "SCRIPT LIBRARY"),
       React.createElement("div", { style: { flex: 1 } },
         Object.keys(scripts).map(type =>
           React.createElement("div", {

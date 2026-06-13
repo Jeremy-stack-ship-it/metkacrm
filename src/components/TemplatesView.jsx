@@ -33,7 +33,7 @@ export default function TemplatesView({
         React.createElement("table",{style:{width:"100%",borderCollapse:"collapse"}},
           React.createElement("thead",null,
             React.createElement("tr",{style:{background:"var(--surface-2)",borderBottom:"1px solid var(--border)"}},
-              ["Name","Preview",""].map(h=>React.createElement("th",{key:h,style:{padding:"14px 20px",textAlign:h===""?"right":"left",fontSize:"10px",fontWeight:"800",color:"var(--t3)",letterSpacing:"1px"}},h))
+              ["Name","Preview",""].map(h=>React.createElement("th",{key:h,style:{padding:"14px 20px",textAlign:h===""?"right":"left",fontSize:"11pxpx",fontWeight:"800",color:"var(--t3)",letterSpacing:"1px"}},h))
             )
           ),
           React.createElement("tbody",null,

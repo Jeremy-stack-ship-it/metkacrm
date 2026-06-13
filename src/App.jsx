@@ -61,7 +61,8 @@ import ContactDetail, { StageStepper, UnderwritingCard } from './components/Cont
 import MessagesView from './components/MessagesView.jsx';
 import ContactsView from './components/ContactsView.jsx';
 import PipelineView from './components/PipelineView.jsx';
-import LeadOrdersView from './components/LeadOrdersView.jsx'; // v3.51 — economics
+import LeadOrdersView from './components/LeadOrdersView.jsx';
+import WeeklyCampaignView from './components/WeeklyCampaignView.jsx'; // v3.51 — economics
 import ScriptsView from './components/ScriptsView.jsx';
 import TemplatesView from './components/TemplatesView.jsx';
 import SettingsView from './components/SettingsView.jsx';
@@ -158,7 +159,7 @@ function MetkaCRM(){
   // v3.24 — init view from URL hash so browser back/forward works
   const [view,setView]=useState(() => {
     const hash = window.location.hash.replace('#','');
-    const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','today']);
+    const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','today','campaign']);
     return VALID.has(hash) ? hash : 'dashboard';
   });
   const [openId,setOpenId]=useState(null);
@@ -1047,7 +1048,7 @@ const queue = useMemo(() => {
   useEffect(() => {
     function onPop(e) {
       const prev = (e.state && e.state.view) || window.location.hash.replace('#','') || 'dashboard';
-      const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','today']);
+      const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','today','campaign']);
       setView(VALID.has(prev) ? prev : 'dashboard');
     }
     window.addEventListener('popstate', onPop);
@@ -1161,14 +1162,6 @@ const queue = useMemo(() => {
     (leads || []).filter(l => l && l.smsUnread).length
   , [leads]);
 
-  if(loading) return React.createElement("div",{style:{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:"13px",fontFamily:"'Inter',sans-serif"}},"Loading Metka Field Ops…");
-
-  // ── ScriptPanel → components/ScriptPanel.jsx ─────────────────────────
-  // StageStepper ← moved to components/ContactDetail.jsx
-
-  // UnderwritingCard ← moved to components/ContactDetail.jsx
-
-  // ── APP RENDER ───────────────────────────────────────────────────
 
   // ── S8a: Quiet set-ring — soft ping when a callback is due ────────────────
   React.useEffect(() => {
@@ -1207,6 +1200,16 @@ const queue = useMemo(() => {
       });
     } catch(e) { /* audio blocked — silent fallback */ }
   }, [leads]); // re-runs on any lead update; gated by sessionStorage ring-once
+
+  if(loading) return React.createElement("div",{style:{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:"13px",fontFamily:"'Inter',sans-serif"}},"Loading Metka Field Ops…");
+
+  // ── ScriptPanel → components/ScriptPanel.jsx ─────────────────────────
+  // StageStepper ← moved to components/ContactDetail.jsx
+
+  // UnderwritingCard ← moved to components/ContactDetail.jsx
+
+  // ── APP RENDER ───────────────────────────────────────────────────
+
 
   return React.createElement("div",{style:{display:"flex",height:"100vh",background:"var(--bg)",color:"var(--t1)",fontFamily:"'Inter',system-ui,sans-serif",overflow:"hidden"}},
 
@@ -1394,6 +1397,11 @@ const queue = useMemo(() => {
           addTemplate, deleteTemplate,
         }),
 
+        // ── CAMPAIGN BRIEF (Weekly RPG) ──
+        view==="campaign" && React.createElement(WeeklyCampaignView, {
+          activity, leads, goals, financialConfig,
+        }),
+
         // ── SETTINGS VIEW ──
         view==="settings" && React.createElement(SettingsView, {
           leads, setLeads, saveLeads,
@@ -1419,6 +1427,7 @@ const queue = useMemo(() => {
           templates, scripts,
           saveScripts, saveTemplates,
           aiConfig, aiDraft, setAiDraft, aiSaved, setAiSaved, saveAi,
+          theme, setTheme,
         })
       )
     ),

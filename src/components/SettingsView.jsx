@@ -26,6 +26,7 @@ export default function SettingsView({
   templates, scripts,
   saveScripts, saveTemplates,
   aiConfig, aiDraft, setAiDraft, aiSaved, setAiSaved, saveAi,
+  theme, setTheme,
 }) {
   // ── CONSTANT CONTACT LOCAL STATE ─────────────────────────────────────
   const [ccConnected, setCcConnected] = React.useState(() => ccIsConnected());
@@ -51,6 +52,103 @@ export default function SettingsView({
   return React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"32px",background:"var(--surface-2)"}},
     React.createElement("div",{style:{maxWidth:"640px",margin:"0 auto"}},
       React.createElement("h2",{style:{fontSize:"20px",fontWeight:"800",marginBottom:"24px",color:"var(--t1)",fontFamily:"'Syne',sans-serif"}},"Settings"),
+
+      // ── APPEARANCE CARD ───────────────────────────────────────────────
+      React.createElement("div",{style:{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"16px",padding:"24px",marginBottom:"16px",boxShadow:"0 4px 16px rgba(0,0,0,0.03)"}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center"}},
+          React.createElement("div",null,
+            React.createElement("div",{style:{fontSize:"15px",fontWeight:"700",color:"var(--t1)",marginBottom:"4px"}},"🎨 Appearance"),
+            React.createElement("div",{style:{fontSize:"12px",color:"var(--t3)",lineHeight:"1.5"}},"Day mode for daylight sessions. Night mode for evening dials.")
+          ),
+          React.createElement("div",{style:{display:"flex",borderRadius:"8px",overflow:"hidden",border:"1px solid var(--border)"}},
+            React.createElement("button",{
+              onClick:()=>setTheme&&setTheme('day'),
+              style:{
+                padding:"8px 16px",fontSize:"12px",fontWeight:"700",cursor:"pointer",border:"none",
+                background:theme!=="night"?"var(--blue)":"var(--surface-2)",
+                color:theme!=="night"?"#fff":"var(--t3)",
+                letterSpacing:"0.04em",transition:"background 0.15s,color 0.15s",
+              }
+            },"☀️ DAY"),
+            React.createElement("button",{
+              onClick:()=>setTheme&&setTheme('night'),
+              style:{
+                padding:"8px 16px",fontSize:"12px",fontWeight:"700",cursor:"pointer",
+                background:theme==="night"?"var(--blue)":"var(--surface-2)",
+                color:theme==="night"?"#fff":"var(--t3)",
+                letterSpacing:"0.04em",transition:"background 0.15s,color 0.15s",
+                border:"none",borderLeft:"1px solid var(--border)",
+              }
+            },"🌙 NIGHT")
+          )
+        )
+      ),
+
+      // ── DIAL SESSIONS CARD ───────────────────────────────────────────────
+      (() => {
+        const LS_SESS = 'metka-dial-sessions-v1';
+        const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        const defaultSessions = [
+          { id:'MON_AM', day:1, label:'Monday AM',      ampm:'AM', startH:9,  startM:0,  endH:10, endM:30, active:true  },
+          { id:'MON_PM', day:1, label:'Monday PM',      ampm:'PM', startH:16, startM:0,  endH:17, endM:30, active:true  },
+          { id:'TUE_AM', day:2, label:'Tuesday AM',     ampm:'AM', startH:9,  startM:0,  endH:10, endM:30, active:true  },
+          { id:'TUE_PM', day:2, label:'Tuesday PM',     ampm:'PM', startH:14, startM:30, endH:16, endM:0,  active:true  },
+          { id:'WED_AM', day:3, label:'Wednesday AM',   ampm:'AM', startH:9,  startM:0,  endH:10, endM:30, active:true  },
+          { id:'WED_PM', day:3, label:'Wednesday Late', ampm:'PM', startH:18, startM:30, endH:20, endM:0,  active:true  },
+          { id:'THU_AM', day:4, label:'Thursday AM',    ampm:'AM', startH:9,  startM:0,  endH:10, endM:30, active:true  },
+          { id:'THU_PM', day:4, label:'Thursday PM',    ampm:'PM', startH:16, startM:0,  endH:17, endM:30, active:true  },
+          { id:'FRI_AM', day:5, label:'Friday AM',      ampm:'AM', startH:9,  startM:0,  endH:10, endM:30, active:true  },
+          { id:'FRI_PM', day:5, label:'Friday PM',      ampm:'PM', startH:16, startM:0,  endH:17, endM:30, active:true  },
+          { id:'SAT_AM', day:6, label:'Saturday AM',    ampm:'AM', startH:9,  startM:0,  endH:12, endM:0,  active:true  },
+        ];
+        const fmtT = (h, m) => { const hh = h % 12 || 12; const mm = String(m).padStart(2,'0'); return hh + ':' + mm + (h < 12 ? ' AM' : ' PM'); };
+        const [sessions, setSessions] = React.useState(() => {
+          try { const s = JSON.parse(localStorage.getItem(LS_SESS)); return s && s.length ? s : defaultSessions; } catch { return defaultSessions; }
+        });
+        const [editing, setEditing] = React.useState(null); // id of row being edited
+        const [draft, setDraft]     = React.useState({});
+
+        const save = (updated) => { setSessions(updated); localStorage.setItem(LS_SESS, JSON.stringify(updated)); };
+
+        const startEdit = (s) => { setEditing(s.id); setDraft({ startH: s.startH, startM: s.startM, endH: s.endH, endM: s.endM }); };
+        const commitEdit = (id) => {
+          save(sessions.map(s => s.id === id ? { ...s, startH: +draft.startH, startM: +draft.startM, endH: +draft.endH, endM: +draft.endM } : s));
+          setEditing(null);
+        };
+        const resetAll = () => { save(defaultSessions); setEditing(null); };
+
+        return React.createElement("div",{style:{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"16px",padding:"24px",marginBottom:"16px",boxShadow:"0 4px 16px rgba(0,0,0,0.03)"}},
+          React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}},
+            React.createElement("div",null,
+              React.createElement("div",{style:{fontSize:"15px",fontWeight:"700",color:"var(--t1)",marginBottom:"4px"}},"🗓 Dial Sessions"),
+              React.createElement("div",{style:{fontSize:"12px",color:"var(--t3)",lineHeight:"1.5"}},"Configure your dial block times. Used by the session strip and countdown.")
+            ),
+            React.createElement("button",{onClick:resetAll,style:{fontSize:"11px",fontWeight:"700",padding:"6px 12px",borderRadius:"7px",border:"1px solid var(--border)",background:"var(--surface-2)",color:"var(--t3)",cursor:"pointer"}},"Reset defaults")
+          ),
+          sessions.map(s =>
+            React.createElement("div",{key:s.id,style:{display:"flex",alignItems:"center",gap:"10px",padding:"8px 0",borderBottom:"1px solid var(--border)"}},
+              React.createElement("span",{style:{fontSize:"12px",fontWeight:"700",color:"var(--t2)",minWidth:"110px"}},[s.label]),
+              editing === s.id
+                ? React.createElement(React.Fragment,null,
+                    React.createElement("input",{type:"number",min:0,max:23,value:draft.startH,onChange:e=>setDraft(d=>({...d,startH:e.target.value})),style:{width:"44px",padding:"4px",borderRadius:"5px",border:"1px solid var(--border)",background:"var(--surface-2)",color:"var(--t1)",fontSize:"12px",textAlign:"center"}}),
+                    React.createElement("span",{style:{color:"var(--t4)",fontSize:"11px"}},"h"),
+                    React.createElement("input",{type:"number",min:0,max:59,step:5,value:draft.startM,onChange:e=>setDraft(d=>({...d,startM:e.target.value})),style:{width:"44px",padding:"4px",borderRadius:"5px",border:"1px solid var(--border)",background:"var(--surface-2)",color:"var(--t1)",fontSize:"12px",textAlign:"center"}}),
+                    React.createElement("span",{style:{color:"var(--t4)",fontSize:"11px"}},":m →"),
+                    React.createElement("input",{type:"number",min:0,max:23,value:draft.endH,onChange:e=>setDraft(d=>({...d,endH:e.target.value})),style:{width:"44px",padding:"4px",borderRadius:"5px",border:"1px solid var(--border)",background:"var(--surface-2)",color:"var(--t1)",fontSize:"12px",textAlign:"center"}}),
+                    React.createElement("span",{style:{color:"var(--t4)",fontSize:"11px"}},"h"),
+                    React.createElement("input",{type:"number",min:0,max:59,step:5,value:draft.endM,onChange:e=>setDraft(d=>({...d,endM:e.target.value})),style:{width:"44px",padding:"4px",borderRadius:"5px",border:"1px solid var(--border)",background:"var(--surface-2)",color:"var(--t1)",fontSize:"12px",textAlign:"center"}}),
+                    React.createElement("span",{style:{color:"var(--t4)",fontSize:"11px"}},":m"),
+                    React.createElement("button",{onClick:()=>commitEdit(s.id),style:{marginLeft:"6px",fontSize:"11px",fontWeight:"700",padding:"4px 10px",borderRadius:"6px",border:"none",background:"var(--green)",color:"#fff",cursor:"pointer"}},"✓ Save"),
+                    React.createElement("button",{onClick:()=>setEditing(null),style:{fontSize:"11px",fontWeight:"600",padding:"4px 8px",borderRadius:"6px",border:"1px solid var(--border)",background:"var(--surface-2)",color:"var(--t3)",cursor:"pointer"}},"Cancel")
+                  )
+                : React.createElement(React.Fragment,null,
+                    React.createElement("span",{style:{fontSize:"12px",color:"var(--t1)",fontFamily:"'JetBrains Mono',monospace",fontWeight:"600"}}, fmtT(s.startH, s.startM) + " – " + fmtT(s.endH, s.endM)),
+                    React.createElement("button",{onClick:()=>startEdit(s),style:{marginLeft:"auto",fontSize:"11px",fontWeight:"700",padding:"3px 10px",borderRadius:"6px",border:"1px solid var(--border)",background:"var(--surface-2)",color:"var(--t3)",cursor:"pointer"}},"Edit")
+                  )
+            )
+          )
+        );
+      })(),
 
       // ── PHASE LIFECYCLE ENGINE CARD (v3.60 — DISARMED: calendar engine runs phases automatically) ──
       React.createElement("div",{style:{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"16px",padding:"24px",marginBottom:"16px",boxShadow:"0 4px 16px rgba(0,0,0,0.03)"}},
@@ -151,7 +249,7 @@ export default function SettingsView({
             ),
             React.createElement("details",{style:{marginTop:"10px"}},
               React.createElement("summary",{style:{fontSize:"11px",fontWeight:"700",color:"var(--blue)",cursor:"pointer"}},"View Twilio Function code to paste"),
-              React.createElement("pre",{style:{fontSize:"10px",color:"var(--t3)",marginTop:"8px",overflowX:"auto",background:"var(--navy)",padding:"10px",borderRadius:"6px",lineHeight:"1.6"}},
+              React.createElement("pre",{style:{fontSize:"11pxpx",color:"var(--t3)",marginTop:"8px",overflowX:"auto",background:"var(--navy)",padding:"10px",borderRadius:"6px",lineHeight:"1.6"}},
 `exports.handler = function(context, event, callback) {
   const AccessToken = Twilio.jwt.AccessToken;
   const VoiceGrant = AccessToken.VoiceGrant;
@@ -198,14 +296,14 @@ export default function SettingsView({
             : React.createElement("span",{style:{fontSize:"11px",fontWeight:"800",color:"var(--amber)",background:"#FEF3C7",padding:"4px 10px",borderRadius:"20px",border:"1px solid #FCD34D"}},"NOT SET")
         ),
         React.createElement("div",{style:{fontSize:"12px",color:"var(--t3)",marginBottom:"18px",fontWeight:"500",lineHeight:"1.6"}},"Enter your Twilio credentials to activate two-way SMS in the Messages tab on every contact."),
-        React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"ACCOUNT SID"),
+        React.createElement("label",{style:{fontSize:"11pxpx",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"ACCOUNT SID"),
         React.createElement("input",{
           placeholder:"ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
           value:twilioDraft.accountSid,
           onChange:e=>setTwilioDraft(p=>({...p,accountSid:e.target.value})),
           style:{background:"var(--surface-2)",border:"1px solid var(--border)",borderRadius:"7px",padding:"10px 14px",fontSize:"12px",color:"var(--t1)",width:"100%",marginBottom:"12px",boxSizing:"border-box",fontFamily:"'JetBrains Mono',monospace"}
         }),
-        React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"AUTH TOKEN"),
+        React.createElement("label",{style:{fontSize:"11pxpx",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"AUTH TOKEN"),
         React.createElement("input",{
           type:"password",
           placeholder:"Your Auth Token",
@@ -213,7 +311,7 @@ export default function SettingsView({
           onChange:e=>setTwilioDraft(p=>({...p,authToken:e.target.value})),
           style:{background:"var(--surface-2)",border:"1px solid var(--border)",borderRadius:"7px",padding:"10px 14px",fontSize:"12px",color:"var(--t1)",width:"100%",marginBottom:"12px",boxSizing:"border-box",fontFamily:"'JetBrains Mono',monospace"}
         }),
-        React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"TWILIO PHONE NUMBER"),
+        React.createElement("label",{style:{fontSize:"11pxpx",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"TWILIO PHONE NUMBER"),
         React.createElement("input",{
           placeholder:"+14055550001",
           value:twilioDraft.fromNumber,
@@ -257,7 +355,7 @@ export default function SettingsView({
             ["APPS GOAL (per week)","appsGoalWeek","5","e.g. 5"],
           ].map(([label,key,_def,ph]) =>
             React.createElement("div",{key},
-              React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},label),
+              React.createElement("label",{style:{fontSize:"11pxpx",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},label),
               React.createElement("input",{
                 type:"number",
                 placeholder:ph,
@@ -274,7 +372,7 @@ export default function SettingsView({
             ["TARGET CONTRACT LEVEL","contractTarget","e.g. 100%"],
           ].map(([label,key,ph]) =>
             React.createElement("div",{key},
-              React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},label),
+              React.createElement("label",{style:{fontSize:"11pxpx",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},label),
               React.createElement("input",{
                 type:"text",
                 placeholder:ph,
@@ -306,7 +404,7 @@ export default function SettingsView({
           ),
           gmailSaved && React.createElement("span",{style:{fontSize:"11px",fontWeight:"800",color:"var(--green)",background:"var(--green-dim)",padding:"4px 10px",borderRadius:"20px",border:"1px solid #6EE7B7"}},"SAVED ✓")
         ),
-        React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"YOUR EMAIL ADDRESS"),
+        React.createElement("label",{style:{fontSize:"11pxpx",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"YOUR EMAIL ADDRESS"),
         React.createElement("input",{
           type:"email",
           placeholder:"Jeremy@metkasolutions.com",
@@ -314,7 +412,7 @@ export default function SettingsView({
           onChange: e => setGmailDraft(d => ({...d, address: e.target.value})),
           style:{width:"100%",padding:"10px 12px",borderRadius:"8px",border:"1px solid var(--border)",background:"var(--surface-2)",color:"var(--t1)",fontSize:"13px",fontFamily:"inherit",boxSizing:"border-box",marginBottom:"14px"}
         }),
-        React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"DEFAULT EMAIL SIGNATURE (optional)"),
+        React.createElement("label",{style:{fontSize:"11pxpx",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"DEFAULT EMAIL SIGNATURE (optional)"),
         React.createElement("textarea",{
           placeholder:"Jeremy Metka | Senior Field Underwriter\nMinistry of Protection | NPN #21425108\n(405) 555-0000",
           value: gmailDraft.signature || '',
@@ -350,7 +448,7 @@ export default function SettingsView({
             : React.createElement("span",{style:{fontSize:"11px",fontWeight:"800",color:"var(--amber)",background:"#FEF3C7",padding:"4px 10px",borderRadius:"20px",border:"1px solid #FCD34D"}},"NOT SET")
         ),
 
-        React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"APPS SCRIPT EMAIL URL"),
+        React.createElement("label",{style:{fontSize:"11pxpx",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"APPS SCRIPT EMAIL URL"),
         React.createElement("div",{style:{fontSize:"11px",color:"var(--t4)",marginBottom:"6px"}},"Paste your deployed Google Apps Script web app URL (from script.google.com → Deploy → Web App)"),
         React.createElement("input",{
           type:"text",
@@ -360,7 +458,7 @@ export default function SettingsView({
           style:{width:"100%",padding:"10px 12px",borderRadius:"8px",border:"1px solid var(--border)",background:"var(--surface-2)",color:"var(--t1)",fontSize:"12px",fontFamily:"'JetBrains Mono',monospace",boxSizing:"border-box",marginBottom:"14px"}
         }),
 
-        React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"CALENDLY BOOKING URL"),
+        React.createElement("label",{style:{fontSize:"11pxpx",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"CALENDLY BOOKING URL"),
         React.createElement("div",{style:{fontSize:"11px",color:"var(--t4)",marginBottom:"6px"}},"Included in sequence emails as the 15-minute booking CTA. Not sent via SMS (A2P pending approval)."),
         React.createElement("input",{
           type:"text",
@@ -370,7 +468,7 @@ export default function SettingsView({
           style:{width:"100%",padding:"10px 12px",borderRadius:"8px",border:"1px solid var(--border)",background:"var(--surface-2)",color:"var(--t1)",fontSize:"13px",fontFamily:"inherit",boxSizing:"border-box",marginBottom:"14px"}
         }),
 
-        React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"AGENT PHONE (email signature)"),
+        React.createElement("label",{style:{fontSize:"11pxpx",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"AGENT PHONE (email signature)"),
         React.createElement("input",{
           type:"text",
           placeholder:"(405) 555-0000",
@@ -492,7 +590,7 @@ export default function SettingsView({
             : React.createElement("span",{style:{fontSize:"11px",fontWeight:"800",color:"var(--amber)",background:"#FEF3C7",padding:"4px 10px",borderRadius:"20px",border:"1px solid #FCD34D"}},"NOT SET")
         ),
         React.createElement("div",{style:{fontSize:"12px",color:"var(--t3)",marginBottom:"18px",fontWeight:"500",lineHeight:"1.6"}},"Enables the AI panel (🤖 button in the corner) — Chat, Lead Intel, Draft Copy, and Note Extraction. Powered by Google Gemini 2.0 Flash. Get a free key at aistudio.google.com."),
-        React.createElement("label",{style:{fontSize:"10px",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"GEMINI API KEY"),
+        React.createElement("label",{style:{fontSize:"11pxpx",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"GEMINI API KEY"),
         React.createElement("input",{
           type:"password",
           placeholder:"Paste your Google AI Studio API key…",

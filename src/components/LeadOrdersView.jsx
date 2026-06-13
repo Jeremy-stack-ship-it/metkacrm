@@ -29,7 +29,7 @@ export default function LeadOrdersView({ leads }) {
       {Object.keys(medians).length > 0 && (
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
           {Object.entries(medians).map(([lvl, d]) => (
-            <span key={lvl} style={{ fontSize: '10px', fontWeight: 800, color: 'var(--blue)', background: 'var(--blue-dim)', border: '1px solid var(--blue-mid)', padding: '4px 10px', borderRadius: '20px' }}>
+            <span key={lvl} style={{ fontSize: '11pxpx', fontWeight: 800, color: 'var(--blue)', background: 'var(--blue-dim)', border: '1px solid var(--blue-mid)', padding: '4px 10px', borderRadius: '20px' }}>
               {lvl}: median {d}d to break even
             </span>
           ))}
@@ -41,7 +41,7 @@ export default function LeadOrdersView({ leads }) {
           <thead>
             <tr style={{ background: 'var(--surface-2)' }}>
               {['Order', 'Source', 'Level', 'Start', 'Leads', 'Spend', 'Appts', 'Sat', 'Apps', 'APV', 'Collected', 'Net', 'ROI', 'Break-even', 'Days'].map(h => (
-                <th key={h} style={{ padding: '9px 10px', textAlign: h === 'Order' ? 'left' : 'right', fontSize: '9px', fontWeight: 800, color: 'var(--t3)', letterSpacing: '0.8px', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap' }}>{h.toUpperCase()}</th>
+                <th key={h} style={{ padding: '9px 10px', textAlign: h === 'Order' ? 'left' : 'right', fontSize: '11pxpx', fontWeight: 800, color: 'var(--t3)', letterSpacing: '0.8px', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap' }}>{h.toUpperCase()}</th>
               ))}
             </tr>
           </thead>
