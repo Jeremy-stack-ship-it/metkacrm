@@ -7,7 +7,6 @@ const GROUPS = [
     icon:  '⚡',
     label: 'WORK',
     items: [
-      { id: 'today',        icon: '⚡', label: 'TODAY' },
       { id: 'dial',         icon: '🎙️', label: 'DIAL'  },
       { id: 'messages',     icon: '💬', label: 'SMS'   },
       { id: 'callbacks',    icon: '📞', label: 'CB'    },

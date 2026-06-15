@@ -6,6 +6,23 @@ const CALENDLY = 'https://calendly.com/metkasolutions/20min';
 const HIHELLO  = 'https://hihello.me/p/6cc69b25-86ec-4c39-a45b-fd48bee85403'; // digital business card
 const SELF_APPLY = 'https://apply.quility.com/#/symmetry/raq/SFG0092434?redirect_url=https%3A%2F%2Fyourlivingbenefit.com%2F&leadtype=Life%20Insurance&producttype=Life%20Insurance';
 
+// v3.77 — No Answer rotating templates (5-shot cycle)
+const NO_ANSWER_TEMPLATES = [
+  "Hey {firstName}, this is Jeremy Metka. I just tried reaching you about your life insurance request. When is a good time for a quick call?",
+  "Hey {firstName}, Jeremy Metka here — tried you again. Quick heads up: most of the coverage I help families with pays out while you're still alive, not just at death. Worth 10 minutes. When works for you?",
+  "Hey {firstName}, Jeremy Metka following up on your life insurance request. Are you looking for coverage for yourself only, or would your spouse need to be included as well? Just want to pull the right options.",
+  "Hey {firstName}, this is Jeremy Metka. I'm wrapping up my regional files — do I need to close out your household file, or would you still like to go over your life insurance options?",
+  "Hey {firstName}, last reach out from Jeremy Metka. I've tried several times to connect about your request. If timing isn't right, no worries — just reply STOP and I'll close your file. Otherwise I'm here when you're ready.",
+];
+
+// v3.79 — Number change broadcast template
+const NUM_CHANGE_TEMPLATE =
+  "Hey {firstName}, Jeremy Metka here — I changed my number. Please save (580) 263-5409 as my new contact. I’ll be in touch soon. Reply STOP to opt out.";
+
+// v3.78 — TCPA-compliant initial contact template (must be first text from this number)
+const INITIAL_CONTACT_TEMPLATE =
+  "Hey {firstName}, this is Jeremy Metka — I'm a licensed life insurance advisor following up on your recent request for coverage. I have some options I'd love to walk you through. When's a good time for a quick call? Reply STOP to opt out.";
+
 // ── SMS THREAD ────────────────────────────────────────────────────────────────
 // Shared two-way SMS thread component.
 // Props:
@@ -23,6 +40,7 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
   // v3.58 — 7b: ladder position memory. When a drawer step fills the composer,
   // a successful SEND auto-advances smsSeq/smsStep — no manual mark needed.
   const [filledStep, setFilledStep] = React.useState(null);
+  const [naIdx,      setNaIdx]      = React.useState(0); // v3.77 — no-answer template cycle
   const bottomRef = React.useRef(null);
 
   const MAX = 160;
@@ -39,6 +57,18 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
   React.useEffect(() => {
     if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [open && (open.notes || []).length]);
+
+  // v3.78 — TCPA: derive whether any SMS has been sent from this number to this lead
+  const hasBeenTexted = React.useMemo(() => {
+    if (!open) return false;
+    return (open.notes || []).some(n =>
+      n && n.text && (
+        n.text.startsWith('📱 SMS sent:') ||
+        n.text.startsWith('[SEQ] SMS sent') ||
+        n.type === 'sms_inbound'
+      )
+    );
+  }, [open && open.notes]);
 
   const smsMessages = React.useMemo(() => {
     if (!open) return [];
@@ -227,6 +257,40 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
             style:{ fontSize:'11px', fontWeight:'800', padding:'3px 9px', borderRadius:'6px', border:'1px solid rgba(239,68,68,0.5)', background:'rgba(239,68,68,0.10)', color:'#EF4444', cursor:'pointer' }
           }, '\ud83d\udd25 Card');
         })(),
+        // v3.78 — No Answer button: TCPA intro first, then rotating templates
+        !optedOut && React.createElement('button', {
+          onClick: () => {
+            const first = open.firstName || (open.name||'').split(' ')[0] || 'there';
+            if (!hasBeenTexted && naIdx === 0) {
+              // First ever text — must be TCPA-compliant intro
+              fill(INITIAL_CONTACT_TEMPLATE.replace(/\{firstName\}/gi, first));
+              setNaIdx(1); // next tap starts cycle at template 1
+            } else {
+              const tpl = NO_ANSWER_TEMPLATES[(naIdx - 1) % NO_ANSWER_TEMPLATES.length];
+              fill(tpl.replace(/\{firstName\}/gi, first));
+              setNaIdx(i => i + 1);
+            }
+          },
+          title: !hasBeenTexted && naIdx === 0
+            ? 'TCPA intro — first text must include opt-out'
+            : 'No answer template ' + ((naIdx-1) % NO_ANSWER_TEMPLATES.length + 1) + ' of ' + NO_ANSWER_TEMPLATES.length,
+          style:{ fontSize:'11px', fontWeight:'900', padding:'3px 9px', borderRadius:'6px',
+            border: !hasBeenTexted && naIdx === 0 ? '1px solid rgba(234,179,8,0.6)' : '1px solid rgba(239,68,68,0.4)',
+            background: !hasBeenTexted && naIdx === 0 ? 'rgba(234,179,8,0.10)' : 'rgba(239,68,68,0.08)',
+            color: !hasBeenTexted && naIdx === 0 ? '#A16207' : '#DC2626',
+            cursor:'pointer', whiteSpace:'nowrap' }
+        }, !hasBeenTexted && naIdx === 0
+          ? '⚠️ INTRO'
+          : '📵 ' + ((naIdx-1) % NO_ANSWER_TEMPLATES.length + 1) + '/' + NO_ANSWER_TEMPLATES.length),
+        // v3.79 — Number change button
+        !optedOut && React.createElement('button', {
+          onClick: () => {
+            const first = open.firstName || (open.name||'').split(' ')[0] || 'there';
+            fill(NUM_CHANGE_TEMPLATE.replace(/\{firstName\}/gi, first));
+          },
+          title: 'Number change broadcast',
+          style:{ fontSize:'11px', fontWeight:'900', padding:'3px 9px', borderRadius:'6px', border:'1px solid rgba(99,102,241,0.4)', background:'rgba(99,102,241,0.08)', color:'#4338CA', cursor:'pointer', whiteSpace:'nowrap' }
+        }, '📲 # Change'),
         [['Name', open.firstName||(open.name||'').split(' ')[0]||'there'], ['Cal', CALENDLY], ['Apply', SELF_APPLY]].map(([lbl, val]) =>
           React.createElement('button', { key:lbl, onClick:()=>insertVar(val), style:{ fontSize:'11pxpx', fontWeight:'700', padding:'3px 7px', borderRadius:'6px', border:'1px solid var(--border)', background:'var(--surface-2)', color:'var(--t3)', cursor:'pointer' } }, '{'+lbl+'}')
         ),

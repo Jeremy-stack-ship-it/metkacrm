@@ -159,7 +159,7 @@ function MetkaCRM(){
   // v3.24 — init view from URL hash so browser back/forward works
   const [view,setView]=useState(() => {
     const hash = window.location.hash.replace('#','');
-    const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','today','campaign']);
+    const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','campaign']);
     return VALID.has(hash) ? hash : 'dashboard';
   });
   const [openId,setOpenId]=useState(null);
@@ -191,7 +191,7 @@ function MetkaCRM(){
   const [confirmCbTime, setConfirmCbTime] = useState("");
   // v3.8 — Unified Dial View state
   const [dialSortMode, setDialSortMode] = useState("priority");
-  const [dialRightTab, setDialRightTab] = useState("script");
+  const [dialRightTab, setDialRightTab] = useState("sms");
   const [navOpen, setNavOpen] = useState(true); // v3.9 — collapses on dial view, hamburger to restore
   // v2.3 — Activity Tracker state
   const [activity,setActivity]=useState([]);
@@ -1048,7 +1048,7 @@ const queue = useMemo(() => {
   useEffect(() => {
     function onPop(e) {
       const prev = (e.state && e.state.view) || window.location.hash.replace('#','') || 'dashboard';
-      const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','today','campaign']);
+      const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','campaign']);
       setView(VALID.has(prev) ? prev : 'dashboard');
     }
     window.addEventListener('popstate', onPop);

@@ -16,7 +16,9 @@ function fmtAssignDate(raw) {
   try {
     const d = new Date(raw);
     if (isNaN(d.getTime())) return raw;
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    return date + ' ' + time;
   } catch(e) { return raw; }
 }
 
@@ -169,11 +171,31 @@ export default function DialView({
               style: { fontSize: "11px", fontWeight: "700", padding: "3px 9px", borderRadius: "4px", background: tcpaInfo.safe ? "var(--green-dim)" : "var(--red-dim)", color: tcpaInfo.safe ? "var(--green)" : "var(--red)", border: "1px solid " + (tcpaInfo.safe ? "#6EE7B7" : "#FCA5A5") }
             }, (tcpaInfo.safe ? "🟢 " : "🔴 ") + tcpaInfo.timeStr + " " + tcpaInfo.ltz),
             React.createElement("span", { style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: BC[open.bucket] + "18", color: BC[open.bucket], fontWeight: "800" } }, BL[open.bucket]),
-            open.leadType && React.createElement("span", { style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--blue-mid)", color: "#1D4ED8", fontWeight: "700" } }, open.leadType),
+            (() => {
+              const lt = open.leadType || open.leadSubSource || open.leadSource;
+              if (!lt) return null;
+              const ltUp = lt.toUpperCase();
+              const LT_COLORS = {
+                'EPA':  { bg: '#FFF7ED', color: '#C2410C', border: '#FED7AA' },
+                'RLGL': { bg: '#F0FDF4', color: '#15803D', border: '#86EFAC' },
+                'GL':   { bg: '#F0FDF4', color: '#15803D', border: '#86EFAC' },
+                'DLHA': { bg: '#EFF6FF', color: '#1D4ED8', border: '#BFDBFE' },
+                'MP':   { bg: '#FAF5FF', color: '#7E22CE', border: '#E9D5FF' },
+                'FE':   { bg: '#FFF1F2', color: '#BE123C', border: '#FECDD3' },
+              };
+              const c = LT_COLORS[ltUp] || { bg: 'var(--surface-2)', color: 'var(--t2)', border: 'var(--border)' };
+              return React.createElement("span", { title: "Lead type", style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: c.bg, color: c.color, fontWeight: "800", border: "1px solid " + c.border } }, lt.toUpperCase());
+            })(),
+            open.leadLevel && React.createElement("span", { title:"Lead level", style:{ fontSize:"11px", padding:"3px 9px", borderRadius:"20px", background:"#FFF7ED", color:"#C2410C", fontWeight:"900", border:"1px solid #FED7AA", letterSpacing:"0.04em" } }, open.leadLevel),
             open.city && open.state && React.createElement("span", { style: { fontSize: "11px", color: "var(--t3)" } }, "📍 " + open.city + ", " + open.state),
             open.assignDate && React.createElement("span", { title: "Assign date — lead received", style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--surface-2)", color: "var(--t3)", fontWeight: "600", border: "1px solid var(--border)" } }, "📋 " + fmtAssignDate(open.assignDate)),
             isUWStuck(open) && React.createElement("span", { className: "pulse-red", style: { fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "var(--red-dim)", color: "var(--red)", fontWeight: "800", border: "1px solid #FCA5A5" } }, "⚠ UW " + daysInUW(open) + "d")
           )
+        ),
+
+        // ── Tobacco flag only (all other data in left pane) ─────────────────
+        open.tobacco && React.createElement("div", { style:{ padding:"2px 18px 4px" } },
+          React.createElement("span", { style:{ fontSize:"11px", padding:"3px 9px", borderRadius:"20px", background:"#FEF3C7", color:"#D97706", fontWeight:"900", border:"1px solid #FCD34D" } }, "🚬 TOBACCO")
         ),
 
         // ── Phase / Sequence indicator strip ─────────────────────────────
@@ -454,37 +476,100 @@ export default function DialView({
                   )
                 ),
 
-                // Quick Capture
-                React.createElement("div", { style: { background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "8px", padding: "12px", marginBottom: "10px" } },
-                  React.createElement("div", { style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.08em", marginBottom: "10px" } }, "🩺 QUICK CAPTURE"),
-                  React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px", marginBottom: "8px" } },
-                    [["Age", "age", "54"], ["Height", "height", "5'10\""], ["Weight", "weight", "180"], ["DOB", "dob", "1970-01-01"]].map(([lbl, field, ph]) =>
-                      React.createElement("div", { key: field },
-                        React.createElement("label", { htmlFor: "qc-" + field + "-" + open.id, style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.5px", display: "block", marginBottom: "3px" } }, lbl.toUpperCase()),
-                        React.createElement("input", {
-                          id: "qc-" + field + "-" + open.id, key: field + "-dial-" + open.id, placeholder: ph, defaultValue: open[field] || "",
-                          onBlur: e => { const v = e.target.value.trim(); if (v !== (open[field] || "")) upd(open.id, { [field]: v }); },
-                          style: { ...inp(), width: "100%", fontSize: "12px", boxSizing: "border-box", padding: "6px 8px" }
-                        })
+                // v3.73 — Option A: sidebar strip layout (lead data left 35% | capture right 65%)
+                React.createElement("div", { style:{ background:"var(--surface-2)", border:"1px solid var(--border)", borderRadius:"8px", padding:"12px", marginBottom:"10px", display:"grid", gridTemplateColumns:"35% 65%", gap:"12px", alignItems:"start" } },
+
+                  // ── LEFT PANE: READ-ONLY LEAD DATA ──
+                  (() => {
+                    const fmtPhone = p => p ? p.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3") : null;
+                    const altPhones = [
+                      open.cellPhone && open.cellPhone !== (open.phone||"").replace(/\D/g,"") ? "Cell: "+fmtPhone(open.cellPhone) : null,
+                      open.homePhone && open.homePhone !== (open.phone||"").replace(/\D/g,"") ? "Home: "+fmtPhone(open.homePhone) : null,
+                      open.workPhone && open.workPhone !== (open.phone||"").replace(/\D/g,"") ? "Work: "+fmtPhone(open.workPhone) : null,
+                    ].filter(Boolean).join(" · ") || null;
+                    const pairs = [
+                      ["Age",        open.age],
+                      ["Sex",        open.sex],
+                      ["Address",    [open.street, open.city && open.state ? open.city+", "+open.state : (open.city||open.state), open.zip].filter(Boolean).join(" · ")],
+                      ["County",     open.county],
+                      ["Coverage",   open.requestedCoverage && Number(open.requestedCoverage) > 0 ? "$"+Number(open.requestedCoverage).toLocaleString()+(open.reqCoverageRange?" ("+open.reqCoverageRange+")":"") : open.reqCoverageRange],
+                      ["Beneficiary",open.beneficiary],
+                      ["Loan",       open.loanAmount && Number(open.loanAmount) > 0 ? "$"+Number(open.loanAmount).toLocaleString() : null],
+                      ["Home Value", open.homeValue && Number(open.homeValue) > 0 ? "$"+Number(open.homeValue).toLocaleString() : null],
+                      ["Income",     open.householdIncome && Number(open.householdIncome) > 0 ? "$"+Number(open.householdIncome).toLocaleString() : null],
+                      ["Alt Phones", altPhones],
+                      ["Email",      open.email],
+                      ["Lead Level", open.leadLevel],
+                      ["Source",     open.leadSubSource || open.leadSource],
+                      ["Lead Type",  open.leadType],
+                    ].filter(([,v]) => v);
+                    return React.createElement("div", { style:{ borderRight:"1px solid var(--border)", paddingRight:"12px" } },
+                      React.createElement("div", { style:{ fontSize:"10px", fontWeight:"900", color:"var(--t4)", letterSpacing:"0.08em", marginBottom:"8px", textTransform:"uppercase" } }, "📋 Lead Data"),
+                      pairs.length
+                        ? pairs.map(([lbl,val]) =>
+                            React.createElement("div", { key:lbl, style:{ marginBottom:"7px" } },
+                              React.createElement("div", { style:{ fontSize:"10px", fontWeight:"800", color:"var(--t4)", letterSpacing:"0.05em", marginBottom:"1px" } }, lbl.toUpperCase()),
+                              React.createElement("div", { style:{ fontSize:"12px", fontWeight:"700", color:"var(--t1)", lineHeight:"1.3", wordBreak:"break-word" } }, val)
+                            )
+                          )
+                        : React.createElement("div", { style:{ fontSize:"11px", color:"var(--t4)", fontStyle:"italic" } }, "No data on file"),
+                      open.pdfUrl && React.createElement("a", { href:open.pdfUrl, target:"_blank", rel:"noopener noreferrer", style:{ display:"block", marginTop:"10px", padding:"5px 8px", background:"#EFF6FF", border:"1px solid #BFDBFE", borderRadius:"5px", fontSize:"11px", fontWeight:"800", color:"#1D4ED8", textDecoration:"none", textAlign:"center" } }, "📄 LEAD SHEET")
+                    );
+                  })(),
+
+                  // ── RIGHT PANE: HEALTH + HOUSEHOLD CAPTURE ──
+                  React.createElement("div", null,
+
+                    // Health Capture
+                    React.createElement("div", { style:{ marginBottom:"10px" } },
+                      React.createElement("div", { style:{ fontSize:"10px", fontWeight:"900", color:"var(--t4)", letterSpacing:"0.08em", marginBottom:"7px", textTransform:"uppercase" } }, "🩺 Health"),
+                      React.createElement("div", { style:{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:"5px", marginBottom:"7px" } },
+                        [["Ht","height"],["Wt","weight"],["DOB","dob"],["Age","age"]].map(([lbl,field]) =>
+                          React.createElement("div", { key:field },
+                            React.createElement("label", { htmlFor:"qc-"+field+"-"+open.id, style:{ fontSize:"10px", fontWeight:"800", color:"var(--t3)", letterSpacing:"0.5px", display:"block", marginBottom:"2px" } }, lbl),
+                            React.createElement("input", { id:"qc-"+field+"-"+open.id, key:field+"-dial-"+open.id, defaultValue:open[field]||"", onBlur:e=>{ const v=e.target.value.trim(); if(v!==(open[field]||"")) upd(open.id,{[field]:v}); }, style:{...inp(),width:"100%",fontSize:"12px",boxSizing:"border-box",padding:"5px 7px"} })
+                          )
+                        )
+                      ),
+                      React.createElement("div", {
+                        style:{ display:"flex", alignItems:"center", gap:"8px", padding:"6px 9px", borderRadius:"4px", background:open.tobacco?"#FEF3C7":"var(--surface)", border:"2px solid "+(open.tobacco?"#F59E0B":"var(--border)"), cursor:"pointer", marginBottom:"7px" },
+                        onClick:()=>upd(open.id,{tobacco:!open.tobacco})
+                      },
+                        React.createElement("input", { type:"checkbox", id:"qc-tobacco-"+open.id, checked:!!open.tobacco, onChange:()=>upd(open.id,{tobacco:!open.tobacco}), style:{width:"14px",height:"14px",cursor:"pointer",accentColor:"#D97706"} }),
+                        React.createElement("label", { htmlFor:"qc-tobacco-"+open.id, style:{fontSize:"11px",fontWeight:"800",color:open.tobacco?"#B45309":"var(--t2)",cursor:"pointer"} }, "🚬 TOBACCO / NICOTINE"),
+                        open.tobacco && React.createElement("span", { style:{fontSize:"10px",fontWeight:"900",color:"#B45309",marginLeft:"auto",background:"#FDE68A",padding:"2px 7px",borderRadius:"4px"} }, "TABLE RATING")
+                      ),
+                      React.createElement("textarea", { id:"qc-meds-"+open.id, key:"meds-dial-"+open.id, placeholder:"Meds / conditions...", defaultValue:open.medications||"", onBlur:e=>{ const v=e.target.value.trim(); if(v!==(open.medications||"")) upd(open.id,{medications:v}); }, style:{...inp(),width:"100%",fontSize:"12px",resize:"none",minHeight:"46px",lineHeight:"1.4",boxSizing:"border-box",padding:"6px 8px"} })
+                    ),
+
+                    // Divider
+                    React.createElement("div", { style:{ borderTop:"1px solid var(--border)", marginBottom:"10px" } }),
+
+                    // Household Capture
+                    React.createElement("div", null,
+                      React.createElement("div", { style:{ fontSize:"10px", fontWeight:"900", color:"var(--t4)", letterSpacing:"0.08em", marginBottom:"7px", textTransform:"uppercase" } }, "👨‍👩‍👧 Household"),
+                      React.createElement("div", { style:{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr", gap:"5px", marginBottom:"5px" } },
+                        [["Spouse Name","spouseName"],["Spouse Age","spouseAge"],["Dependents","dependents"]].map(([lbl,field]) =>
+                          React.createElement("div", { key:field },
+                            React.createElement("label", { htmlFor:"qc-"+field+"-"+open.id, style:{fontSize:"10px",fontWeight:"800",color:"var(--t3)",letterSpacing:"0.5px",display:"block",marginBottom:"2px"} }, lbl.toUpperCase()),
+                            React.createElement("input", { id:"qc-"+field+"-"+open.id, key:field+"-dial-"+open.id, defaultValue:open[field]||"", onBlur:e=>{ const v=e.target.value.trim(); if(v!==(open[field]||"")) upd(open.id,{[field]:v}); }, style:{...inp(),width:"100%",fontSize:"12px",boxSizing:"border-box",padding:"5px 7px"} })
+                          )
+                        )
+                      ),
+                      React.createElement("div", { style:{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"5px" } },
+                        [["Spouse DOB","spouseDob"],["Req. Coverage","requestedCoverage"]].map(([lbl,field]) =>
+                          React.createElement("div", { key:field },
+                            React.createElement("label", { htmlFor:"qc-"+field+"-"+open.id, style:{fontSize:"10px",fontWeight:"800",color:"var(--t3)",letterSpacing:"0.5px",display:"block",marginBottom:"2px"} }, lbl.toUpperCase()),
+                            React.createElement("input", { id:"qc-"+field+"-"+open.id, key:field+"-dial-"+open.id, defaultValue:open[field]||"", onBlur:e=>{ const v=e.target.value.trim(); if(v!==(open[field]||"")) upd(open.id,{[field]:v}); }, style:{...inp(),width:"100%",fontSize:"12px",boxSizing:"border-box",padding:"5px 7px"} })
+                          )
+                        )
                       )
+                    ),
+
+                    // Living Benefits badge
+                    React.createElement("div", { style:{ marginTop:"10px", padding:"7px 9px", background:"#ECFDF5", border:"1px solid #6EE7B7", borderRadius:"4px", fontSize:"11px", color:"#065F46", fontWeight:"600" } },
+                      "💚 Living Benefits — money that pays while ALIVE."
                     )
-                  ),
-                  React.createElement("div", {
-                    style: { display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", borderRadius: "4px", background: open.tobacco ? "#FEF3C7" : "var(--surface)", border: "1px solid " + (open.tobacco ? "#FCD34D" : "var(--border)"), cursor: "pointer", marginBottom: "8px" },
-                    onClick: () => upd(open.id, { tobacco: !open.tobacco })
-                  },
-                    React.createElement("input", { type: "checkbox", id: "qc-tobacco-" + open.id, checked: !!open.tobacco, onChange: () => upd(open.id, { tobacco: !open.tobacco }), style: { width: "14px", height: "14px", cursor: "pointer", accentColor: "#D97706" } }),
-                    React.createElement("label", { htmlFor: "qc-tobacco-" + open.id, style: { fontSize: "11px", fontWeight: "700", color: open.tobacco ? "#D97706" : "var(--t2)", cursor: "pointer" } }, "🚬 Tobacco User"),
-                    open.tobacco && React.createElement("span", { style: { fontSize: "11px", fontWeight: "800", color: "#D97706", marginLeft: "auto" } }, "TABLE RATING")
-                  ),
-                  React.createElement("label", { htmlFor: "qc-meds-" + open.id, style: { fontSize: "11px", fontWeight: "800", color: "var(--t3)", letterSpacing: "0.5px", display: "block", marginBottom: "3px" } }, "MEDICATIONS / CONDITIONS"),
-                  React.createElement("textarea", {
-                    id: "qc-meds-" + open.id, key: "meds-dial-" + open.id, placeholder: "Meds, conditions...", defaultValue: open.medications || "",
-                    onBlur: e => { const v = e.target.value.trim(); if (v !== (open.medications || "")) upd(open.id, { medications: v }); },
-                    style: { ...inp(), width: "100%", fontSize: "12px", resize: "none", minHeight: "44px", lineHeight: "1.4", boxSizing: "border-box", padding: "6px 8px" }
-                  }),
-                  React.createElement("div", { style: { marginTop: "8px", padding: "8px 10px", background: "#ECFDF5", border: "1px solid #6EE7B7", borderRadius: "4px", fontSize: "11px", color: "#065F46", fontWeight: "600" } },
-                    "💚 Living Benefits — money that pays while ALIVE. Always lead with this."
                   )
                 ),
 

@@ -557,3 +557,92 @@ Build clean.
 - **Hooks crash fixed (v3.63 regression):** Quiet ring useEffect was placed after `if(loading) return` early exit — React saw hook count mismatch between loading/loaded renders. Moved to before the loading guard.
 
 Files: src/components/* (22 files font pass), NavSidebar.jsx, ContactDetail.jsx, SettingsView.jsx, src/App.jsx (hooks fix).
+
+## v3.65 — 2026-06-13
+### Fixed
+- TODAY nav tab was blank (no view router branch existed for `view==="today"`). Aliased to DialView: `(view==="dial" || view==="today")` — TODAY now lands on the dial queue as intended.
+
+## v3.66 — 2026-06-13
+### Removed
+- TODAY nav tab removed from NavSidebar (duplicated DIAL). Alias and VALID set entry cleaned from App.jsx.
+
+## v3.67 — 2026-06-13
+### Fixed
+- Assign date chip in DialView now shows full date + time (e.g. "Jun 3, 2025 9:41 AM") instead of month/day only.
+
+## v3.68 — 2026-06-13
+### Fixed
+- Lead type chip now shows with fallback chain: leadType → leadSubSource → leadSource (existing leads with empty leadType now display something)
+- Color-coded by type: EPA=orange, RLGL/GL=green, DLHA=blue, MP=purple, FE=red
+- Assign date chip now shows full date + time (v3.67 — included here for completeness)
+
+## v3.69 — 2026-06-13
+### Added
+- Lead info row 2 in DialView header: email (mailto link), sex, loan amount, lead source/subsource chips
+- Quick Capture expanded to two-column Household Profile: 🩺 HEALTH (left — existing fields) + 👨‍👩‍👧 HOUSEHOLD (right — Spouse Name, Spouse Age, Spouse DOB, Dependents, Req. Coverage); all new fields save on blur
+
+## v3.70 — 2026-06-13
+### Added
+- csvParser: maps HomeValue, HouseholdIncome, RequestedCoverageAmount, SpouseName, SpouseAge, SpouseDob, Dependents from CSV on import
+- DialView row 2: home value (🏡) and household income (💰) chips now display when populated
+- Household Profile right column fields pre-fill from CSV data on next import
+
+## v3.71 — 2026-06-13
+### Added
+- csvParser: LeadLevel/LeadLevelAlias (EPA, DLHA, LHGL), BeneficiaryRelationship, RequestedCoverageAmountRange now mapped
+- DialView row 1: LeadLevel chip (orange/bold) between lead type and location
+- DialView row 2: Requested coverage (green 🛡), beneficiary relationship (👨‍👩‍👧), tobacco flag (🚬 amber) now show when populated
+- Tobacco chip in row 2 appears automatically when checkbox is checked — visible at a glance without scrolling down
+
+## v3.72 — 2026-06-13
+### Redesigned
+- Center panel card: 3 clear sections — LEAD DATA (read-only grid, populated fields only), HEALTH CAPTURE (4-field row + bold tobacco + meds), HOUSEHOLD (blank capture inputs)
+- No more fake placeholder values showing as data
+- Tobacco checkbox full-width, bold, TABLE RATING badge
+
+## v3.73 — 2026-06-15
+### Redesigned
+- Center panel card: Option A sidebar strip layout — 35% | 65% horizontal split
+- Left pane: vertical stacked label/value list (populated fields only, borderRight divider). Shows: Age, Sex, Coverage+range, Beneficiary, Loan, Home Value, Income, Lead Level, Source, Zip. Falls back to "No data on file" when empty.
+- Right pane: Health Capture (Ht/Wt/DOB/Age grid + tobacco toggle + meds textarea) + Household Capture (Spouse Name/Age/Dependents + Spouse DOB/Req Coverage) + Living Benefits badge
+- Removed placeholder values from all capture inputs (blank until filled on call)
+
+## v3.74 — 2026-06-15
+### Fixed
+- Left pane pairs: added Location (city+state combined), Email, Lead Type
+- $0/$null loan/homeValue/income no longer show as data (Number() > 0 guard)
+- Zip moved under Location for logical grouping
+
+## v3.75 — 2026-06-15
+### Added
+- SMS is now the default right panel tab (was Script — click Script when they pick up)
+- Left pane: Address now combines Street + City/State + Zip into one row
+- Left pane: County added (98% populated)
+- Left pane: Alt Phones shows Cell/Home/Work when different from primary phone (deduped)
+- Left pane: 📄 LEAD SHEET button links to PDFURL when available (100% populated)
+- csvParser: cellPhone, homePhone, workPhone mapped as separate fields
+
+## v3.76 — 2026-06-15
+### Cleaned
+- Removed row 2 info chips — all data now lives in the left pane card (no duplicates)
+- Kept tobacco as a standalone flag chip above the phase strip (quick visual on hot leads)
+
+## v3.77 — 2026-06-15
+### Added
+- SMS panel: 📵 1/5 button in toolbar pre-fills composer with rotating no-answer template
+- 5 templates cycle on each tap (1→2→3→4→5→1): intro, Living Benefits angle, qualify spouse, Ghost Protocol, final close
+- Counter shows current position (e.g. "📵 2/5") — resets when lead changes
+- Templates personalized with {firstName}. One tap to fill, one tap to send. Honors smsOptOut.
+
+## v3.78 — 2026-06-15
+### Compliance
+- TCPA: No-answer button shows ⚠️ INTRO on first text to any lead (no prior SMS history)
+- Intro template includes "Reply STOP to opt out." — required for initial contact from this number
+- After intro is sent (or any prior SMS exists in notes), button switches to 📵 1/5 cycling templates
+- hasBeenTexted derived from notes — no new field needed, works retroactively for leads already texted
+
+## v3.79 — 2026-06-15
+### Added
+- SMS panel: 📲 # Change button fills composer with number-change broadcast template
+- Message: "Hey {firstName}, Jeremy Metka here — I changed my number. Please save (580) 263-5409 as my new contact. I'll be in touch soon. Reply STOP to opt out."
+- 151 chars / 1 segment. Per-lead manual send via existing SMS panel.

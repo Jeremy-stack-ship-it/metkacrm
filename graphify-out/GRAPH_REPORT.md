@@ -1,16 +1,16 @@
-# Graph Report - metka-crm  (2026-06-12)
+# Graph Report - metka-crm  (2026-06-13)
 
 ## Corpus Check
-- 85 files · ~141,378 words
+- 86 files · ~143,698 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1876 nodes · 4514 edges · 108 communities (77 shown, 31 thin omitted)
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 383 edges (avg confidence: 0.8)
+- 1882 nodes · 4524 edges · 105 communities (74 shown, 31 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 384 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f273c77f`
+- Built from commit: `9995e466`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -99,10 +99,7 @@
 - [[_COMMUNITY_Community 82|Community 82]]
 - [[_COMMUNITY_Community 83|Community 83]]
 - [[_COMMUNITY_Community 84|Community 84]]
-- [[_COMMUNITY_Community 85|Community 85]]
 - [[_COMMUNITY_Community 86|Community 86]]
-- [[_COMMUNITY_Community 87|Community 87]]
-- [[_COMMUNITY_Community 88|Community 88]]
 - [[_COMMUNITY_Community 89|Community 89]]
 - [[_COMMUNITY_Community 90|Community 90]]
 - [[_COMMUNITY_Community 91|Community 91]]
@@ -131,8 +128,8 @@
 5. `jw` - 49 edges
 6. `PE()` - 48 edges
 7. `Np()` - 45 edges
-8. `t()` - 42 edges
-9. `MetkaCRM()` - 42 edges
+8. `MetkaCRM()` - 42 edges
+9. `t()` - 42 edges
 10. `fe()` - 41 edges
 
 ## Surprising Connections (you probably didn't know these)
@@ -147,15 +144,15 @@
 - `MetkaCRM()` --calls--> `assignLeadOrders()`  [EXTRACTED]
   src/App.jsx → src/lib/leadOrders.js
 
-## Communities (108 total, 31 thin omitted)
+## Communities (105 total, 31 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.06
-Nodes (49): StageStepper(), BUSINESS_HOURS, dayKey(), fmtHour(), HourlyStats(), useAuth(), ACTIVITY_TYPES, aggregateActivity() (+41 more)
+Cohesion: 0.09
+Nodes (37): DashboardTab(), ACTIVITY_TYPES, aggregateActivity(), computeActivityQueue(), CONTACT_DISPS, dayKey(), DEFAULT_GOALS, fmtTime() (+29 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.11
-Nodes (30): AddLeadForm(), AppointmentConfirmModal(), APP_STATUSES, ContactDetail(), ECON_STAGES, UnderwritingCard(), ContactsView(), DialRightPanel() (+22 more)
+Cohesion: 0.10
+Nodes (38): AddLeadForm(), APP_STATUSES, ContactDetail(), ECON_STAGES, StageStepper(), UnderwritingCard(), ContactsView(), DialRightPanel() (+30 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.04
@@ -163,11 +160,11 @@ Nodes (41): active, activityNotes, allRows, archived, archiveNote, base64urlEnco
 
 ### Community 3 - "Community 3"
 Cohesion: 0.08
-Nodes (27): INNER_TABS, SequenceTab(), TC, TD_STYLE, TH_STYLE, advanceSequence(), getNextTouchDate(), getSequenceBadgeColor() (+19 more)
+Nodes (24): INNER_TABS, SequenceTab(), TC, TD_STYLE, TH_STYLE, getNextTouchDate(), getSequenceBadgeColor(), getSequenceStatus() (+16 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.08
-Nodes (50): DashboardTab(), DialQueuePanel(), SessionStrip(), DialView(), fmtAssignDate(), AUTO_CALLBACKS, buildDispositionPatch(), DISP_NOTE_TEXT (+42 more)
+Nodes (44): DialQueuePanel(), SessionStrip(), AUTO_CALLBACKS, buildDispositionPatch(), DISP_NOTE_TEXT, DISP_STAGE_MAP, addDaysISO(), _ageBasis() (+36 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.10
@@ -178,8 +175,8 @@ Cohesion: 0.24
 Nodes (14): btn(), card(), CCTab(), sectionLabel(), ccAuthorize(), ccClearTokens(), ccExchangeCode(), ccFetch() (+6 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.12
-Nodes (18): autoDetectMapping(), mapFunnelStatus(), parseBucket(), parseCSV(), parseDisp(), parseStage(), DISP_RANK, FIELD_KEYS (+10 more)
+Cohesion: 0.07
+Nodes (24): AppointmentConfirmModal(), useAuth(), autoDetectMapping(), mapFunnelStatus(), parseBucket(), parseCSV(), parseDisp(), parseStage() (+16 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.14
@@ -194,8 +191,8 @@ Cohesion: 0.22
 Nodes (8): accountSid, authToken, CORS, credentials, digits, form, fromNumber, sb
 
 ### Community 11 - "Community 11"
-Cohesion: 0.22
-Nodes (7): DEFAULT_AI, DEFAULT_CB_PRESETS, DEFAULT_FINANCIAL, DEFAULT_GMAIL, DEFAULT_SEQ, DEFAULT_TWILIO, useSettingsConfig()
+Cohesion: 0.14
+Nodes (8): GROUPS, VIEW_GROUP, DEFAULT_AI, DEFAULT_CB_PRESETS, DEFAULT_FINANCIAL, DEFAULT_GMAIL, DEFAULT_SEQ, DEFAULT_TWILIO
 
 ### Community 12 - "Community 12"
 Cohesion: 0.33
@@ -211,7 +208,11 @@ Nodes (20): 3.1 — phaseEngine: buildSpillover(leads, remainingCapacity, now), 
 
 ### Community 15 - "Community 15"
 Cohesion: 0.05
-Nodes (39): [2026-04-01] v1.0.0 — Initial Build, [2026-05-01] v2.0.0 — Ministry Lead Operating System, [2026-05-13] v3.6 — Modular Architecture Refactor, [2026-05-14] v3.6.1 — Power Dialer + Audit Fixes, [3.50] — 2026-06-13, Added, Added, Added (+31 more)
+Nodes (41): [2026-04-01] v1.0.0 — Initial Build, [2026-05-01] v2.0.0 — Ministry Lead Operating System, [2026-05-13] v3.6 — Modular Architecture Refactor, [2026-05-14] v3.6.1 — Power Dialer + Audit Fixes, [3.50] — 2026-06-13, Added, Added, Added (+33 more)
+
+### Community 16 - "Community 16"
+Cohesion: 0.12
+Nodes (16): a0(), fl(), gE, gk(), jE(), jk(), k0(), Lo() (+8 more)
 
 ### Community 17 - "Community 17"
 Cohesion: 0.40
@@ -230,8 +231,8 @@ Cohesion: 0.25
 Nodes (6): email, patch, rowEmail, sb, ts, url
 
 ### Community 29 - "Community 29"
-Cohesion: 0.38
-Nodes (5): DRAFT_OPTS, draftPrompt(), GEMINI_URL(), geminiCall(), leadCtx()
+Cohesion: 0.40
+Nodes (3): DRAFT_OPTS, draftPrompt(), leadCtx()
 
 ### Community 30 - "Community 30"
 Cohesion: 0.40
@@ -239,15 +240,15 @@ Nodes (4): 2026-06-11 — Heredoc escape corrupted an insert (caught same-minute
 
 ### Community 31 - "Community 31"
 Cohesion: 0.01
-Nodes (82): a, a2(), Aa(), am(), ar, B2(), bg, bl() (+74 more)
+Nodes (65): a, a2(), am(), ar, bg, bl(), bn, cancelRefEvent() (+57 more)
 
 ### Community 32 - "Community 32"
-Cohesion: 0.14
-Nodes (3): Gn(), Oa(), Yl()
+Cohesion: 0.13
+Nodes (4): Gn(), Oa(), oE, Yl()
 
 ### Community 33 - "Community 33"
-Cohesion: 0.24
-Nodes (8): fmt$(), LeadOrdersView(), r0(), assignLeadOrders(), leadMoneyIn(), medianDaysToBE(), money(), orderRollup()
+Cohesion: 0.22
+Nodes (9): fmt$(), LeadOrdersView(), r0(), assignLeadOrders(), leadMoneyIn(), medianDaysToBE(), money(), orderRollup() (+1 more)
 
 ### Community 35 - "Community 35"
 Cohesion: 0.15
@@ -257,181 +258,161 @@ Nodes (12): AUDIT v2 — 2026-06-12 — Delta since AUDIT-2026-06-10, RECOMMENDE
 Cohesion: 0.18
 Nodes (10): 1 — Literal code artifacts rendering on the dashboard (VERIFIED), 2 — The dashboard tells a false story every day, 3 — Lead cards show the STALE phase label, queues sort by the real one, 4 — Block header announces times that don't exist, 5 — Today's Block has no nav entry, 6 — alert()/confirm() blocks the dial flow, 7 — Speed-readability on the work screens, Runners-up (not in the 7): ORDERS row labels are machine-speak ("UNKNOWN DLHA 2026-W23" → "DLHA · week of May 25"); smsUnread only clears from MessagesView (not ContactDetail/DialView threads); CHARGEBACK ACTIVE banner is permanent → alarm fatigue (show until acknowledged weekly); empty SMS thread wastes 80% viewport. (+2 more)
 
-### Community 37 - "Community 37"
-Cohesion: 0.08
-Nodes (3): _handleTokenChanged(), jv(), jw
-
 ### Community 38 - "Community 38"
-Cohesion: 0.09
-Nodes (35): aC(), ai(), b1(), Ba(), dd(), df(), di(), du() (+27 more)
+Cohesion: 0.13
+Nodes (26): ai(), b1(), Ba(), dd(), df(), di(), If(), ja() (+18 more)
 
 ### Community 39 - "Community 39"
-Cohesion: 0.08
-Nodes (34): binaryEncode(), copy(), createBucket(), createIndex(), createSignedUploadUrl(), createSignedUrl(), createSignedUrls(), Db() (+26 more)
-
-### Community 40 - "Community 40"
 Cohesion: 0.10
-Nodes (4): e2, Np(), t2, X_()
+Nodes (27): copy(), createBucket(), createIndex(), createSignedUploadUrl(), createSignedUrl(), createSignedUrls(), Db(), deleteBucket() (+19 more)
 
 ### Community 41 - "Community 41"
-Cohesion: 0.09
-Nodes (19): cancelTimeout(), channel(), getChannels(), hasReceived(), inPendingSyncState(), joinRef(), leave(), onClose() (+11 more)
+Cohesion: 0.11
+Nodes (16): cancelTimeout(), channel(), getChannels(), hasReceived(), inPendingSyncState(), joinRef(), onClose(), onError() (+8 more)
+
+### Community 42 - "Community 42"
+Cohesion: 0.08
+Nodes (5): finally(), O_(), q2(), r(), uE
 
 ### Community 43 - "Community 43"
-Cohesion: 0.11
-Nodes (18): canPush(), clearHeartbeats(), flushSendBuffer(), hasLogger(), heartbeatTimeout(), isMember(), leaveOpenTopic(), onConnClose() (+10 more)
+Cohesion: 0.15
+Nodes (16): clearHeartbeats(), flushSendBuffer(), hasLogger(), heartbeatTimeout(), isMember(), leaveOpenTopic(), onConnClose(), onConnError() (+8 more)
 
 ### Community 44 - "Community 44"
-Cohesion: 0.20
-Nodes (5): fe(), Gd(), q(), Se(), wr()
+Cohesion: 0.19
+Nodes (5): fe(), gg(), q(), Se(), wr()
 
 ### Community 45 - "Community 45"
-Cohesion: 0.10
-Nodes (4): n2(), um, Xt(), z0()
+Cohesion: 0.08
+Nodes (9): et(), My(), n2(), nd(), nk(), t2, um, Xt() (+1 more)
 
 ### Community 46 - "Community 46"
-Cohesion: 0.10
-Nodes (26): Ab(), cd(), cr(), dp(), E(), Fc(), fv(), gu() (+18 more)
+Cohesion: 0.08
+Nodes (39): A1(), av(), c1(), Ca(), cd(), dv(), eg(), Ei() (+31 more)
 
 ### Community 47 - "Community 47"
 Cohesion: 0.12
-Nodes (26): Bt(), c1(), Ca(), cf(), Cy(), D1(), Ep(), ev() (+18 more)
+Nodes (20): Bt(), Cy(), $d(), D1(), E(), Ep(), Gp(), hh() (+12 more)
 
 ### Community 48 - "Community 48"
-Cohesion: 0.13
-Nodes (7): a0(), co(), L_(), md(), nE(), r0(), Xi
+Cohesion: 0.16
+Nodes (5): Gd(), H_(), is(), md(), Xi
 
 ### Community 50 - "Community 50"
-Cohesion: 0.11
-Nodes (23): ah(), Bi(), Cc(), fk(), fn(), Ga(), H2(), hC() (+15 more)
+Cohesion: 0.09
+Nodes (26): ah(), Bi(), bk(), _c(), Cc(), Do(), fk(), fn() (+18 more)
 
 ### Community 51 - "Community 51"
-Cohesion: 0.14
-Nodes (22): Bo(), Bp(), Ff(), fl(), fu(), gE, Hf(), hu() (+14 more)
+Cohesion: 0.18
+Nodes (18): Bo(), Bp(), by(), Ff(), fu(), Hf(), hu(), jl() (+10 more)
 
 ### Community 52 - "Community 52"
-Cohesion: 0.11
-Nodes (23): appendParams(), ck(), endpointURL(), f0(), fh(), Ft(), h0(), hw() (+15 more)
+Cohesion: 0.10
+Nodes (23): appendParams(), bE(), ck(), endpointURL(), f0(), fh(), Ft(), h0() (+15 more)
 
 ### Community 53 - "Community 53"
-Cohesion: 0.14
-Nodes (23): as(), cv(), Eu(), Fb(), hp(), hS(), Jd(), jf() (+15 more)
+Cohesion: 0.08
+Nodes (37): as(), b0(), bf(), ch(), cv(), Eu(), ev(), Fb() (+29 more)
 
 ### Community 54 - "Community 54"
-Cohesion: 0.10
-Nodes (21): by(), et(), fS(), Gy(), id(), Ki(), lC(), lS() (+13 more)
+Cohesion: 0.22
+Nodes (11): du(), fw(), gv(), gw(), hw(), mg(), mw(), na() (+3 more)
 
 ### Community 55 - "Community 55"
-Cohesion: 0.14
-Nodes (18): createNamespace(), createNamespaceIfNotExists(), createTable(), createTableIfNotExists(), dropNamespace(), dropTable(), listNamespaces(), listTables() (+10 more)
+Cohesion: 0.15
+Nodes (20): ajax(), batchSend(), createNamespace(), createNamespaceIfNotExists(), createTable(), createTableIfNotExists(), dropNamespace(), dropTable() (+12 more)
 
 ### Community 57 - "Community 57"
-Cohesion: 0.14
-Nodes (19): Af(), bv(), cT(), G0(), ip(), iT(), nm(), Oi() (+11 more)
+Cohesion: 0.15
+Nodes (18): Af(), bv(), cT(), G0(), ip(), iT(), nm(), Oi() (+10 more)
 
 ### Community 58 - "Community 58"
-Cohesion: 0.19
-Nodes (3): n0(), w_(), Wt()
+Cohesion: 0.16
+Nodes (4): L_(), n0(), w_(), Wt()
 
 ### Community 59 - "Community 59"
-Cohesion: 0.17
-Nodes (20): ay(), Bs(), contains(), Cp(), ef(), eS(), ey(), Fi() (+12 more)
+Cohesion: 0.12
+Nodes (26): ay(), Bs(), contains(), Cp(), ef(), eS(), ey(), Fi() (+18 more)
 
 ### Community 60 - "Community 60"
-Cohesion: 0.11
-Nodes (5): C2(), explain(), nk(), stripNulls(), x2
+Cohesion: 0.10
+Nodes (6): C2(), cf(), L1(), stripNulls(), x2, xg
 
 ### Community 61 - "Community 61"
-Cohesion: 0.22
-Nodes (18): _1(), ap(), Bu, Dl(), Fd(), Fo(), Ii(), jp() (+10 more)
+Cohesion: 0.12
+Nodes (28): _1(), ap(), Bu, Dl(), Fd(), Fo(), Gy(), Ii() (+20 more)
+
+### Community 63 - "Community 63"
+Cohesion: 0.09
+Nodes (7): disconnect(), leave(), os(), replaceTransport(), resend(), xdomainRequest(), xhrRequest()
+
+### Community 64 - "Community 64"
+Cohesion: 0.11
+Nodes (4): canPush(), Dw, rejoin(), Yb()
 
 ### Community 65 - "Community 65"
-Cohesion: 0.18
-Nodes (14): A1(), Au(), Cl(), Hl(), I1(), Kp(), Ps, Qr() (+6 more)
+Cohesion: 0.11
+Nodes (25): Ab(), Au(), Cl(), dp(), Fc(), fv(), gu(), Hl() (+17 more)
 
 ### Community 66 - "Community 66"
-Cohesion: 0.12
-Nodes (17): cg(), dc(), ea(), ew(), Fy(), gS(), JS(), KS() (+9 more)
+Cohesion: 0.25
+Nodes (9): cg(), ea(), ew(), nw(), of(), pc(), tw(), ua() (+1 more)
 
 ### Community 67 - "Community 67"
-Cohesion: 0.13
-Nodes (16): cloneRequestState(), containedBy(), delete(), ilikeAllOf(), ilikeAnyOf(), in(), insert(), join() (+8 more)
+Cohesion: 0.07
+Nodes (38): binaryEncode(), cloneRequestState(), containedBy(), delete(), ek(), encode(), eq(), explain() (+30 more)
 
 ### Community 68 - "Community 68"
-Cohesion: 0.16
-Nodes (15): __, cE(), constructor(), eE(), _initRealtimeClient(), _initSupabaseAuthClient(), lg, _listenForAuthEvents() (+7 more)
+Cohesion: 0.12
+Nodes (20): __, aE, cE(), constructor(), eE(), H2(), _initRealtimeClient(), _initSupabaseAuthClient() (+12 more)
 
 ### Community 69 - "Community 69"
 Cohesion: 0.23
-Nodes (9): catch(), execute(), fetchRequest(), getPromise(), hT(), j0(), pT(), then() (+1 more)
+Nodes (8): catch(), execute(), fetchRequest(), getPromise(), hT(), j0(), pT(), then()
 
 ### Community 70 - "Community 70"
-Cohesion: 0.18
-Nodes (13): applyTransformOptsToQuery(), bd(), download(), exists(), _getFinalPath(), getPublicUrl(), info(), listBucketOptionsToQueryString() (+5 more)
-
-### Community 71 - "Community 71"
 Cohesion: 0.19
-Nodes (7): At, eq(), j_(), neq(), single(), z_(), zE()
+Nodes (12): applyTransformOptsToQuery(), bd(), download(), _getFinalPath(), getPublicUrl(), info(), listBucketOptionsToQueryString(), makeRef() (+4 more)
 
 ### Community 72 - "Community 72"
-Cohesion: 0.21
-Nodes (10): I0(), ie(), kc(), M(), mE, n(), og, v() (+2 more)
+Cohesion: 0.18
+Nodes (12): exists(), I0(), ie(), kc(), M(), mE, n(), og (+4 more)
 
 ### Community 73 - "Community 73"
-Cohesion: 0.21
-Nodes (11): av(), b0(), bf(), ch(), lf(), mc(), nc(), py() (+3 more)
+Cohesion: 0.28
+Nodes (7): BUSINESS_HOURS, dayKey(), fmtHour(), HourlyStats(), RANKS, WeeklyCampaignView(), XP_PER
 
 ### Community 74 - "Community 74"
-Cohesion: 0.18
-Nodes (10): bk(), _c(), Do(), ig, k_(), Rg(), t0(), to() (+2 more)
-
-### Community 76 - "Community 76"
-Cohesion: 0.20
-Nodes (9): aE, bE(), ek(), limit(), order(), sa(), vk(), Vr() (+1 more)
+Cohesion: 0.25
+Nodes (8): B2(), I2(), ic(), j2(), O2(), q0, Sd(), x0
 
 ### Community 77 - "Community 77"
-Cohesion: 0.18
-Nodes (5): c0(), d0(), dE, lE(), oE
+Cohesion: 0.25
+Nodes (3): c0(), d0(), dE
 
 ### Community 78 - "Community 78"
-Cohesion: 0.20
-Nodes (10): cancelRefEvent(), connect(), connectWithFallback(), cS(), destroy(), dS(), remove(), reset() (+2 more)
+Cohesion: 0.12
+Nodes (7): connect(), connectWithFallback(), cS(), dS(), remove(), transportConnect(), transportName()
 
 ### Community 79 - "Community 79"
 Cohesion: 0.18
 Nodes (5): dg(), Ka, Pg(), toJSON(), vg
 
 ### Community 80 - "Community 80"
-Cohesion: 0.22
-Nodes (7): eg(), Ei(), _g(), ms(), qb(), qc(), Uo()
+Cohesion: 0.29
+Nodes (4): ms(), qb(), qc(), Uo()
 
 ### Community 81 - "Community 81"
-Cohesion: 0.27
-Nodes (10): from(), l0(), O0(), qu(), rE(), tc(), upsert(), Vu() (+2 more)
+Cohesion: 0.11
+Nodes (17): Aa(), aC(), dc(), fa(), Gb(), Gm(), jm(), JS() (+9 more)
 
 ### Community 82 - "Community 82"
 Cohesion: 0.24
 Nodes (6): SmsThread(), SMS_SEQUENCES, suggestSeqCat(), reconstructSeqSms(), SMS, TRACK_LABEL_TO_ID
 
-### Community 83 - "Community 83"
-Cohesion: 0.22
-Nodes (9): _f(), li(), Lp(), ny(), Op(), Qp(), QT(), Zb() (+1 more)
-
-### Community 85 - "Community 85"
-Cohesion: 0.25
-Nodes (3): ajax(), batchSend(), poll()
-
 ### Community 86 - "Community 86"
-Cohesion: 0.25
-Nodes (7): $d(), jy(), Ky(), ll(), mf(), Vb(), Xs()
-
-### Community 87 - "Community 87"
-Cohesion: 0.29
-Nodes (8): dv(), f1(), h1(), sl(), tg(), U2(), uv(), xp()
-
-### Community 88 - "Community 88"
-Cohesion: 0.25
-Nodes (4): finally(), O_(), q2(), r()
+Cohesion: 0.33
+Nodes (6): cr(), ll(), mf(), nf(), Xs(), YS()
 
 ### Community 89 - "Community 89"
 Cohesion: 0.29
@@ -441,9 +422,13 @@ Nodes (4): B(), i(), $S(), zo()
 Cohesion: 0.38
 Nodes (6): binaryDecode(), decode(), decodeBroadcast(), decodePush(), decodeReply(), onConnMessage()
 
+### Community 91 - "Community 91"
+Cohesion: 0.36
+Nodes (3): co(), zi(), zt()
+
 ### Community 92 - "Community 92"
-Cohesion: 0.29
-Nodes (6): a, assignDate, b, lead, result, yesterday
+Cohesion: 0.22
+Nodes (9): autoFollowUp(), openCalendlyPopup(), priority(), a, assignDate, b, lead, result (+1 more)
 
 ### Community 93 - "Community 93"
 Cohesion: 0.33
@@ -454,24 +439,24 @@ Cohesion: 1.00
 Nodes (3): clone(), syncDiff(), syncState()
 
 ## Knowledge Gaps
-- **295 isolated node(s):** `Added`, `Changed`, `Fixed`, `Dependencies`, `Notes` (+290 more)
+- **298 isolated node(s):** `Added`, `Changed`, `Fixed`, `Dependencies`, `Notes` (+293 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **31 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Fi()` connect `Community 59` to `Community 65`, `Community 37`, `Community 7`, `Community 54`, `Community 31`?**
-  _High betweenness centrality (0.246) - this node is a cross-community bridge._
-- **Why does `autoDetectMapping()` connect `Community 7` to `Community 0`, `Community 59`?**
-  _High betweenness centrality (0.245) - this node is a cross-community bridge._
-- **Why does `PE()` connect `Community 34` to `Community 67`, `Community 69`, `Community 70`, `Community 42`, `Community 45`, `Community 51`, `Community 56`, `Community 60`, `Community 62`, `Community 31`?**
-  _High betweenness centrality (0.034) - this node is a cross-community bridge._
+- **Why does `autoDetectMapping()` connect `Community 7` to `Community 59`?**
+  _High betweenness centrality (0.255) - this node is a cross-community bridge._
+- **Why does `Fi()` connect `Community 59` to `Community 65`, `Community 7`, `Community 46`, `Community 61`, `Community 31`?**
+  _High betweenness centrality (0.255) - this node is a cross-community bridge._
+- **Why does `jw` connect `Community 37` to `Community 67`, `Community 68`, `Community 41`, `Community 43`, `Community 46`, `Community 78`, `Community 49`, `Community 90`, `Community 31`, `Community 63`?**
+  _High betweenness centrality (0.041) - this node is a cross-community bridge._
 - **Are the 73 inferred relationships involving `Se()` (e.g. with `._authenticate()` and `._challenge()`) actually correct?**
   _`Se()` has 73 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 10 inferred relationships involving `w1()` (e.g. with `ap()` and `Bt()`) actually correct?**
   _`w1()` has 10 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Added`, `Changed`, `Fixed` to the rest of the system?**
-  _295 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _298 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.06377151799687011 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08585858585858586 - nodes in this community are weakly interconnected._
