@@ -712,7 +712,19 @@ const saveLeads = useCallback((next, opts = {}) => {
       upd(leadId, (fresh) => ({
         notes: [{ ts: new Date().toISOString(), type: 'note', text: '\ud83d\udcf1 SMS sent: ' + body.slice(0, 80) + (body.length > 80 ? '\u2026' : '') }, ...(fresh.notes || [])]
       }));
-    } catch (e) { toast('SMS failed: ' + e.message, 'err', 5000); }
+    } catch (e) {
+      const msg = e.message || '';
+      // Twilio 30006 = landline/unreachable carrier; 30003 = unreachable handset
+      if (msg.includes('30006') || msg.toLowerCase().includes('landline')) {
+        toast('📵 Landline detected — cannot text this number. Call only.', 'err', 7000);
+        upd(leadId, (f) => ({ notes: [{ ts: new Date().toISOString(), type: 'note', text: '⚠️ SMS failed: landline/unreachable carrier (Twilio 30006). Call only.' }, ...(f.notes||[])] }));
+      } else if (msg.includes('30003') || msg.toLowerCase().includes('could not deliver') || msg.toLowerCase().includes('unreachable')) {
+        toast('📵 Could not deliver — number may be inactive or unreachable.', 'err', 7000);
+        upd(leadId, (f) => ({ notes: [{ ts: new Date().toISOString(), type: 'note', text: '⚠️ SMS failed: could not deliver (Twilio 30003). Number may be inactive.' }, ...(f.notes||[])] }));
+      } else {
+        toast('SMS failed: ' + msg, 'err', 5000);
+      }
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [upd]);
 
@@ -864,7 +876,26 @@ const saveLeads = useCallback((next, opts = {}) => {
     // source of truth (stage map, phase transition, auto-callbacks, disposition
     // notes, direct-VM counter). Computed inside the functional updater from the
     // FRESHEST lead state — also fixes the stale `open` read on directVmCount.
-    upd(open.id, (freshestLead) => buildDispositionPatch(freshestLead, dispId));
+    upd(open.id, (freshestLead) => {
+      const patch = buildDispositionPatch(freshestLead, dispId);
+      // v3.83 — auto-enroll in email sequence if lead has email and is not yet enrolled
+      // Skip: opted-out, terminal dispositions, client/issued stage, already enrolled
+      const terminalDisp = ['dnc','not_interested','withdrawn','chargeback','submitted','appointment_booked'];
+      const hasEmail = !!(freshestLead.email || '').trim();
+      const emailOptOut = freshestLead.emailOptOut === true;
+      const alreadyEnrolled = !!(freshestLead.seqTrack || patch.seqTrack);
+      const isTerminal = terminalDisp.includes(dispId) || terminalDisp.includes(freshestLead.disposition);
+      const isClient = freshestLead.stage === 'issued' || freshestLead.stage === 'app_submitted' || freshestLead.disposition === 'submitted';
+      if (hasEmail && !emailOptOut && !alreadyEnrolled && !isTerminal && !isClient) {
+        patch.seqTrack     = 'new';
+        patch.seqStep      = 0;
+        patch.seqPaused    = false;
+        patch.seqExitReason = null;
+        patch.seqStartDate = new Date().toISOString();
+        patch.notes = [{ ts: new Date().toISOString(), type: 'note', text: '[SEQ] Auto-enrolled in New Lead email track on first dial.' }, ...(freshestLead.notes || [])];
+      }
+      return patch;
+    });
 
     // v3.4 — advance to next lead (nextId captured pre-upd, no index-jump risk)
     if (inDialer) {
@@ -1314,7 +1345,7 @@ const queue = useMemo(() => {
           templates, calendlyUrl, setCalendlyTargetId,
           refreshQueueOrder, openCalendlyPopup, logActivity,
           sendSms: sendSmsGuarded,
-          todayCount:
+          todayCount,
           setView, setPrevView,
           callbackPresets, setCallbackPresets,
           pendingDialSlot, clearPendingDialSlot: () => setPendingDialSlot(null),

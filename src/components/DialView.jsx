@@ -61,6 +61,7 @@ export default function DialView({
   const [callPanelExpanded, setCallPanelExpanded] = useState(true);
   const [onHold,            setOnHold]            = useState(false);
   const [dialQueueFilter,   setDialQueueFilter]   = useState('today');
+  const [dialMonthFilter,   setDialMonthFilter]   = useState(''); // v3.81 — month queue filter
   // v3.23 — manual slot selection: null = follow time-based active session
   const [selectedSlot,      setSelectedSlot]      = useState(null);
   // v3.38 — expandable right panel: collapses queue to give scripts/lead card full width
@@ -119,6 +120,7 @@ export default function DialView({
       currentPdLead, pdBg, pdAccent,
       // queue filter
       dialQueueFilter, setDialQueueFilter,
+      dialMonthFilter, setDialMonthFilter,
       // slot selection
       selectedSlot, setSelectedSlot,
       // call props

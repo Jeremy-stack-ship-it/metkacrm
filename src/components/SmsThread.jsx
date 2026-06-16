@@ -21,7 +21,7 @@ const NUM_CHANGE_TEMPLATE =
 
 // v3.78 — TCPA-compliant initial contact template (must be first text from this number)
 const INITIAL_CONTACT_TEMPLATE =
-  "Hey {firstName}, this is Jeremy Metka — I'm a licensed life insurance advisor following up on your recent request for coverage. I have some options I'd love to walk you through. When's a good time for a quick call? Reply STOP to opt out.";
+  "Hey {firstName}, this is Jeremy Metka. Most agents that reach out just sell death benefits. I specialize in Living Benefits — coverage that pays YOU while you're still alive. Big difference. When's a good time to connect? Reply STOP to opt out.";
 
 // ── SMS THREAD ────────────────────────────────────────────────────────────────
 // Shared two-way SMS thread component.
@@ -40,7 +40,7 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
   // v3.58 — 7b: ladder position memory. When a drawer step fills the composer,
   // a successful SEND auto-advances smsSeq/smsStep — no manual mark needed.
   const [filledStep, setFilledStep] = React.useState(null);
-  const [naIdx,      setNaIdx]      = React.useState(0); // v3.77 — no-answer template cycle
+  const [naOpen,     setNaOpen]     = React.useState(false); // v3.80 — no-answer dropdown
   const bottomRef = React.useRef(null);
 
   const MAX = 160;
@@ -257,40 +257,60 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
             style:{ fontSize:'11px', fontWeight:'800', padding:'3px 9px', borderRadius:'6px', border:'1px solid rgba(239,68,68,0.5)', background:'rgba(239,68,68,0.10)', color:'#EF4444', cursor:'pointer' }
           }, '\ud83d\udd25 Card');
         })(),
-        // v3.78 — No Answer button: TCPA intro first, then rotating templates
-        !optedOut && React.createElement('button', {
+        // v3.80 — INTRO button (TCPA gate — always visible when not opted out)
+        !optedOut && !hasBeenTexted && React.createElement('button', {
           onClick: () => {
             const first = open.firstName || (open.name||'').split(' ')[0] || 'there';
-            if (!hasBeenTexted && naIdx === 0) {
-              // First ever text — must be TCPA-compliant intro
-              fill(INITIAL_CONTACT_TEMPLATE.replace(/\{firstName\}/gi, first));
-              setNaIdx(1); // next tap starts cycle at template 1
-            } else {
-              const tpl = NO_ANSWER_TEMPLATES[(naIdx - 1) % NO_ANSWER_TEMPLATES.length];
-              fill(tpl.replace(/\{firstName\}/gi, first));
-              setNaIdx(i => i + 1);
-            }
+            fill(INITIAL_CONTACT_TEMPLATE.replace(/\{firstName\}/gi, first));
           },
-          title: !hasBeenTexted && naIdx === 0
-            ? 'TCPA intro — first text must include opt-out'
-            : 'No answer template ' + ((naIdx-1) % NO_ANSWER_TEMPLATES.length + 1) + ' of ' + NO_ANSWER_TEMPLATES.length,
-          style:{ fontSize:'11px', fontWeight:'900', padding:'3px 9px', borderRadius:'6px',
-            border: !hasBeenTexted && naIdx === 0 ? '1px solid rgba(234,179,8,0.6)' : '1px solid rgba(239,68,68,0.4)',
-            background: !hasBeenTexted && naIdx === 0 ? 'rgba(234,179,8,0.10)' : 'rgba(239,68,68,0.08)',
-            color: !hasBeenTexted && naIdx === 0 ? '#A16207' : '#DC2626',
-            cursor:'pointer', whiteSpace:'nowrap' }
-        }, !hasBeenTexted && naIdx === 0
-          ? '⚠️ INTRO'
-          : '📵 ' + ((naIdx-1) % NO_ANSWER_TEMPLATES.length + 1) + '/' + NO_ANSWER_TEMPLATES.length),
-        // v3.79 — Number change button
-        !optedOut && React.createElement('button', {
-          onClick: () => {
-            const first = open.firstName || (open.name||'').split(' ')[0] || 'there';
-            fill(NUM_CHANGE_TEMPLATE.replace(/\{firstName\}/gi, first));
+          title: 'First text — includes STOP opt-out (TCPA required)',
+          style:{ fontSize:'11px', fontWeight:'900', padding:'3px 9px', borderRadius:'6px', border:'1px solid rgba(234,179,8,0.6)', background:'rgba(234,179,8,0.10)', color:'#A16207', cursor:'pointer', whiteSpace:'nowrap' }
+        }, '⚠️ INTRO'),
+        // v3.80 — No Answer dropdown
+        !optedOut && React.createElement('div', { style:{ position:'relative' } },
+          React.createElement('button', {
+            onClick: () => setNaOpen(v => !v),
+            style:{ fontSize:'11px', fontWeight:'900', padding:'3px 9px', borderRadius:'6px', border:'1px solid rgba(239,68,68,0.4)', background: naOpen ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.08)', color:'#DC2626', cursor:'pointer', whiteSpace:'nowrap' }
+          }, '📵 No Answer ' + (naOpen ? '▲' : '▾')),
+          naOpen && React.createElement('div', {
+            style:{ position:'absolute', bottom:'100%', right:0, zIndex:200, background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'8px 8px 0 8px', boxShadow:'0 -6px 20px rgba(0,0,0,0.22)', minWidth:'300px', maxWidth:'320px', padding:'6px', marginBottom:'0' }
           },
-          title: 'Number change broadcast',
-          style:{ fontSize:'11px', fontWeight:'900', padding:'3px 9px', borderRadius:'6px', border:'1px solid rgba(99,102,241,0.4)', background:'rgba(99,102,241,0.08)', color:'#4338CA', cursor:'pointer', whiteSpace:'nowrap' }
-        }, '📲 # Change'),
+            // Template items
+            [...NO_ANSWER_TEMPLATES.map((tpl, i) =>
+              React.createElement('button', {
+                key: 'na'+i,
+                onClick: () => {
+                  const first = open.firstName || (open.name||'').split(' ')[0] || 'there';
+                  fill(tpl.replace(/\{firstName\}/gi, first));
+                  setNaOpen(false);
+                },
+                style:{ display:'block', width:'100%', textAlign:'left', padding:'7px 10px', borderRadius:'6px', border:'none', background:'transparent', color:'var(--t1)', fontSize:'11px', cursor:'pointer', lineHeight:'1.4', marginBottom:'2px' },
+                onMouseEnter: e => e.currentTarget.style.background='var(--surface-2)',
+                onMouseLeave: e => e.currentTarget.style.background='transparent',
+              },
+                React.createElement('span', { style:{ fontWeight:'900', color:'#DC2626', marginRight:'6px', fontSize:'10px' } }, 'T'+(i+1)),
+                tpl.replace(/\{firstName\}/g, open.firstName || (open.name||'').split(' ')[0] || 'there').slice(0, 80) + '…'
+              )
+            ),
+            // Divider
+            React.createElement('div', { style:{ borderTop:'1px solid var(--border)', margin:'4px 0' } }),
+            // # Change
+            React.createElement('button', {
+              key: 'numchange',
+              onClick: () => {
+                const first = open.firstName || (open.name||'').split(' ')[0] || 'there';
+                fill(NUM_CHANGE_TEMPLATE.replace(/\{firstName\}/gi, first));
+                setNaOpen(false);
+              },
+              style:{ display:'block', width:'100%', textAlign:'left', padding:'7px 10px', borderRadius:'6px', border:'none', background:'transparent', color:'var(--t1)', fontSize:'11px', cursor:'pointer', lineHeight:'1.4' },
+              onMouseEnter: e => e.currentTarget.style.background='var(--surface-2)',
+              onMouseLeave: e => e.currentTarget.style.background='transparent',
+            },
+              React.createElement('span', { style:{ fontWeight:'900', color:'#4338CA', marginRight:'6px', fontSize:'10px' } }, '📲'),
+              '# Change — ' + NUM_CHANGE_TEMPLATE.replace(/\{firstName\}/g, open.firstName || (open.name||'').split(' ')[0] || 'there').slice(0, 70) + '…'
+            )]
+          )
+        ),
         [['Name', open.firstName||(open.name||'').split(' ')[0]||'there'], ['Cal', CALENDLY], ['Apply', SELF_APPLY]].map(([lbl, val]) =>
           React.createElement('button', { key:lbl, onClick:()=>insertVar(val), style:{ fontSize:'11pxpx', fontWeight:'700', padding:'3px 7px', borderRadius:'6px', border:'1px solid var(--border)', background:'var(--surface-2)', color:'var(--t3)', cursor:'pointer' } }, '{'+lbl+'}')
         ),

@@ -1,6 +1,6 @@
 import React from 'react';
 import { BC, isUWStuck } from '../constants.js';
-import { getPhasePriority, isDueToday, getActiveSession, getNextSession, SESSIONS, masterQueueSort, effectivePhase, PHASE_DEFS, buildHotQueue, hoursSinceOpen, inPromiseWindow } from '../lib/phaseEngine'; // v3.58-59 chips + hot queue + promises
+import { getPhasePriority, isDueToday, getActiveSession, getNextSession, SESSIONS, masterQueueSort, effectivePhase, PHASE_DEFS, buildHotQueue, hoursSinceOpen, inPromiseWindow, isClientLead } from '../lib/phaseEngine'; // v3.58-59 chips + hot queue + promises
 
 const LS_SESSION = 'metka-session-v1';
 
@@ -50,12 +50,38 @@ export default function DialQueuePanel({
   queue,
   refreshQueueOrder, setView,
   dialSortMode, setDialSortMode,
+  dialMonthFilter, setDialMonthFilter, // v3.81 — month queue filter
   openId, setOpenId, setNoteText, setDialRightTab,
 }) {
   // ── SMART BLOCK REBALANCE (v3.14) ────────────────────────────────────────
   // Mid-session gap detection: injects fresh high-priority leads not yet dialed
   // into the active session's remaining slots. Uses existing composite sort —
   // phase priority first, then most-recently-due within phase. No AI needed.
+  // v3.82 — hide-dialed-today toggle (persisted)
+  const [hideDialedToday, setHideDialedToday] = React.useState(() => {
+    try { return localStorage.getItem('metka-hide-dialed') !== 'false'; } catch { return true; }
+  });
+  const toggleHideDialed = () => setHideDialedToday(v => {
+    const next = !v;
+    try { localStorage.setItem('metka-hide-dialed', String(next)); } catch {}
+    return next;
+  });
+  const todayStr = new Date().toLocaleDateString('en-CA');
+  // v3.83 — shared dialable guard used by month filter + dropdown counts
+  const isDialable = l => l && !isClientLead(l) && l.phase !== 'EXIT' && l.stage !== 'removed'
+    && !['dnc','not_interested','withdrawn','chargeback','appointment_booked'].includes(l.disposition);
+
+  // v3.83 — effective queue: month-filtered from full DB, or phase engine queue
+  const displayQueue = React.useMemo(() => {
+    let list = dialMonthFilter
+      ? (leads || []).filter(l => isDialable(l) && l.assignDate && l.assignDate.slice(0,7) === dialMonthFilter)
+      : dialQueueFilter === 'hot' ? buildHotQueue(leads)
+        : dialQueueFilter === 'today' ? queue.filter(isDueToday) : queue;
+    if (hideDialedToday) list = list.filter(l => l.lastContact !== todayStr);
+    return list;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dialMonthFilter, dialQueueFilter, hideDialedToday, leads, queue, todayStr]);
+
   const rebalanceSession = () => {
     if (!session) return;
     const sessionIdSet = new Set(session.ids);
@@ -301,13 +327,13 @@ export default function DialQueuePanel({
               }, 'SKIP \u2192')
             )
           : React.createElement('button', {
-              onClick: pdStart,
+              onClick: () => pdStart(displayQueue),
               title: 'Auto-dial: 18s attempt 1, 30s attempt 2, then advance to next lead',
-              style: { width: '100%', minHeight: '34px', padding: '0 8px', fontSize: '11px', fontWeight: '800', letterSpacing: '0.8px', background: pdQueue.length > 0 ? 'rgba(16,185,129,0.22)' : 'rgba(255,255,255,0.06)', color: pdQueue.length > 0 ? '#3B82F6' : 'rgba(255,255,255,0.55)', border: '1px solid ' + (pdQueue.length > 0 ? 'rgba(16,185,129,0.45)' : 'rgba(255,255,255,0.12)'), borderRadius: '4px', cursor: pdQueue.length > 0 ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }
+              style: { width: '100%', minHeight: '34px', padding: '0 8px', fontSize: '11px', fontWeight: '800', letterSpacing: '0.8px', background: displayQueue.length > 0 ? 'rgba(16,185,129,0.22)' : 'rgba(255,255,255,0.06)', color: displayQueue.length > 0 ? '#3B82F6' : 'rgba(255,255,255,0.55)', border: '1px solid ' + (displayQueue.length > 0 ? 'rgba(16,185,129,0.45)' : 'rgba(255,255,255,0.12)'), borderRadius: '4px', cursor: displayQueue.length > 0 ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }
             },
               React.createElement('span', null, '⚡'),
               React.createElement('span', null, 'POWER DIAL'),
-              React.createElement('span', { style: { fontSize: '11px', fontWeight: '800', background: pdQueue.length > 0 ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.1)', color: pdQueue.length > 0 ? '#3B82F6' : 'rgba(255,255,255,0.5)', borderRadius: '8px', padding: '1px 7px' } }, pdQueue.length)
+              React.createElement('span', { style: { fontSize: '11px', fontWeight: '800', background: (dialMonthFilter ? displayQueue.length : pdQueue.length) > 0 ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.1)', color: (dialMonthFilter ? displayQueue.length : pdQueue.length) > 0 ? '#3B82F6' : 'rgba(255,255,255,0.5)', borderRadius: '8px', padding: '1px 7px' } }, displayQueue.length)
             ),
 
         // 📅 Log session to Google Calendar
@@ -331,9 +357,9 @@ export default function DialQueuePanel({
         })(),
 
         // ▶ Manual Dial
-        queue.length > 0 && React.createElement('button', {
+        displayQueue.length > 0 && React.createElement('button', {
           onClick: () => {
-            const ids = queue.map(l => l.id);
+            const ids = displayQueue.map(l => l.id);
             const s = { ids, idx: 0, total: ids.length, startedAt: new Date().toISOString() };
             setSession(s); setSessionPaused(false);
             try { localStorage.setItem(LS_SESSION, JSON.stringify(s)); } catch {}
@@ -344,7 +370,7 @@ export default function DialQueuePanel({
         },
           React.createElement('span', null, '▶'),
           React.createElement('span', null, 'MANUAL DIAL'),
-          React.createElement('span', { style: { fontSize: '11px', fontWeight: '700', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', borderRadius: '8px', padding: '1px 6px' } }, queue.length)
+          React.createElement('span', { style: { fontSize: '11px', fontWeight: '700', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', borderRadius: '8px', padding: '1px 6px' } }, displayQueue.length)
         )
       ),
 
@@ -354,11 +380,13 @@ export default function DialQueuePanel({
         style: { fontSize: '12px', fontWeight: '700', color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }
       }, session
         ? (session.idx + 1) + ' / ' + session.total + ' leads'
-        : dialQueueFilter === 'hot'
-          ? buildHotQueue(leads).length + ' \ud83d\udd25 openers (48h)'
-          : dialQueueFilter === 'today'
-            ? queue.filter(isDueToday).length + ' due today'
-            : queue.length + ' in queue'
+        : dialMonthFilter
+          ? (leads||[]).filter(l => isDialable(l) && l.assignDate && l.assignDate.slice(0,7) === dialMonthFilter).length + ' leads in queue · ' + new Date(dialMonthFilter+'-01').toLocaleString('default',{month:'short',year:'numeric',timeZone:'UTC'})
+          : dialQueueFilter === 'hot'
+            ? buildHotQueue(leads).length + ' \ud83d\udd25 openers (48h)'
+            : dialQueueFilter === 'today'
+              ? queue.filter(isDueToday).length + ' due today'
+              : queue.length + ' in queue'
       ),
 
       session && React.createElement('div', {
@@ -444,15 +472,42 @@ export default function DialQueuePanel({
           ];
         })()
       ),
-      React.createElement('label', { htmlFor: 'dial-sort-mode', style: { fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', letterSpacing: '1.2px', display: 'block', marginBottom: '4px' } }, 'SORT'),
-      React.createElement('select', {
-        id: 'dial-sort-mode', value: dialSortMode, onChange: e => setDialSortMode(e.target.value),
-        style: { width: '100%', background: 'var(--navy-2)', border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.85)', borderRadius: '4px', padding: '5px 7px', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }
-      },
-        React.createElement('option', { value: 'priority', style: { background: 'var(--navy-2)', color: '#f1f5f9' } }, 'Priority Score'),
-        React.createElement('option', { value: 'phase',    style: { background: 'var(--navy-2)', color: '#f1f5f9' } }, 'Phase Engine'),
-        React.createElement('option', { value: 'overdue',  style: { background: 'var(--navy-2)', color: '#f1f5f9' } }, 'Overdue First')
-      )
+      // v3.82 — hide dialed today toggle
+      React.createElement('button', {
+        onClick: toggleHideDialed,
+        title: hideDialedToday ? 'Currently hiding leads already dialed today — click to show them' : 'Currently showing all leads — click to hide already-dialed',
+        style: { width: '100%', minHeight: '24px', marginBottom: '8px', fontSize: '10px', fontWeight: '800', letterSpacing: '0.8px', borderRadius: '4px', border: '1px solid ' + (hideDialedToday ? 'rgba(16,185,129,0.45)' : 'rgba(255,255,255,0.12)'), background: hideDialedToday ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.04)', color: hideDialedToday ? '#10B981' : 'rgba(255,255,255,0.35)', cursor: 'pointer' }
+      }, hideDialedToday ? '✓ HIDING DIALED TODAY' : '○ SHOW ALL (INCL. DIALED)'),
+      // v3.81 — MONTH QUEUE FILTER
+      (() => {
+        // Build sorted unique months from all leads
+        const monthSet = new Set();
+        (leads||[]).forEach(l => { if (isDialable(l) && l.assignDate) monthSet.add(l.assignDate.slice(0,7)); });
+        const months = [...monthSet].sort().reverse(); // newest first
+        if (months.length === 0) return null;
+        const fmtMonth = ym => {
+          const [y, m] = ym.split('-');
+          const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          return names[parseInt(m,10)-1] + ' ' + y;
+        };
+        // Count leads in each month within the full queue (not filtered)
+        const monthCounts = {};
+        (leads||[]).forEach(l => { if (isDialable(l) && l.assignDate) { const k = l.assignDate.slice(0,7); monthCounts[k] = (monthCounts[k]||0)+1; }});
+        return React.createElement(React.Fragment, null,
+          React.createElement('label', { htmlFor: 'dial-month-filter', style: { fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', letterSpacing: '1.2px', display: 'block', marginTop: '8px', marginBottom: '4px' } }, 'MONTH'),
+          React.createElement('select', {
+            id: 'dial-month-filter',
+            value: dialMonthFilter,
+            onChange: e => setDialMonthFilter(e.target.value),
+            style: { width: '100%', background: dialMonthFilter ? 'rgba(139,92,246,0.18)' : 'var(--navy-2)', border: '1px solid ' + (dialMonthFilter ? 'rgba(139,92,246,0.5)' : 'rgba(255,255,255,0.14)'), color: dialMonthFilter ? '#C4B5FD' : 'rgba(255,255,255,0.85)', borderRadius: '4px', padding: '5px 7px', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }
+          },
+            React.createElement('option', { value: '', style: { background: 'var(--navy-2)', color: '#f1f5f9' } }, 'All months'),
+            months.map(ym => React.createElement('option', { key: ym, value: ym, style: { background: 'var(--navy-2)', color: '#f1f5f9' } },
+              fmtMonth(ym) + (monthCounts[ym] ? '  (' + monthCounts[ym] + ')' : '')
+            ))
+          )
+        );
+      })()
     ),
 
     // ── QUEUE LIST ────────────────────────────────────────────────────────
@@ -462,18 +517,11 @@ export default function DialQueuePanel({
     },
       (() => {
         const now3       = new Date();
-        const activeList = dialQueueFilter === 'hot' ? buildHotQueue(leads)
-          : dialQueueFilter === 'today' ? queue.filter(isDueToday) : queue;
+        // v3.83 — use pre-computed displayQueue (month filter + hide-dialed already applied)
+        let activeList = [...displayQueue];
         let sorted = [...activeList];
 
-        if (dialSortMode === 'priority') sorted.sort(masterQueueSort); // v3.26 — composite: phase + next_dial tiebreaker; overdue sort mode handles callback urgency
-        else if (dialSortMode === 'phase') sorted.sort((a, b) => getPhasePriority(b) - getPhasePriority(a));
-        else if (dialSortMode === 'overdue') sorted.sort((a, b) => {
-          const aOD = (a.nextCallback && new Date(a.nextCallback) < now3) ? 1 : 0;
-          const bOD = (b.nextCallback && new Date(b.nextCallback) < now3) ? 1 : 0;
-          if (bOD !== aOD) return bOD - aOD;
-          return ((bOD ? now3 - new Date(b.nextCallback) : 0) - (aOD ? now3 - new Date(a.nextCallback) : 0));
-        });
+        sorted.sort(masterQueueSort); // v3.83 — locked to Phase Engine priority; SORT dropdown removed
 
         const DISP_ICON = {
           no_answer: '📵', vm_left: '📬', callback: '📅', follow_up: '🔄',

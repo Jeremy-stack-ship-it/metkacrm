@@ -2,6 +2,45 @@
 
 All notable changes to this project are documented here. Format: [Date] v[Version] — [Theme]
 
+[2026-06-16] v3.83 — ANC (Active Noise Cancellation) — corrected wiring
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHANGE: Make microphone noise suppression / echo cancellation actually engage
+FILE: src/lib/useTwilioDevice.js
+WHAT:
+  - audioConstraints was being passed to the new Device(token, {...}) constructor.
+    In @twilio/voice-sdk v2.18.2 audioConstraints is NOT a Device.Options key
+    (verified against device.d.ts) — the constructor silently dropped it, so
+    noise suppression never turned on. No error was thrown.
+  - FIX: apply via the AudioHelper after the device is built:
+    device.audio?.setAudioConstraints({ noiseSuppression, echoCancellation,
+    autoGainControl }).catch(() => {}).
+  - codecPreferences ['opus','pcmu'] kept on the constructor (valid, working) —
+    opus gives higher-quality call audio.
+NOTE: setAudioConstraints applies to the NEXT mic stream acquired, i.e. the next
+  dial after device registration — not retroactively on a call already ringing.
+TEST: Code/build verified (vite build clean, 169 modules). Audio quality itself
+  must be confirmed by Jeremy on one live outbound call — cannot be tested in-sandbox.
+REVERT: restore the single new Device(...) block with audioConstraints inline.
+(Part of the uncommitted v3.83 batch alongside landline/unreachable SMS error
+ handling and first-dial email auto-enroll in App.jsx.)
+
+
+[2026-06-15] v3.81 — Month Queue Filter
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHANGE: Month queue filter — dial leads from a specific assign month
+FILES: src/components/DialView.jsx, src/components/DialQueuePanel.jsx
+WHAT:
+  - New dialMonthFilter state (default '' = all months) in DialView.jsx
+  - Passed to DialQueuePanel as dialMonthFilter / setDialMonthFilter
+  - MONTH select dropdown added below SORT in the queue sidebar
+  - Dropdown auto-populates from leads.assignDate — unique YYYY-MM values, newest first
+  - Each option shows "Jan 2026 (142)" — month label + queue count
+  - Purple highlight when a month is active (distinct from TODAY/ALL/🔥)
+  - Month filter STACKS on top of today/all/hot — phase priority preserved within month
+  - Progress counter text appended with selected month when filter active
+  - Build clean: 169 modules, 1,034 kB
+
+
 v3.21 — Sequence Engine Reporting: sequence_runs Supabase table, process-sequence edge function writes cron run summary on each execution, sbLoadSeqStats added to supabaseSync.js, seqStats state wired through App.jsx.
 v3.22 — Nav cleanup + SEQ consolidation: TODAY removed from nav, ACT→ACC, DATA→LEADS, RUNS removed from nav. SequenceRunsTab embedded as 🤖 Engine sub-tab inside SequenceTab. 📞 Due Today default sub-tab. TODAY'S SEQUENCE DIALS panel removed from Dashboard.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -646,3 +685,11 @@ Files: src/components/* (22 files font pass), NavSidebar.jsx, ContactDetail.jsx,
 - SMS panel: 📲 # Change button fills composer with number-change broadcast template
 - Message: "Hey {firstName}, Jeremy Metka here — I changed my number. Please save (580) 263-5409 as my new contact. I'll be in touch soon. Reply STOP to opt out."
 - 151 chars / 1 segment. Per-lead manual send via existing SMS panel.
+
+## v3.80 — 2026-06-15
+### Redesigned
+- SMS toolbar: INTRO + No Answer dropdown replace the cycling buttons
+- ⚠️ INTRO button: only shows when lead has no prior SMS history (TCPA gate)
+- 📵 No Answer ▾: dropdown with T1–T5 templates + # Change below a divider
+- Each dropdown item shows template label + first 80 chars of personalized preview
+- Dropdown closes on selection

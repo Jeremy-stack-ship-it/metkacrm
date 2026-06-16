@@ -15,8 +15,8 @@
     "semantic_hash": "cf2c74ef32bde44e46ec9f929f2ca283"
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\App.jsx": {
-    "mtime": 1781326459.3186522,
-    "ast_hash": "b42c7d55dd426132708ba4ae74565990",
+    "mtime": 1781531218.1109104,
+    "ast_hash": "0459def329f616eafc71980fede66e3b",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\constants.js": {
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\DialView.jsx": {
-    "mtime": 1781323535.8298755,
-    "ast_hash": "4cfc9711cf5a9b1a20d544b42f9cc240",
+    "mtime": 1781531451.1662447,
+    "ast_hash": "87449a9ec98ba377e8405d6f3ec9fc7c",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\FieldMapModal.jsx": {
@@ -120,8 +120,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\NavSidebar.jsx": {
-    "mtime": 1781327240.3951118,
-    "ast_hash": "9f1eb598ae6c533555eafdf0fb966a77",
+    "mtime": 1781355939.80127,
+    "ast_hash": "5b5b78f7be46ec6e838bc448655620a3",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\PipelineView.jsx": {
@@ -170,8 +170,8 @@
     "semantic_hash": "7700334b2c8ad2d95c1c1237077e93f4"
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\lib\\csvParser.js": {
-    "mtime": 1781323089.9495015,
-    "ast_hash": "029156d8360b4d1a8b7c29657fa8c7b1",
+    "mtime": 1781531229.7666316,
+    "ast_hash": "4bcd798e6f3d8cdf1f20b83833f22447",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\lib\\defaultScripts.js": {
@@ -280,8 +280,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\CHANGELOG.md": {
-    "mtime": 1781327349.6399891,
-    "ast_hash": "c08d7d6e54cfcccf51d398b8613b49a5",
+    "mtime": 1781532415.1700976,
+    "ast_hash": "b675d378ad750b725f196a65cf348065",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\CRM-MAP.md": {
@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\SmsThread.jsx": {
-    "mtime": 1781327230.7251399,
-    "ast_hash": "02d406dcfd0b64571de1f4faa4835756",
+    "mtime": 1781532408.6028762,
+    "ast_hash": "d603c235d8ecbd02c47fcb6a85346b22",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\AIPanel.jsx": {

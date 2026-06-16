@@ -33,7 +33,20 @@ export function useTwilioDevice({ upd, logDial }) {
       .then(data => {
         const token = data.token || data.accessToken || data.access_token;
         if (!token) throw new Error('No token in response');
-        const device = new Device(token, { logLevel: 1 });
+        const device = new Device(token, {
+          logLevel: 1,
+          // v3.83 — opus first for higher-quality call audio
+          codecPreferences: ['opus', 'pcmu'],
+        });
+        // v3.83 — ANC: noise suppression / echo cancellation must be applied via
+        // the AudioHelper in @twilio/voice-sdk v2.x. audioConstraints is NOT a
+        // Device constructor option (it was being silently dropped). This applies
+        // to the next mic stream acquired, i.e. your next dial after registration.
+        device.audio?.setAudioConstraints({
+          noiseSuppression: true,
+          echoCancellation: true,
+          autoGainControl: true,
+        }).catch(() => {});
         device.on('ready',           () => setVoiceDeviceStatus('ready'));
         device.on('registered',      () => setVoiceDeviceStatus('ready'));
         device.on('error',           () => setVoiceDeviceStatus('error'));
