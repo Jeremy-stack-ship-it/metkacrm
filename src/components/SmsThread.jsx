@@ -6,13 +6,14 @@ const CALENDLY = 'https://calendly.com/metkasolutions/20min';
 const HIHELLO  = 'https://hihello.me/p/6cc69b25-86ec-4c39-a45b-fd48bee85403'; // digital business card
 const SELF_APPLY = 'https://apply.quility.com/#/symmetry/raq/SFG0092434?redirect_url=https%3A%2F%2Fyourlivingbenefit.com%2F&leadtype=Life%20Insurance&producttype=Life%20Insurance';
 
-// v3.77 — No Answer rotating templates (5-shot cycle)
-const NO_ANSWER_TEMPLATES = [
-  "Hey {firstName}, this is Jeremy Metka. I just tried reaching you about your life insurance request. When is a good time for a quick call?",
-  "Hey {firstName}, Jeremy Metka here — tried you again. Quick heads up: most of the coverage I help families with pays out while you're still alive, not just at death. Worth 10 minutes. When works for you?",
-  "Hey {firstName}, Jeremy Metka following up on your life insurance request. Are you looking for coverage for yourself only, or would your spouse need to be included as well? Just want to pull the right options.",
-  "Hey {firstName}, this is Jeremy Metka. I'm wrapping up my regional files — do I need to close out your household file, or would you still like to go over your life insurance options?",
-  "Hey {firstName}, last reach out from Jeremy Metka. I've tried several times to connect about your request. If timing isn't right, no worries — just reply STOP and I'll close your file. Otherwise I'm here when you're ready.",
+// v3.86 — No Answer rotating templates (per-person 5-shot cycle), casual rewrite.
+// Exported so DialView's No Answer confirm-to-send uses the same single source.
+export const NO_ANSWER_TEMPLATES = [
+  "Hey {firstName}, it's Jeremy Metka — tried giving you a call about the life insurance info you requested. Send me a time that works and I'll catch you then.",
+  "Hey {firstName}, Jeremy again. Missed you just now. Still want to get you squared away on the coverage you reached out about — when's good for you?",
+  "Hi {firstName}, Jeremy Metka here. Tried your line about your life insurance request. No rush on my end — just let me know when you've got a few minutes.",
+  "Hey {firstName}, it's Jeremy. Been trying to reach you about the coverage you asked about. Happy to keep it short — what's a good time to connect?",
+  "Hey {firstName}, Jeremy Metka here — circling back on your life insurance request. I know things get busy. What day this week is easiest for a quick call?",
 ];
 
 // v3.79 — Number change broadcast template

@@ -89,11 +89,23 @@ export const advanceSequence = (lead) => {
   if (!sched) return {};
   const nextStep = (lead.seqStep ?? 0) + 1;
   const nextEntry = sched.find(s => s.step === nextStep);
-  if (!nextEntry) {
-    // Past end of track — auto-archive
-    return { seqStep: nextStep, seqPaused: true, seqExitReason: 'exhausted' };
-  }
-  if (nextEntry.channels.includes('archive')) {
+  // v3.84 — end of a non-nurture track (past last step OR an archive step) hands
+  // off to the email-only nurture drip instead of going dark. Mirrors the
+  // process-sequence Edge Function (lines 763-784). seqExitReason 'exhausted' is
+  // now reserved for nurture's true 2-year archive (and terminal dispositions,
+  // which are set in seqPatchForDisposition).
+  const atEnd = !nextEntry || nextEntry.channels.includes('archive');
+  if (atEnd) {
+    if (track !== 'nurture') {
+      return {
+        seqTrack:      'nurture',
+        seqStep:       0,
+        seqPaused:     false,
+        seqExitReason: null,
+        seqStartDate:  lead.assignDate || lead.seqStartDate || new Date().toISOString(),
+      };
+    }
+    // Nurture's own archive step is the only genuine exhaustion.
     return { seqStep: nextStep, seqPaused: true, seqExitReason: 'exhausted' };
   }
   return { seqStep: nextStep };

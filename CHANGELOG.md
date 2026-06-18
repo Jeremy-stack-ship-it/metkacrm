@@ -2,6 +2,73 @@
 
 All notable changes to this project are documented here. Format: [Date] v[Version] — [Theme]
 
+[2026-06-17] v3.86 — No Answer → confirm-to-send text (per-person rotation)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHANGE: Clicking No Answer now offers to text the lead the next rotation message.
+FILES: src/components/SmsThread.jsx, src/components/DialView.jsx
+WHAT:
+  - SmsThread.jsx: 5 NO_ANSWER_TEMPLATES rewritten (casual, name + purpose, no
+    cheese, no premature closeout). Array now EXPORTED (single source of truth).
+  - DialView.jsx: No Answer button → handleNoAnswerText():
+      * picks template by per-lead naStep (0-4, wraps)
+      * window.confirm shows the rendered text; OK = send + advance naStep,
+        Cancel = no text. EITHER way the no_answer disposition is logged + PD advances.
+      * opted-out (smsOptOut) or no-phone leads skip the prompt, just log no_answer.
+  - Sends through existing sendSmsGuarded (STOP/opt-out block + landline handling).
+ROTATION: per-person — naStep stored on the lead, so each family cycles through all
+  5 across repeated no-answers (matches the ~30-dial-before-ghost cadence).
+COMPLIANCE: manual confirm per send (agent-initiated, TCPA-safe). Does NOT touch the
+  automated sequence engine or the (disabled) SMS cron.
+TEST: node 4/4 (export, 5 templates, rotation wrap, firstName merge). vite build clean.
+REVERT: restore old NO_ANSWER_TEMPLATES (un-export); revert DialView import+handler+onClick.
+
+
+[2026-06-16] v3.85 — REVERT v3.83 call-path experiment (hangup regression)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHANGE: Roll Twilio Device config back to known-good — calls were immediately
+  hanging up on dial after v3.83 went live (commit 3687d12).
+FILE: src/lib/useTwilioDevice.js
+WHAT: Removed BOTH v3.83 call-path additions:
+  - codecPreferences: ['opus','pcmu']
+  - device.audio.setAudioConstraints({noiseSuppression,echoCancellation,autoGainControl})
+  Device is back to `new Device(token, { logLevel: 1 })` — the exact config that
+  ran clean through v3.73-3.79.
+WHY: v3.83 made the ANC audioConstraints actually fire for the first time (it was
+  silently dropped before the v3.83 fix) AND prioritized opus. Both are global
+  call-setup changes and the only things that touched the dial path in that
+  window. Isolating by reverting to known-good rather than guessing.
+NOTE: v3.84 (sequence engine) does NOT touch calling — not implicated.
+NEXT: confirm dialing is stable, then reintroduce ANC ALONE (codec untouched),
+  tested on a live call in isolation, so we know which of the two caused it.
+REVERT-OF: v3.83 useTwilioDevice.js block.
+
+
+[2026-06-16] v3.84 — Sequence engine: client/server nurture-handoff parity
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHANGE: Stop leads going dark at end of a short email track
+FILE: src/lib/sequenceEngine.js  (function: advanceSequence)
+WHY: At the end of new/re-engage/ghost, advanceSequence stamped
+  seqExitReason:'exhausted' + seqPaused:true — emails halted permanently.
+  The nurture catch-track existed and the process-sequence Edge Function
+  re-enrolled into it, but the CLIENT engine had no handoff (split-brain).
+  Result: 423 leads email-dead, 418 of them not actually resolved.
+WHAT:
+  - End of a NON-nurture track (past last step OR an archive step) now returns a
+    nurture enrollment: seqTrack:'nurture', seqStep:0, seqPaused:false,
+    seqExitReason:null, seqStartDate held at lead.assignDate (offsets align).
+  - seqExitReason:'exhausted' is now reserved for nurture's own 2-year archive.
+    Terminal dispositions (dnc/not_interested/withdrawn/chargeback) still pause
+    via seqPatchForDisposition — unchanged.
+  - Mirrors process-sequence/index.ts lines 763-784 field-for-field.
+SCOPE: only advanceSequence changed. shouldAutoArchive, seqPatchForDisposition,
+  display/badge logic untouched. Sole client caller = ContactDetail Advance button.
+TEST: node assertion 7/7 (new@7/@8, re-engage@3, ghost@1 -> nurture; nurture@6 ->
+  exhausted; mid-track normal; seqStartDate fallback). vite build clean, 169 modules.
+DOES NOT: rescue the existing 423 already-exhausted (needs the one-time nurture
+  backfill — pending Jeremy go); does not touch cron exhausted-filter or re-enable.
+REVERT: restore the two-branch exhausted return in advanceSequence.
+
+
 [2026-06-16] v3.83 — ANC (Active Noise Cancellation) — corrected wiring
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CHANGE: Make microphone noise suppression / echo cancellation actually engage

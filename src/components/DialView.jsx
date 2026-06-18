@@ -4,6 +4,7 @@ import { usePowerDialer } from '../lib/usePowerDialer.js';
 import { getNextTouchDate } from '../lib/sequenceEngine.js';
 import { getTrackLength } from '../lib/sequenceTemplates.js';
 import { PHASE_DEFS, buildTodayQueue, effectivePhase, leadAgeDays, hoursSinceOpen } from '../lib/phaseEngine.js'; // v3.57-59 queue brain + chips + heat
+import { NO_ANSWER_TEMPLATES } from './SmsThread.jsx'; // v3.86 — shared no-answer text rotation
 
 
 // ── Script token renderer — module scope (no per-render redefinition) ──────
@@ -646,6 +647,23 @@ export default function DialView({
             setCbCustomTs('');
           };
 
+          // v3.86 — No Answer → confirm-to-send next per-person rotation text.
+          // Opted-out (STOP) or no-phone leads skip the text and just log the no-answer.
+          const handleNoAnswerText = () => {
+            if (!open) return;
+            const phone = (open.phone || '').trim();
+            if (open.smsOptOut === true || !phone) { fireDisp('no_answer'); return; }
+            const idx = (open.naStep || 0) % NO_ANSWER_TEMPLATES.length;
+            const firstName = (open.firstName || (open.name || '').split(' ')[0] || 'there');
+            const body = NO_ANSWER_TEMPLATES[idx].replace(/\{firstName\}/g, firstName);
+            const ok = window.confirm('Send this text to ' + (open.name || 'this lead') + '?\n\n' + body);
+            if (ok) {
+              sendSms(phone, body, open.id);
+              upd(open.id, { naStep: (open.naStep || 0) + 1 });
+            }
+            fireDisp('no_answer');
+          };
+
           return React.createElement("div", {
             style: { flexShrink: 0, padding: "8px 12px", borderTop: "2px solid var(--border)", background: "var(--surface)", display: "flex", gap: "5px", overflow: "visible", position: "relative" }
           },
@@ -714,7 +732,7 @@ export default function DialView({
                       const vmCount = d.id === 'direct_vm' ? (open.directVmCount || 0) : 0;
                       return React.createElement("button", {
                         key: d.id,
-                        onClick: () => isCb ? setCbPopoverOpen(v => !v) : fireDisp(d.id),
+                        onClick: () => isCb ? setCbPopoverOpen(v => !v) : (d.id === 'no_answer' ? handleNoAnswerText() : fireDisp(d.id)),
                         "aria-label": "Log: " + d.label,
                         "aria-pressed": isActive,
                         style: {

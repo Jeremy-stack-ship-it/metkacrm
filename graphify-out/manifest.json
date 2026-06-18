@@ -15,8 +15,8 @@
     "semantic_hash": "cf2c74ef32bde44e46ec9f929f2ca283"
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\App.jsx": {
-    "mtime": 1781531218.1109104,
-    "ast_hash": "0459def329f616eafc71980fede66e3b",
+    "mtime": 1781559339.82787,
+    "ast_hash": "c2b7d6b6da0dff99f331304691b4565b",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\constants.js": {
@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\DialQueuePanel.jsx": {
-    "mtime": 1781323535.8612092,
-    "ast_hash": "40d1dd317b3675223da6d996e9c21203",
+    "mtime": 1781557072.464828,
+    "ast_hash": "65d06b439c48094289b4a80cb3e322c4",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\DialRightPanel.jsx": {
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\DialView.jsx": {
-    "mtime": 1781531451.1662447,
-    "ast_hash": "87449a9ec98ba377e8405d6f3ec9fc7c",
+    "mtime": 1781536174.89418,
+    "ast_hash": "0614fb20d657138287726cfe66d47d9f",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\FieldMapModal.jsx": {
@@ -235,9 +235,9 @@
     "semantic_hash": "f57e1d95128274300403ee52708fd409"
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\lib\\useTwilioDevice.js": {
-    "mtime": 1779666491.6366148,
-    "ast_hash": "8e4e0b8cdb42541a95ad8974d1d8fc55",
-    "semantic_hash": "8e4e0b8cdb42541a95ad8974d1d8fc55"
+    "mtime": 1781619024.9713635,
+    "ast_hash": "a0c0f70bcbb0c755069d801b2dcebf3f",
+    "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\__tests__\\csvParser.test.js": {
     "mtime": 1778957097.453917,
@@ -280,8 +280,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\CHANGELOG.md": {
-    "mtime": 1781532415.1700976,
-    "ast_hash": "b675d378ad750b725f196a65cf348065",
+    "mtime": 1781619079.6737058,
+    "ast_hash": "5d5264a07df8a90589b5b86e1e42fa9e",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\CRM-MAP.md": {
@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\SmsThread.jsx": {
-    "mtime": 1781532408.6028762,
-    "ast_hash": "d603c235d8ecbd02c47fcb6a85346b22",
+    "mtime": 1781555166.232787,
+    "ast_hash": "49698feb1e008efe4ca89108d84bd623",
     "semantic_hash": ""
   },
   "C:\\Users\\jamn1\\OneDrive\\Documents\\Claude\\Projects\\Ministry of Protection HQ\\metka-crm\\src\\components\\AIPanel.jsx": {
