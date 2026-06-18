@@ -2,6 +2,27 @@
 
 All notable changes to this project are documented here. Format: [Date] v[Version] — [Theme]
 
+[2026-06-17] v3.87 — 🔥 button = intro + living-benefits + business card
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHANGE: Repurpose the 🔥 Card chip into a first-touch intro that leads with
+  Living Benefits and drops the hihello business card. Built for Razor Ridge
+  (and any) fresh leads.
+FILE: src/components/SmsThread.jsx
+WHAT:
+  - New cardMsg: "Hey {first}, Jeremy Metka — got your request about life
+    insurance with living benefits. Here's my card so you know who's calling:
+    {hihello}. Reply STOP to opt out."
+  - Removed the 48h email-opener gate (was: hidden unless opened email <48h).
+    Now shows on ANY lead that hasn't texted STOP — so it works on brand-new
+    leads who've never opened anything.
+  - Still manual (fills composer, agent sends), still hidden for smsOptOut.
+KEPT: the separate plain INTRO button (no card) left in place.
+TEST: vite build clean.
+RELATED: see NEXT_SESSION.md backlog — Razor Ridge email→CRM Apps Script + phone
+  notification (not started).
+REVERT: restore 48h gate + old coverage-options cardMsg.
+
+
 [2026-06-17] v3.86 — No Answer → confirm-to-send text (per-person rotation)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CHANGE: Clicking No Answer now offers to text the lead the next rotation message.

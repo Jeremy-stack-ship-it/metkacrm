@@ -248,13 +248,12 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
         // send only (deconfliction intact) — fills the composer, you hit send,
         // then dial them two minutes later with your name already on their phone.
         (() => {
-          const h = hoursSinceOpen(open);
-          if (h == null || h > 48 || open.smsOptOut) return null;
+          if (open.smsOptOut) return null;
           const first = open.firstName || (open.name||'').split(' ')[0] || 'there';
-          const cardMsg = 'Hey ' + first + ', Jeremy Metka \u2014 saw you were looking over what I sent about your coverage options. Here\u2019s my card so you know who\u2019s calling: ' + HIHELLO + ' \u2014 talk soon. Reply STOP to opt out.';
+          const cardMsg = 'Hey ' + first + ', Jeremy Metka \u2014 got your request about life insurance with living benefits. Here\u2019s my card so you know who\u2019s calling: ' + HIHELLO + '. Reply STOP to opt out.';
           return React.createElement('button', {
             onClick: () => setMsgText(cardMsg),
-            title: 'They opened an email ' + h + 'h ago \u2014 send your card, then dial',
+            title: 'Send your intro + business card',
             style:{ fontSize:'11px', fontWeight:'800', padding:'3px 9px', borderRadius:'6px', border:'1px solid rgba(239,68,68,0.5)', background:'rgba(239,68,68,0.10)', color:'#EF4444', cursor:'pointer' }
           }, '\ud83d\udd25 Card');
         })(),
