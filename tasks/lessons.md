@@ -16,3 +16,23 @@
 ## 2026-06-12 — Proposed merging the tool Jeremy loves into the tool he doesn't use for dialing
 **What happened:** Specced "Block absorbs DialView" + mockup. Jeremy: scared, then veto — "I like my DialView far more for seamless dialer uses." He was right: DialView is a refined cockpit (Twilio, scripts, auto-advance) shaped by real use; the Block is a planner that drifted.
 **How to apply:** When two surfaces overlap, the one shaped by daily USE wins; feed it data, don't replace it. Never propose retiring a tool the user reaches for under pressure. Mock up BEFORE speccing retirement language — "DialView retires" caused the fear, not the architecture.
+
+
+---
+
+## 2026-06-17 — Split-Brain Recurred: SMS panel (v3.90)
+
+**Pattern (2nd occurrence — see the 2026-06-16 sequence-engine entry):** Two copies
+of the same UI drifted. The SMS thread exists as the shared `SmsThread.jsx` (used by
+DialView) AND as an inline `SmsThreadTab` inside ContactDetail. We kept adding
+templates/buttons to the shared one (No-Answer rotation, 🔥 intro, INTRO) and the
+inline lead-view copy silently fell behind — Jeremy noticed the INTRO/templates
+missing when opening a lead.
+
+**Fix:** Point ContactDetail's SMS tab at the shared `<SmsThread/>`. Confirmed superset
+before swapping so nothing regressed.
+
+**Rule:** When a feature lives in a shared component, do NOT leave a parallel inline
+copy in another view. If you find a duplicate panel/engine, unify on the shared one.
+Before swapping, verify the shared version is a superset (grep both feature sets).
+Known remaining duplicates to watch: the old SmsThreadTab is now orphaned (delete later).

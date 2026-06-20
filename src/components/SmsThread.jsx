@@ -250,7 +250,7 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
         (() => {
           if (open.smsOptOut) return null;
           const first = open.firstName || (open.name||'').split(' ')[0] || 'there';
-          const cardMsg = 'Hey ' + first + ', Jeremy Metka \u2014 got your request about life insurance with living benefits. Here\u2019s my card so you know who\u2019s calling: ' + HIHELLO + '. Reply STOP to opt out.';
+          const cardMsg = 'Hey ' + first + ', Jeremy Metka \u2014 got your request about life insurance with living benefits. Here\u2019s my card so you know who\u2019s calling: ' + HIHELLO + '. What\u2019s the best time to reach you? Reply STOP to opt out.';
           return React.createElement('button', {
             onClick: () => setMsgText(cardMsg),
             title: 'Send your intro + business card',

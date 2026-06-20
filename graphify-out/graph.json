@@ -25,7 +25,7 @@
       "label": "[3.50] \u2014 2026-06-13",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L308",
+      "source_location": "L329",
       "id": "metka_crm_changelog_3_50_2026_06_13",
       "community": 72,
       "norm_label": "[3.50] \u2014 2026-06-13"
@@ -34,7 +34,7 @@
       "label": "Fixed",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L310",
+      "source_location": "L331",
       "id": "metka_crm_changelog_fixed",
       "community": 72,
       "norm_label": "fixed"
@@ -43,7 +43,7 @@
       "label": "[2026-05-13] v3.6 \u2014 Modular Architecture Refactor",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L314",
+      "source_location": "L335",
       "id": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
       "community": 72,
       "norm_label": "[2026-05-13] v3.6 \u2014 modular architecture refactor"
@@ -52,7 +52,7 @@
       "label": "Added",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L316",
+      "source_location": "L337",
       "id": "metka_crm_changelog_added",
       "community": 72,
       "norm_label": "added"
@@ -61,7 +61,7 @@
       "label": "Changed",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L324",
+      "source_location": "L345",
       "id": "metka_crm_changelog_changed",
       "community": 72,
       "norm_label": "changed"
@@ -70,8 +70,8 @@
       "label": "Fixed",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L330",
-      "id": "metka_crm_changelog_fixed_330",
+      "source_location": "L351",
+      "id": "metka_crm_changelog_fixed_351",
       "community": 72,
       "norm_label": "fixed"
     },
@@ -79,7 +79,7 @@
       "label": "Dependencies",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L334",
+      "source_location": "L355",
       "id": "metka_crm_changelog_dependencies",
       "community": 72,
       "norm_label": "dependencies"
@@ -88,7 +88,7 @@
       "label": "Notes",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L338",
+      "source_location": "L359",
       "id": "metka_crm_changelog_notes",
       "community": 72,
       "norm_label": "notes"
@@ -97,7 +97,7 @@
       "label": "[2026-05-01] v2.0.0 \u2014 Ministry Lead Operating System",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L346",
+      "source_location": "L367",
       "id": "metka_crm_changelog_2026_05_01_v2_0_0_ministry_lead_operating_system",
       "community": 85,
       "norm_label": "[2026-05-01] v2.0.0 \u2014 ministry lead operating system"
@@ -106,8 +106,8 @@
       "label": "Added",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L348",
-      "id": "metka_crm_changelog_added_348",
+      "source_location": "L369",
+      "id": "metka_crm_changelog_added_369",
       "community": 85,
       "norm_label": "added"
     },
@@ -115,8 +115,8 @@
       "label": "Fixed",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L359",
-      "id": "metka_crm_changelog_fixed_359",
+      "source_location": "L380",
+      "id": "metka_crm_changelog_fixed_380",
       "community": 85,
       "norm_label": "fixed"
     },
@@ -124,7 +124,7 @@
       "label": "[2026-04-01] v1.0.0 \u2014 Initial Build",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L364",
+      "source_location": "L385",
       "id": "metka_crm_changelog_2026_04_01_v1_0_0_initial_build",
       "community": 15,
       "norm_label": "[2026-04-01] v1.0.0 \u2014 initial build"
@@ -133,8 +133,8 @@
       "label": "Added",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L366",
-      "id": "metka_crm_changelog_added_366",
+      "source_location": "L387",
+      "id": "metka_crm_changelog_added_387",
       "community": 15,
       "norm_label": "added"
     },
@@ -142,7 +142,7 @@
       "label": "[2026-05-14] v3.6.1 \u2014 Power Dialer + Audit Fixes",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L375",
+      "source_location": "L396",
       "id": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
       "community": 80,
       "norm_label": "[2026-05-14] v3.6.1 \u2014 power dialer + audit fixes"
@@ -151,8 +151,8 @@
       "label": "Added",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L377",
-      "id": "metka_crm_changelog_added_377",
+      "source_location": "L398",
+      "id": "metka_crm_changelog_added_398",
       "community": 80,
       "norm_label": "added"
     },
@@ -160,8 +160,8 @@
       "label": "Changed",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L382",
-      "id": "metka_crm_changelog_changed_382",
+      "source_location": "L403",
+      "id": "metka_crm_changelog_changed_403",
       "community": 80,
       "norm_label": "changed"
     },
@@ -169,8 +169,8 @@
       "label": "Fixed",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L391",
-      "id": "metka_crm_changelog_fixed_391",
+      "source_location": "L412",
+      "id": "metka_crm_changelog_fixed_412",
       "community": 80,
       "norm_label": "fixed"
     },
@@ -178,7 +178,7 @@
       "label": "Build",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L398",
+      "source_location": "L419",
       "id": "metka_crm_changelog_build",
       "community": 80,
       "norm_label": "build"
@@ -187,7 +187,7 @@
       "label": "v3.43 \u2014 2026-06-10 \u2014 Session 1: Correctness Fixes (audit-driven)",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L407",
+      "source_location": "L428",
       "id": "metka_crm_changelog_v3_43_2026_06_10_session_1_correctness_fixes_audit_driven",
       "community": 15,
       "norm_label": "v3.43 \u2014 2026-06-10 \u2014 session 1: correctness fixes (audit-driven)"
@@ -196,7 +196,7 @@
       "label": "v3.44 \u2014 2026-06-10 \u2014 Session 2: Calendar Phase Engine (M2/M3 machinery)",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L418",
+      "source_location": "L439",
       "id": "metka_crm_changelog_v3_44_2026_06_10_session_2_calendar_phase_engine_m2_m3_machinery",
       "community": 15,
       "norm_label": "v3.44 \u2014 2026-06-10 \u2014 session 2: calendar phase engine (m2/m3 machinery)"
@@ -205,7 +205,7 @@
       "label": "v3.45 \u2014 2026-06-10 \u2014 Session 2.5: Funnel CSV Sync (import mode 3)",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L434",
+      "source_location": "L455",
       "id": "metka_crm_changelog_v3_45_2026_06_10_session_2_5_funnel_csv_sync_import_mode_3",
       "community": 15,
       "norm_label": "v3.45 \u2014 2026-06-10 \u2014 session 2.5: funnel csv sync (import mode 3)"
@@ -214,7 +214,7 @@
       "label": "v3.46 \u2014 Session 3: M2/M3 Queue Spillover",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L448",
+      "source_location": "L469",
       "id": "metka_crm_changelog_v3_46_session_3_m2_m3_queue_spillover",
       "community": 15,
       "norm_label": "v3.46 \u2014 session 3: m2/m3 queue spillover"
@@ -223,7 +223,7 @@
       "label": "v3.47 \u2014 Session 3b: Age Re-base (SHIPS INACTIVE \u2014 dry-run projection only)",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L459",
+      "source_location": "L480",
       "id": "metka_crm_changelog_v3_47_session_3b_age_re_base_ships_inactive_dry_run_projection_only",
       "community": 15,
       "norm_label": "v3.47 \u2014 session 3b: age re-base (ships inactive \u2014 dry-run projection only)"
@@ -232,7 +232,7 @@
       "label": "v3.48 \u2014 Session 3c: Age Re-base FLIPPED ON + Bucket C Resurrection (dry-run)",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L469",
+      "source_location": "L490",
       "id": "metka_crm_changelog_v3_48_session_3c_age_re_base_flipped_on_bucket_c_resurrection_dry_run",
       "community": 15,
       "norm_label": "v3.48 \u2014 session 3c: age re-base flipped on + bucket c resurrection (dry-run)"
@@ -241,7 +241,7 @@
       "label": "v3.49 \u2014 Resurrection FLIPPED ON",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L478",
+      "source_location": "L499",
       "id": "metka_crm_changelog_v3_49_resurrection_flipped_on",
       "community": 15,
       "norm_label": "v3.49 \u2014 resurrection flipped on"
@@ -250,7 +250,7 @@
       "label": "v3.50 \u2014 Session 4-lite: Lifetime Flags + Set Rate wiring + Write Order",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L481",
+      "source_location": "L502",
       "id": "metka_crm_changelog_v3_50_session_4_lite_lifetime_flags_set_rate_wiring_write_order",
       "community": 15,
       "norm_label": "v3.50 \u2014 session 4-lite: lifetime flags + set rate wiring + write order"
@@ -259,7 +259,7 @@
       "label": "v3.51 \u2014 Session 5: Lead Order Economics (\"the Derick dashboard\")",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L491",
+      "source_location": "L512",
       "id": "metka_crm_changelog_v3_51_session_5_lead_order_economics_the_derick_dashboard",
       "community": 15,
       "norm_label": "v3.51 \u2014 session 5: lead order economics (\"the derick dashboard\")"
@@ -268,7 +268,7 @@
       "label": "v3.52 \u2014 BUG FIX: field-map whitelist was stripping all v3.45 sync fields",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L502",
+      "source_location": "L523",
       "id": "metka_crm_changelog_v3_52_bug_fix_field_map_whitelist_was_stripping_all_v3_45_sync_fields",
       "community": 15,
       "norm_label": "v3.52 \u2014 bug fix: field-map whitelist was stripping all v3.45 sync fields"
@@ -277,7 +277,7 @@
       "label": "v3.54 \u2014 SMS Guard Session (incident response \u2014 five locks + UI hard lock)",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L509",
+      "source_location": "L530",
       "id": "metka_crm_changelog_v3_54_sms_guard_session_incident_response_five_locks_ui_hard_lock",
       "community": 15,
       "norm_label": "v3.54 \u2014 sms guard session (incident response \u2014 five locks + ui hard lock)"
@@ -286,7 +286,7 @@
       "label": "v3.55 \u2014 Session 6: SMS Filter Tabs + F8 Spouse-Recovery Check",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L523",
+      "source_location": "L544",
       "id": "metka_crm_changelog_v3_55_session_6_sms_filter_tabs_f8_spouse_recovery_check",
       "community": 15,
       "norm_label": "v3.55 \u2014 session 6: sms filter tabs + f8 spouse-recovery check"
@@ -295,7 +295,7 @@
       "label": "v3.56 \u2014 Audit v2 Patch Session (5 fixes, 2 deploys)",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L530",
+      "source_location": "L551",
       "id": "metka_crm_changelog_v3_56_audit_v2_patch_session_5_fixes_2_deploys",
       "community": 15,
       "norm_label": "v3.56 \u2014 audit v2 patch session (5 fixes, 2 deploys)"
@@ -304,7 +304,7 @@
       "label": "v3.57 \u2014 Session 7a: DialView adopts the queue brain",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L542",
+      "source_location": "L563",
       "id": "metka_crm_changelog_v3_57_session_7a_dialview_adopts_the_queue_brain",
       "community": 15,
       "norm_label": "v3.57 \u2014 session 7a: dialview adopts the queue brain"
@@ -313,7 +313,7 @@
       "label": "v3.58 \u2014 Session 7b: Full adoption + DEMOLITION",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L554",
+      "source_location": "L575",
       "id": "metka_crm_changelog_v3_58_session_7b_full_adoption_demolition",
       "community": 15,
       "norm_label": "v3.58 \u2014 session 7b: full adoption + demolition"
@@ -322,7 +322,7 @@
       "label": "v3.59 \u2014 Session 7c: Promise Window + \ud83d\udd25 Hot Queue",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L566",
+      "source_location": "L587",
       "id": "metka_crm_changelog_v3_59_session_7c_promise_window_hot_queue",
       "community": 15,
       "norm_label": "v3.59 \u2014 session 7c: promise window + \ud83d\udd25 hot queue"
@@ -331,7 +331,7 @@
       "label": "v3.60 \u2014 Unsubscribe Fix (COMPLIANCE) + Screenshot-Audit Patch Batch",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L576",
+      "source_location": "L597",
       "id": "metka_crm_changelog_v3_60_unsubscribe_fix_compliance_screenshot_audit_patch_batch",
       "community": 15,
       "norm_label": "v3.60 \u2014 unsubscribe fix (compliance) + screenshot-audit patch batch"
@@ -340,7 +340,7 @@
       "label": "v3.61 \u2014 BUG: Sold clients stayed in the dial machine (the Lori Mills bug) + PD SKIP",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L585",
+      "source_location": "L606",
       "id": "metka_crm_changelog_v3_61_bug_sold_clients_stayed_in_the_dial_machine_the_lori_mills_bug_pd_skip",
       "community": 15,
       "norm_label": "v3.61 \u2014 bug: sold clients stayed in the dial machine (the lori mills bug) + pd skip"
@@ -349,7 +349,7 @@
       "label": "v3.62 \u2014 END-while-ringing fix + \ud83d\udd25 Card Touch",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L597",
+      "source_location": "L618",
       "id": "metka_crm_changelog_v3_62_end_while_ringing_fix_card_touch",
       "community": 15,
       "norm_label": "v3.62 \u2014 end-while-ringing fix + \ud83d\udd25 card touch"
@@ -358,7 +358,7 @@
       "label": "v3.63 \u2014 Session 8a: Truth Dashboard + Day/Night + Font Pass + Contact Attempted Fix",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L604",
+      "source_location": "L625",
       "id": "metka_crm_changelog_v3_63_session_8a_truth_dashboard_day_night_font_pass_contact_attempted_fix",
       "community": 15,
       "norm_label": "v3.63 \u2014 session 8a: truth dashboard + day/night + font pass + contact attempted fix"
@@ -367,7 +367,7 @@
       "label": "Session 8b \u2014 Weekly Campaign RPG + Settings Toggle (2026-06-12)",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L641",
+      "source_location": "L662",
       "id": "metka_crm_changelog_session_8b_weekly_campaign_rpg_settings_toggle_2026_06_12",
       "community": 54,
       "norm_label": "session 8b \u2014 weekly campaign rpg + settings toggle (2026-06-12)"
@@ -376,7 +376,7 @@
       "label": "v3.64 \u2014 Full font pass + TODAY nav + effectivePhase chips + Dial Sessions settings",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L656",
+      "source_location": "L677",
       "id": "metka_crm_changelog_v3_64_full_font_pass_today_nav_effectivephase_chips_dial_sessions_settings",
       "community": 54,
       "norm_label": "v3.64 \u2014 full font pass + today nav + effectivephase chips + dial sessions settings"
@@ -385,7 +385,7 @@
       "label": "v3.65 \u2014 2026-06-13",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L667",
+      "source_location": "L688",
       "id": "metka_crm_changelog_v3_65_2026_06_13",
       "community": 54,
       "norm_label": "v3.65 \u2014 2026-06-13"
@@ -394,8 +394,8 @@
       "label": "Fixed",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L668",
-      "id": "metka_crm_changelog_fixed_668",
+      "source_location": "L689",
+      "id": "metka_crm_changelog_fixed_689",
       "community": 54,
       "norm_label": "fixed"
     },
@@ -403,7 +403,7 @@
       "label": "v3.66 \u2014 2026-06-13",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L671",
+      "source_location": "L692",
       "id": "metka_crm_changelog_v3_66_2026_06_13",
       "community": 54,
       "norm_label": "v3.66 \u2014 2026-06-13"
@@ -412,7 +412,7 @@
       "label": "Removed",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L672",
+      "source_location": "L693",
       "id": "metka_crm_changelog_removed",
       "community": 54,
       "norm_label": "removed"
@@ -421,7 +421,7 @@
       "label": "v3.67 \u2014 2026-06-13",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L675",
+      "source_location": "L696",
       "id": "metka_crm_changelog_v3_67_2026_06_13",
       "community": 54,
       "norm_label": "v3.67 \u2014 2026-06-13"
@@ -430,8 +430,8 @@
       "label": "Fixed",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L676",
-      "id": "metka_crm_changelog_fixed_676",
+      "source_location": "L697",
+      "id": "metka_crm_changelog_fixed_697",
       "community": 54,
       "norm_label": "fixed"
     },
@@ -439,7 +439,7 @@
       "label": "v3.68 \u2014 2026-06-13",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L679",
+      "source_location": "L700",
       "id": "metka_crm_changelog_v3_68_2026_06_13",
       "community": 115,
       "norm_label": "v3.68 \u2014 2026-06-13"
@@ -448,8 +448,8 @@
       "label": "Fixed",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L680",
-      "id": "metka_crm_changelog_fixed_680",
+      "source_location": "L701",
+      "id": "metka_crm_changelog_fixed_701",
       "community": 115,
       "norm_label": "fixed"
     },
@@ -457,25 +457,25 @@
       "label": "v3.69 \u2014 2026-06-13",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L685",
+      "source_location": "L706",
       "id": "metka_crm_changelog_v3_69_2026_06_13",
-      "community": 54,
+      "community": 119,
       "norm_label": "v3.69 \u2014 2026-06-13"
     },
     {
       "label": "Added",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L686",
-      "id": "metka_crm_changelog_added_686",
-      "community": 54,
+      "source_location": "L707",
+      "id": "metka_crm_changelog_added_707",
+      "community": 119,
       "norm_label": "added"
     },
     {
       "label": "v3.70 \u2014 2026-06-13",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L690",
+      "source_location": "L711",
       "id": "metka_crm_changelog_v3_70_2026_06_13",
       "community": 87,
       "norm_label": "v3.70 \u2014 2026-06-13"
@@ -484,8 +484,8 @@
       "label": "Added",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L691",
-      "id": "metka_crm_changelog_added_691",
+      "source_location": "L712",
+      "id": "metka_crm_changelog_added_712",
       "community": 87,
       "norm_label": "added"
     },
@@ -493,7 +493,7 @@
       "label": "v3.71 \u2014 2026-06-13",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L696",
+      "source_location": "L717",
       "id": "metka_crm_changelog_v3_71_2026_06_13",
       "community": 88,
       "norm_label": "v3.71 \u2014 2026-06-13"
@@ -502,8 +502,8 @@
       "label": "Added",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L697",
-      "id": "metka_crm_changelog_added_697",
+      "source_location": "L718",
+      "id": "metka_crm_changelog_added_718",
       "community": 88,
       "norm_label": "added"
     },
@@ -511,7 +511,7 @@
       "label": "v3.72 \u2014 2026-06-13",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L703",
+      "source_location": "L724",
       "id": "metka_crm_changelog_v3_72_2026_06_13",
       "community": 54,
       "norm_label": "v3.72 \u2014 2026-06-13"
@@ -520,7 +520,7 @@
       "label": "Redesigned",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L704",
+      "source_location": "L725",
       "id": "metka_crm_changelog_redesigned",
       "community": 54,
       "norm_label": "redesigned"
@@ -529,7 +529,7 @@
       "label": "v3.73 \u2014 2026-06-15",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L709",
+      "source_location": "L730",
       "id": "metka_crm_changelog_v3_73_2026_06_15",
       "community": 54,
       "norm_label": "v3.73 \u2014 2026-06-15"
@@ -538,8 +538,8 @@
       "label": "Redesigned",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L710",
-      "id": "metka_crm_changelog_redesigned_710",
+      "source_location": "L731",
+      "id": "metka_crm_changelog_redesigned_731",
       "community": 54,
       "norm_label": "redesigned"
     },
@@ -547,7 +547,7 @@
       "label": "v3.74 \u2014 2026-06-15",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L716",
+      "source_location": "L737",
       "id": "metka_crm_changelog_v3_74_2026_06_15",
       "community": 54,
       "norm_label": "v3.74 \u2014 2026-06-15"
@@ -556,8 +556,8 @@
       "label": "Fixed",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L717",
-      "id": "metka_crm_changelog_fixed_717",
+      "source_location": "L738",
+      "id": "metka_crm_changelog_fixed_738",
       "community": 54,
       "norm_label": "fixed"
     },
@@ -565,7 +565,7 @@
       "label": "v3.75 \u2014 2026-06-15",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L722",
+      "source_location": "L743",
       "id": "metka_crm_changelog_v3_75_2026_06_15",
       "community": 113,
       "norm_label": "v3.75 \u2014 2026-06-15"
@@ -574,8 +574,8 @@
       "label": "Added",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L723",
-      "id": "metka_crm_changelog_added_723",
+      "source_location": "L744",
+      "id": "metka_crm_changelog_added_744",
       "community": 113,
       "norm_label": "added"
     },
@@ -583,7 +583,7 @@
       "label": "v3.76 \u2014 2026-06-15",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L731",
+      "source_location": "L752",
       "id": "metka_crm_changelog_v3_76_2026_06_15",
       "community": 54,
       "norm_label": "v3.76 \u2014 2026-06-15"
@@ -592,7 +592,7 @@
       "label": "Cleaned",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L732",
+      "source_location": "L753",
       "id": "metka_crm_changelog_cleaned",
       "community": 54,
       "norm_label": "cleaned"
@@ -601,25 +601,25 @@
       "label": "v3.77 \u2014 2026-06-15",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L736",
+      "source_location": "L757",
       "id": "metka_crm_changelog_v3_77_2026_06_15",
-      "community": 119,
+      "community": 54,
       "norm_label": "v3.77 \u2014 2026-06-15"
     },
     {
       "label": "Added",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L737",
-      "id": "metka_crm_changelog_added_737",
-      "community": 119,
+      "source_location": "L758",
+      "id": "metka_crm_changelog_added_758",
+      "community": 54,
       "norm_label": "added"
     },
     {
       "label": "v3.78 \u2014 2026-06-15",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L743",
+      "source_location": "L764",
       "id": "metka_crm_changelog_v3_78_2026_06_15",
       "community": 54,
       "norm_label": "v3.78 \u2014 2026-06-15"
@@ -628,7 +628,7 @@
       "label": "Compliance",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L744",
+      "source_location": "L765",
       "id": "metka_crm_changelog_compliance",
       "community": 54,
       "norm_label": "compliance"
@@ -637,7 +637,7 @@
       "label": "v3.79 \u2014 2026-06-15",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L750",
+      "source_location": "L771",
       "id": "metka_crm_changelog_v3_79_2026_06_15",
       "community": 114,
       "norm_label": "v3.79 \u2014 2026-06-15"
@@ -646,8 +646,8 @@
       "label": "Added",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L751",
-      "id": "metka_crm_changelog_added_751",
+      "source_location": "L772",
+      "id": "metka_crm_changelog_added_772",
       "community": 114,
       "norm_label": "added"
     },
@@ -655,7 +655,7 @@
       "label": "v3.80 \u2014 2026-06-15",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L756",
+      "source_location": "L777",
       "id": "metka_crm_changelog_v3_80_2026_06_15",
       "community": 54,
       "norm_label": "v3.80 \u2014 2026-06-15"
@@ -664,37 +664,10 @@
       "label": "Redesigned",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
-      "source_location": "L757",
-      "id": "metka_crm_changelog_redesigned_757",
+      "source_location": "L778",
+      "id": "metka_crm_changelog_redesigned_778",
       "community": 54,
       "norm_label": "redesigned"
-    },
-    {
-      "label": "DialView.jsx",
-      "file_type": "code",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L1",
-      "id": "src_components_dialview_jsx",
-      "community": 4,
-      "norm_label": "dialview.jsx"
-    },
-    {
-      "label": "fmtAssignDate()",
-      "file_type": "code",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L15",
-      "id": "components_dialview_fmtassigndate",
-      "community": 4,
-      "norm_label": "fmtassigndate()"
-    },
-    {
-      "label": "DialView()",
-      "file_type": "code",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L27",
-      "id": "components_dialview_dialview",
-      "community": 4,
-      "norm_label": "dialview()"
     },
     {
       "label": "SmsThread.jsx",
@@ -724,148 +697,175 @@
       "norm_label": "smsthread()"
     },
     {
+      "label": "DialView.jsx",
+      "file_type": "code",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L1",
+      "community": 4,
+      "norm_label": "dialview.jsx",
+      "id": "src_components_dialview_jsx"
+    },
+    {
+      "label": "fmtAssignDate()",
+      "file_type": "code",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L15",
+      "community": 4,
+      "norm_label": "fmtassigndate()",
+      "id": "components_dialview_fmtassigndate"
+    },
+    {
+      "label": "DialView()",
+      "file_type": "code",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L27",
+      "community": 4,
+      "norm_label": "dialview()",
+      "id": "components_dialview_dialview"
+    },
+    {
       "label": "sequenceEngine.js",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L1",
-      "id": "src_lib_sequenceengine_js",
       "community": 3,
-      "norm_label": "sequenceengine.js"
+      "norm_label": "sequenceengine.js",
+      "id": "src_lib_sequenceengine_js"
     },
     {
       "label": "TERMINAL_DISPS",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L16",
-      "id": "lib_sequenceengine_terminal_disps",
       "community": 3,
-      "norm_label": "terminal_disps"
+      "norm_label": "terminal_disps",
+      "id": "lib_sequenceengine_terminal_disps"
     },
     {
       "label": "PAUSE_DISPS",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L17",
-      "id": "lib_sequenceengine_pause_disps",
       "community": 3,
-      "norm_label": "pause_disps"
+      "norm_label": "pause_disps",
+      "id": "lib_sequenceengine_pause_disps"
     },
     {
       "label": "initSequence()",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L23",
-      "id": "lib_sequenceengine_initsequence",
       "community": 3,
-      "norm_label": "initsequence()"
+      "norm_label": "initsequence()",
+      "id": "lib_sequenceengine_initsequence"
     },
     {
       "label": "getNextTouchDate()",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L38",
-      "id": "lib_sequenceengine_getnexttouchdate",
       "community": 1,
-      "norm_label": "getnexttouchdate()"
+      "norm_label": "getnexttouchdate()",
+      "id": "lib_sequenceengine_getnexttouchdate"
     },
     {
       "label": "isSeqDueToday()",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L58",
-      "id": "lib_sequenceengine_isseqduetoday",
       "community": 1,
-      "norm_label": "isseqduetoday()"
+      "norm_label": "isseqduetoday()",
+      "id": "lib_sequenceengine_isseqduetoday"
     },
     {
       "label": "shouldAutoArchive()",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L72",
-      "id": "lib_sequenceengine_shouldautoarchive",
       "community": 3,
-      "norm_label": "shouldautoarchive()"
+      "norm_label": "shouldautoarchive()",
+      "id": "lib_sequenceengine_shouldautoarchive"
     },
     {
       "label": "advanceSequence()",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L85",
-      "id": "lib_sequenceengine_advancesequence",
       "community": 3,
-      "norm_label": "advancesequence()"
+      "norm_label": "advancesequence()",
+      "id": "lib_sequenceengine_advancesequence"
     },
     {
       "label": "pauseSequence()",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L115",
-      "id": "lib_sequenceengine_pausesequence",
       "community": 3,
-      "norm_label": "pausesequence()"
+      "norm_label": "pausesequence()",
+      "id": "lib_sequenceengine_pausesequence"
     },
     {
       "label": "resumeSequence()",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L122",
-      "id": "lib_sequenceengine_resumesequence",
       "community": 3,
-      "norm_label": "resumesequence()"
+      "norm_label": "resumesequence()",
+      "id": "lib_sequenceengine_resumesequence"
     },
     {
       "label": "seqPatchForDisposition()",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L131",
-      "id": "lib_sequenceengine_seqpatchfordisposition",
       "community": 3,
-      "norm_label": "seqpatchfordisposition()"
+      "norm_label": "seqpatchfordisposition()",
+      "id": "lib_sequenceengine_seqpatchfordisposition"
     },
     {
       "label": "getSequenceStatus()",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L153",
-      "id": "lib_sequenceengine_getsequencestatus",
       "community": 1,
-      "norm_label": "getsequencestatus()"
+      "norm_label": "getsequencestatus()",
+      "id": "lib_sequenceengine_getsequencestatus"
     },
     {
       "label": "getSequenceBadgeColor()",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L177",
-      "id": "lib_sequenceengine_getsequencebadgecolor",
       "community": 1,
-      "norm_label": "getsequencebadgecolor()"
+      "norm_label": "getsequencebadgecolor()",
+      "id": "lib_sequenceengine_getsequencebadgecolor"
     },
     {
       "label": "getTodayCallList()",
       "file_type": "code",
       "source_file": "src/lib/sequenceEngine.js",
       "source_location": "L193",
-      "id": "lib_sequenceengine_gettodaycalllist",
       "community": 3,
-      "norm_label": "gettodaycalllist()"
+      "norm_label": "gettodaycalllist()",
+      "id": "lib_sequenceengine_gettodaycalllist"
     },
     {
       "label": "useTwilioDevice.js",
       "file_type": "code",
       "source_file": "src/lib/useTwilioDevice.js",
       "source_location": "L1",
-      "id": "src_lib_usetwiliodevice_js",
       "community": 0,
-      "norm_label": "usetwiliodevice.js"
+      "norm_label": "usetwiliodevice.js",
+      "id": "src_lib_usetwiliodevice_js"
     },
     {
       "label": "useTwilioDevice()",
       "file_type": "code",
       "source_file": "src/lib/useTwilioDevice.js",
       "source_location": "L11",
-      "id": "lib_usetwiliodevice_usetwiliodevice",
       "community": 0,
-      "norm_label": "usetwiliodevice()"
+      "norm_label": "usetwiliodevice()",
+      "id": "lib_usetwiliodevice_usetwiliodevice"
     },
     {
       "label": "App.jsx",
@@ -6344,7 +6344,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L48",
-      "community": 83,
+      "community": 78,
       "norm_label": "dw",
       "id": "assets_index_dm05d_8w_dw"
     },
@@ -6362,7 +6362,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L48",
-      "community": 83,
+      "community": 78,
       "norm_label": ".state()",
       "id": "assets_index_dm05d_8w_dw_state"
     },
@@ -6371,7 +6371,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L48",
-      "community": 83,
+      "community": 78,
       "norm_label": ".joinedonce()",
       "id": "assets_index_dm05d_8w_dw_joinedonce"
     },
@@ -6380,7 +6380,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L48",
-      "community": 83,
+      "community": 78,
       "norm_label": ".joinpush()",
       "id": "assets_index_dm05d_8w_dw_joinpush"
     },
@@ -6389,7 +6389,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L48",
-      "community": 83,
+      "community": 78,
       "norm_label": ".rejointimer()",
       "id": "assets_index_dm05d_8w_dw_rejointimer"
     },
@@ -6398,7 +6398,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L48",
-      "community": 83,
+      "community": 78,
       "norm_label": ".on()",
       "id": "assets_index_dm05d_8w_dw_on"
     },
@@ -6416,7 +6416,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L48",
-      "community": 83,
+      "community": 78,
       "norm_label": ".subscribe()",
       "id": "assets_index_dm05d_8w_dw_subscribe"
     },
@@ -6470,7 +6470,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L48",
-      "community": 83,
+      "community": 78,
       "norm_label": ".updatejoinpayload()",
       "id": "assets_index_dm05d_8w_dw_updatejoinpayload"
     },
@@ -6479,7 +6479,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L48",
-      "community": 83,
+      "community": 63,
       "norm_label": ".canpush()",
       "id": "assets_index_dm05d_8w_dw_canpush"
     },
@@ -6497,7 +6497,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L48",
-      "community": 83,
+      "community": 78,
       "norm_label": ".isjoining()",
       "id": "assets_index_dm05d_8w_dw_isjoining"
     },
@@ -6668,7 +6668,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L48",
-      "community": 83,
+      "community": 63,
       "norm_label": ".send()",
       "id": "assets_index_dm05d_8w_os_send"
     },
@@ -7046,7 +7046,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L48",
-      "community": 78,
+      "community": 43,
       "norm_label": ".endpointurl()",
       "id": "assets_index_dm05d_8w_ow_endpointurl"
     },
@@ -7244,7 +7244,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L66",
-      "community": 78,
+      "community": 43,
       "norm_label": ".endpointurl()",
       "id": "assets_index_dm05d_8w_jw_endpointurl"
     },
@@ -9953,7 +9953,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L83",
-      "community": 52,
+      "community": 50,
       "norm_label": "ge",
       "id": "assets_index_dm05d_8w_ge"
     },
@@ -9980,7 +9980,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L83",
-      "community": 52,
+      "community": 50,
       "norm_label": "ve",
       "id": "assets_index_dm05d_8w_ve"
     },
@@ -10205,7 +10205,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L83",
-      "community": 52,
+      "community": 50,
       "norm_label": "lo()",
       "id": "assets_index_dm05d_8w_lo"
     },
@@ -10214,7 +10214,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L83",
-      "community": 52,
+      "community": 50,
       "norm_label": "je()",
       "id": "assets_index_dm05d_8w_je"
     },
@@ -10250,7 +10250,7 @@
       "file_type": "code",
       "source_file": "dist2/assets/index-Dm05D_8w.js",
       "source_location": "L83",
-      "community": 52,
+      "community": 50,
       "norm_label": "fl()",
       "id": "assets_index_dm05d_8w_fl"
     },
@@ -17632,10 +17632,10 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L330",
+      "source_location": "L351",
       "weight": 1.0,
       "source": "metka_crm_changelog_2026_05_13_v3_6_modular_architecture_refactor",
-      "target": "metka_crm_changelog_fixed_330",
+      "target": "metka_crm_changelog_fixed_351",
       "confidence_score": 1.0
     },
     {
@@ -17652,40 +17652,40 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L348",
+      "source_location": "L369",
       "weight": 1.0,
       "source": "metka_crm_changelog_2026_05_01_v2_0_0_ministry_lead_operating_system",
-      "target": "metka_crm_changelog_added_348",
+      "target": "metka_crm_changelog_added_369",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L359",
+      "source_location": "L380",
       "weight": 1.0,
       "source": "metka_crm_changelog_2026_05_01_v2_0_0_ministry_lead_operating_system",
-      "target": "metka_crm_changelog_fixed_359",
+      "target": "metka_crm_changelog_fixed_380",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L366",
+      "source_location": "L387",
       "weight": 1.0,
       "source": "metka_crm_changelog_2026_04_01_v1_0_0_initial_build",
-      "target": "metka_crm_changelog_added_366",
+      "target": "metka_crm_changelog_added_387",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L377",
+      "source_location": "L398",
       "weight": 1.0,
       "source": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
-      "target": "metka_crm_changelog_added_377",
+      "target": "metka_crm_changelog_added_398",
       "confidence_score": 1.0
     },
     {
@@ -17702,20 +17702,20 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L382",
+      "source_location": "L403",
       "weight": 1.0,
       "source": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
-      "target": "metka_crm_changelog_changed_382",
+      "target": "metka_crm_changelog_changed_403",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L391",
+      "source_location": "L412",
       "weight": 1.0,
       "source": "metka_crm_changelog_2026_05_14_v3_6_1_power_dialer_audit_fixes",
-      "target": "metka_crm_changelog_fixed_391",
+      "target": "metka_crm_changelog_fixed_412",
       "confidence_score": 1.0
     },
     {
@@ -17892,10 +17892,10 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L668",
+      "source_location": "L689",
       "weight": 1.0,
       "source": "metka_crm_changelog_v3_65_2026_06_13",
-      "target": "metka_crm_changelog_fixed_668",
+      "target": "metka_crm_changelog_fixed_689",
       "confidence_score": 1.0
     },
     {
@@ -17912,50 +17912,50 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L676",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_v3_67_2026_06_13",
-      "target": "metka_crm_changelog_fixed_676",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L680",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_v3_68_2026_06_13",
-      "target": "metka_crm_changelog_fixed_680",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L686",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_v3_69_2026_06_13",
-      "target": "metka_crm_changelog_added_686",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L691",
-      "weight": 1.0,
-      "source": "metka_crm_changelog_v3_70_2026_06_13",
-      "target": "metka_crm_changelog_added_691",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
       "source_location": "L697",
       "weight": 1.0,
+      "source": "metka_crm_changelog_v3_67_2026_06_13",
+      "target": "metka_crm_changelog_fixed_697",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L701",
+      "weight": 1.0,
+      "source": "metka_crm_changelog_v3_68_2026_06_13",
+      "target": "metka_crm_changelog_fixed_701",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L707",
+      "weight": 1.0,
+      "source": "metka_crm_changelog_v3_69_2026_06_13",
+      "target": "metka_crm_changelog_added_707",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L712",
+      "weight": 1.0,
+      "source": "metka_crm_changelog_v3_70_2026_06_13",
+      "target": "metka_crm_changelog_added_712",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L718",
+      "weight": 1.0,
       "source": "metka_crm_changelog_v3_71_2026_06_13",
-      "target": "metka_crm_changelog_added_697",
+      "target": "metka_crm_changelog_added_718",
       "confidence_score": 1.0
     },
     {
@@ -17972,30 +17972,30 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L710",
+      "source_location": "L731",
       "weight": 1.0,
       "source": "metka_crm_changelog_v3_73_2026_06_15",
-      "target": "metka_crm_changelog_redesigned_710",
+      "target": "metka_crm_changelog_redesigned_731",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L717",
+      "source_location": "L738",
       "weight": 1.0,
       "source": "metka_crm_changelog_v3_74_2026_06_15",
-      "target": "metka_crm_changelog_fixed_717",
+      "target": "metka_crm_changelog_fixed_738",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L723",
+      "source_location": "L744",
       "weight": 1.0,
       "source": "metka_crm_changelog_v3_75_2026_06_15",
-      "target": "metka_crm_changelog_added_723",
+      "target": "metka_crm_changelog_added_744",
       "confidence_score": 1.0
     },
     {
@@ -18012,10 +18012,10 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L737",
+      "source_location": "L758",
       "weight": 1.0,
       "source": "metka_crm_changelog_v3_77_2026_06_15",
-      "target": "metka_crm_changelog_added_737",
+      "target": "metka_crm_changelog_added_758",
       "confidence_score": 1.0
     },
     {
@@ -18032,21 +18032,162 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L751",
+      "source_location": "L772",
       "weight": 1.0,
       "source": "metka_crm_changelog_v3_79_2026_06_15",
-      "target": "metka_crm_changelog_added_751",
+      "target": "metka_crm_changelog_added_772",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
-      "source_location": "L757",
+      "source_location": "L778",
       "weight": 1.0,
       "source": "metka_crm_changelog_v3_80_2026_06_15",
-      "target": "metka_crm_changelog_redesigned_757",
+      "target": "metka_crm_changelog_redesigned_778",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialRightPanel.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialrightpanel_jsx",
+      "target": "src_components_smsthread_jsx"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "src_components_smsthread_jsx"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/MessagesView.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_messagesview_jsx",
+      "target": "src_components_smsthread_jsx"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_smsthread_jsx",
+      "target": "components_smsthread_no_answer_templates"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_smsthread_jsx",
+      "target": "components_smsthread_smsthread"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_smsthread_jsx",
+      "target": "lib_phaseengine_hourssinceopen"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_smsthread_jsx",
+      "target": "lib_phaseengine_sms_sequences"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_smsthread_jsx",
+      "target": "lib_phaseengine_suggestseqcat"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_smsthread_jsx",
+      "target": "lib_seqsmsbodies_reconstructseqsms"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_smsthread_jsx",
+      "target": "src_lib_phaseengine_js"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_smsthread_jsx",
+      "target": "src_lib_seqsmsbodies_js"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/DialView.jsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_components_dialview_jsx",
+      "target": "components_smsthread_no_answer_templates"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/SmsThread.jsx",
+      "source_location": "L96",
+      "weight": 1.0,
+      "source": "components_smsthread_smsthread",
+      "target": "lib_phaseengine_suggestseqcat"
     },
     {
       "relation": "imports_from",
@@ -18078,17 +18219,6 @@
       "confidence_score": 1.0,
       "source": "src_components_dialview_jsx",
       "target": "components_dialview_fmtassigndate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "src_components_dialview_jsx",
-      "target": "components_smsthread_no_answer_templates",
-      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -18201,17 +18331,6 @@
       "target": "src_components_dialrightpanel_jsx"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialView.jsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "src_components_dialview_jsx",
-      "target": "src_components_smsthread_jsx",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -18317,9 +18436,9 @@
       "source_file": "src/components/DialView.jsx",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_components_dialview_jsx",
-      "target": "src_lib_sequenceengine_js",
-      "confidence_score": 1.0
+      "target": "src_lib_sequenceengine_js"
     },
     {
       "relation": "imports_from",
@@ -18441,125 +18560,6 @@
       "weight": 1.0,
       "source": "components_dialview_dialview",
       "target": "src_constants_isuwstuck"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/DialRightPanel.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_dialrightpanel_jsx",
-      "target": "src_components_smsthread_jsx"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/MessagesView.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_messagesview_jsx",
-      "target": "src_components_smsthread_jsx"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SmsThread.jsx",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_smsthread_jsx",
-      "target": "components_smsthread_no_answer_templates"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SmsThread.jsx",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_smsthread_jsx",
-      "target": "components_smsthread_smsthread"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SmsThread.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_smsthread_jsx",
-      "target": "lib_phaseengine_hourssinceopen"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SmsThread.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_smsthread_jsx",
-      "target": "lib_phaseengine_sms_sequences"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SmsThread.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_smsthread_jsx",
-      "target": "lib_phaseengine_suggestseqcat"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SmsThread.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_smsthread_jsx",
-      "target": "lib_seqsmsbodies_reconstructseqsms"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SmsThread.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_smsthread_jsx",
-      "target": "src_lib_phaseengine_js"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/SmsThread.jsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_components_smsthread_jsx",
-      "target": "src_lib_seqsmsbodies_js"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/components/SmsThread.jsx",
-      "source_location": "L96",
-      "weight": 1.0,
-      "source": "components_smsthread_smsthread",
-      "target": "lib_phaseengine_suggestseqcat"
     },
     {
       "relation": "imports_from",
@@ -65655,5 +65655,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "e31b3a0126578f17f77edfadb3286a6d4f9c6c1f"
+  "built_at_commit": "d10868d08eb69edacbb23362efdfbfd68a62fa4b"
 }

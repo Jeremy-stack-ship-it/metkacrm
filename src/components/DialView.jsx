@@ -492,11 +492,12 @@ export default function DialView({
                     ].filter(Boolean).join(" · ") || null;
                     const pairs = [
                       ["Age",        open.age],
-                      ["Sex",        open.sex],
+                      ["Gender",     open.gender || open.sex],
                       ["Address",    [open.street, open.city && open.state ? open.city+", "+open.state : (open.city||open.state), open.zip].filter(Boolean).join(" · ")],
                       ["County",     open.county],
-                      ["Coverage",   open.requestedCoverage && Number(open.requestedCoverage) > 0 ? "$"+Number(open.requestedCoverage).toLocaleString()+(open.reqCoverageRange?" ("+open.reqCoverageRange+")":"") : open.reqCoverageRange],
+                      ["Coverage",   open.requestedCoverage && Number(open.requestedCoverage) > 0 ? "$"+Number(open.requestedCoverage).toLocaleString()+(open.reqCoverageRange?" ("+open.reqCoverageRange+")":"") : (open.requestedCoverage || open.reqCoverageRange)],
                       ["Beneficiary",open.beneficiary],
+                      ["Employment", open.employment],
                       ["Loan",       open.loanAmount && Number(open.loanAmount) > 0 ? "$"+Number(open.loanAmount).toLocaleString() : null],
                       ["Home Value", open.homeValue && Number(open.homeValue) > 0 ? "$"+Number(open.homeValue).toLocaleString() : null],
                       ["Income",     open.householdIncome && Number(open.householdIncome) > 0 ? "$"+Number(open.householdIncome).toLocaleString() : null],

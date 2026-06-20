@@ -62,6 +62,7 @@ import MessagesView from './components/MessagesView.jsx';
 import ContactsView from './components/ContactsView.jsx';
 import PipelineView from './components/PipelineView.jsx';
 import LeadOrdersView from './components/LeadOrdersView.jsx';
+import DuplicatesView from './components/DuplicatesView.jsx'; // v3.94
 import WeeklyCampaignView from './components/WeeklyCampaignView.jsx'; // v3.51 — economics
 import ScriptsView from './components/ScriptsView.jsx';
 import TemplatesView from './components/TemplatesView.jsx';
@@ -159,7 +160,7 @@ function MetkaCRM(){
   // v3.24 — init view from URL hash so browser back/forward works
   const [view,setView]=useState(() => {
     const hash = window.location.hash.replace('#','');
-    const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','campaign']);
+    const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','campaign','duplicates']);
     return VALID.has(hash) ? hash : 'dashboard';
   });
   const [openId,setOpenId]=useState(null);
@@ -975,9 +976,10 @@ const queue = useMemo(() => {
   const filteredContacts=useMemo(()=>{
     return leads.filter(l => {
       const q = searchQuery.toLowerCase();
+      const qDigits = q.replace(/\D/g, ''); // v3.92 — phone search ignores formatting both sides
       const matchesSearch = !q ||
         (l.name && l.name.toLowerCase().includes(q)) ||
-        (l.phone && l.phone.includes(q)) ||
+        (qDigits.length >= 3 && l.phone && l.phone.replace(/\D/g, '').includes(qDigits)) ||
         (l.email && l.email.toLowerCase().includes(q)) ||
         (l.city && l.city.toLowerCase().includes(q));
 
@@ -1079,7 +1081,7 @@ const queue = useMemo(() => {
   useEffect(() => {
     function onPop(e) {
       const prev = (e.state && e.state.view) || window.location.hash.replace('#','') || 'dashboard';
-      const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','campaign']);
+      const VALID = new Set(['dashboard','dial','contacts','pipeline','scripts','templates','settings','campaign','duplicates']);
       setView(VALID.has(prev) ? prev : 'dashboard');
     }
     window.addEventListener('popstate', onPop);
@@ -1402,6 +1404,7 @@ const queue = useMemo(() => {
 
         // ── PIPELINE VIEW ──
         view==="orders" && React.createElement(LeadOrdersView, { leads }),
+        view==="duplicates" && React.createElement(DuplicatesView, { leads, setOpenId, setView, setPrevView, deleteLead, upd }),
 
         view==="pipeline" && React.createElement(PipelineView, {
           leads,

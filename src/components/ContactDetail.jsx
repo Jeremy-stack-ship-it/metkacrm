@@ -19,6 +19,7 @@ import {
 } from '../lib/sequenceEngine.js';
 import { getLBLDay1Opener } from '../lib/sequenceTemplates.js';
 import { SMS_SEQUENCES, suggestSeqCat, effectivePhase, leadAgeDays, PHASE_DEFS } from '../lib/phaseEngine.js';
+import SmsThread from './SmsThread.jsx'; // v3.90 — lead view now uses the shared SMS panel (INTRO / 🔥 intro+card / No-Answer rotation)
 
 // ── STAGE STEPPER (local — only used in ContactDetail) ───────────
 const StageStepper = ({ stage, onSelect }) => {
@@ -515,8 +516,14 @@ export default function ContactDetail({
 
   // v3.35 — local state for structured meeting log
   const [cdTab, setCdTab] = React.useState('overview'); // 'overview' | 'sms'
+  // v3.89 — open straight to the SMS tab when launched via the dashboard 💬 quick-text
+  React.useEffect(() => {
+    try { if (localStorage.getItem('metka-cd-tab') === 'sms') { setCdTab('sms'); localStorage.removeItem('metka-cd-tab'); } } catch (e) {}
+  }, [open && open.id]);
   const [meetingOutcome, setMeetingOutcome] = React.useState('Held');
   const [meetingTs, setMeetingTs]           = React.useState('');
+
+  const [apptTs, setApptTs] = React.useState(''); // v3.93 — manual appointment setter (lead view)
 
   // Save a structured appointment record
   const saveMeeting = () => {
@@ -574,7 +581,7 @@ export default function ContactDetail({
           ),
           // Editable grid
           React.createElement("div", { style:{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"10px", marginBottom:"10px" } },
-            [["Name","name","Full name"],["Phone","phone","(405) 555-0000"],["Email","email","email@domain.com"],["Age","age","e.g. 54"],["City","city","City"],["State","state","OK"],["Loan Amount","loanAmount","e.g. 185000"],["Lead Type","leadType","Mortgage Protection"]].map(([label,field,ph]) =>
+            [["Name","name","Full name"],["Phone","phone","(405) 555-0000"],["Email","email","email@domain.com"],["Age","age","e.g. 54"],["City","city","City"],["State","state","OK"],["Loan Amount","loanAmount","e.g. 185000"],["Lead Type","leadType","Mortgage Protection"],["Gender","gender","Male / Female"],["Zip","zip","74864"],["Req. Coverage","requestedCoverage","e.g. Under $100,000"],["Beneficiary","beneficiary","e.g. Spouse"],["Employment","employment","e.g. Employed Full-Time"]].map(([label,field,ph]) =>
               React.createElement("div", { key:field },
                 React.createElement("label", { style:{ fontSize: "11px", fontWeight:"700", color:"var(--t3)", letterSpacing:"0.6px", display:"block", marginBottom:"4px" } }, label.toUpperCase()),
                 React.createElement("input", { key:field+"-id-"+open.id, placeholder:ph, defaultValue:open[field]||"", onBlur:e=>{ const v=e.target.value.trim(); if(v!==(open[field]||"")) upd(open.id,{[field]:v}); }, style:{...inp(),width:"100%",fontSize:"12px",boxSizing:"border-box"} })
@@ -738,7 +745,7 @@ export default function ContactDetail({
         ),
 
         // SMS tab
-        cdTab === "sms" && React.createElement(SmsThreadTab, { open, sendSms, selfApplyUrl }),
+        cdTab === "sms" && React.createElement(SmsThread, { open, sendSms, upd, height: '560px' }),
 
         // Overview tab contents — disposition + stage + callback + UW
         cdTab === "overview" && React.createElement("div", { style:{ display:"flex", flexDirection:"column", gap:"16px" } },
@@ -750,6 +757,11 @@ export default function ContactDetail({
             onClick:()=>{ openCalendlyPopup(open, calendlyUrl, setCalendlyTargetId); },
             style:{ display:"block", width:"100%", padding:"12px 16px", marginBottom:"10px", background:open.disposition==="appointment_booked"?"#8B5CF6":"var(--surface)", color:open.disposition==="appointment_booked"?"#fff":"#8B5CF6", border:"1.5px solid "+(open.disposition==="appointment_booked"?"#8B5CF6":"#C4B5FD"), borderRadius:"10px", fontSize:"14px", fontWeight:"800", cursor:"pointer", textAlign:"center", transition:"all 0.1s ease" }
           }, open.disposition==="appointment_booked" ? "📅 BOOKED · "+fmt(open.nextCallback) : "📅 BOOK APPOINTMENT → CALENDLY"),
+          // v3.93 — manual appointment setter (parity with the dialer's manual appt)
+          React.createElement("div", { style:{ display:"flex", gap:"6px", marginBottom:"10px", alignItems:"center" } },
+            React.createElement("input", { type:"datetime-local", value:apptTs, onChange:e=>setApptTs(e.target.value), style:{...inp(), flex:1, fontSize:"12px", padding:"8px 10px"} }),
+            React.createElement("button", { onClick:()=>{ if(!apptTs) return; const iso=new Date(apptTs).toISOString(); upd(open.id,(fresh)=>({ disposition:"appointment_booked", stage:"appointment_set", nextCallback:iso, apptConfirmed:false, notes:[{ts:new Date().toISOString(),type:"appointment",text:"\ud83d\udcc5 Appointment set - "+fmt(iso)}, ...(fresh.notes||[])] })); setApptTs(""); }, style:{ padding:"8px 14px", background:"#8B5CF6", color:"#fff", border:"none", borderRadius:"8px", fontSize:"12px", fontWeight:"700", cursor:"pointer", whiteSpace:"nowrap" } }, "\ud83d\udcc5 Set Manually")
+          ),
           React.createElement("div", { style:{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"8px", marginBottom:"8px" } },
             DISPS.filter(d=>["no_answer","vm_left","callback","not_interested","dnc"].includes(d.id)).map(d =>
               React.createElement("button", { key:d.id, onClick:()=>handleDisposition(d.id), style:{ padding:"10px 8px", background:open.disposition===d.id?d.color+"22":"var(--surface-2)", color:open.disposition===d.id?d.color:"var(--t2)", border:"1px solid "+(open.disposition===d.id?d.color+"66":"var(--border)"), borderRadius:"8px", fontSize:"12px", fontWeight:open.disposition===d.id?"700":"600", cursor:"pointer", transition:"all 0.1s ease", textAlign:"center", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" } }, d.label)

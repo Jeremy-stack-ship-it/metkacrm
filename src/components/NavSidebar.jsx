@@ -32,6 +32,7 @@ const GROUPS = [
       { id: 'contacts', icon: '📇', label: 'LEADS' },
       { id: 'pipeline', icon: '📊', label: 'PIPE' },
       { id: 'orders',   icon: '💰', label: 'ORDERS' },
+      { id: 'duplicates', icon: '🔀', label: 'DUPES' },
     ],
   },
   {

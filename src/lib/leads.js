@@ -217,9 +217,9 @@ export const makeLeadManager = (
     setCbTime("");
   };
 
-  const deleteLead = (id) => {
+  const deleteLead = (id, skipConfirm) => {
     const lead = leads.find(l => l.id === id);
-    if (!window.confirm(`Permanently delete ${lead?.name || "this lead"}?\n\nThis cannot be undone.`)) return;
+    if (!skipConfirm && !window.confirm(`Permanently delete ${lead?.name || "this lead"}?\n\nThis cannot be undone.`)) return;
     // v3.43 — F6: functional updater (was stale `leads` closure + saveLeads bulk
     // upsert — deleting mid-dial-burst could persist a pre-disposition snapshot).
     let sfNext = null;

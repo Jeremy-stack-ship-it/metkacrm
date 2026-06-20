@@ -1,7 +1,7 @@
-# Graph Report - metka-crm  (2026-06-17)
+# Graph Report - metka-crm  (2026-06-18)
 
 ## Corpus Check
-- 86 files · ~147,312 words
+- 86 files · ~147,441 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e31b3a01`
+- Built from commit: `d10868d0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -294,7 +294,7 @@ Cohesion: 0.16
 Nodes (14): cancelTimeout(), channel(), getChannels(), hasReceived(), onClose(), onError(), onMessage(), onOpen() (+6 more)
 
 ### Community 43 - "Community 43"
-Cohesion: 0.14
+Cohesion: 0.12
 Nodes (18): clearHeartbeats(), flushSendBuffer(), hasLogger(), heartbeatTimeout(), inPendingSyncState(), isMember(), joinRef(), leaveOpenTopic() (+10 more)
 
 ### Community 44 - "Community 44"
@@ -322,16 +322,16 @@ Cohesion: 0.07
 Nodes (3): isConnected(), Ow, trigger()
 
 ### Community 50 - "Community 50"
-Cohesion: 0.10
-Nodes (25): ah(), Bi(), Cc(), fk(), fn(), Ga(), H2(), hC() (+17 more)
+Cohesion: 0.08
+Nodes (30): ah(), Bi(), Cc(), fk(), fl(), fn(), Ga(), gE (+22 more)
 
 ### Community 51 - "Community 51"
 Cohesion: 0.18
 Nodes (16): Bp(), Ff(), fw(), gv(), gw(), Lr(), mu(), mw() (+8 more)
 
 ### Community 52 - "Community 52"
-Cohesion: 0.08
-Nodes (29): appendParams(), bE(), ck(), endpointURL(), f0(), fh(), fl(), Ft() (+21 more)
+Cohesion: 0.11
+Nodes (24): appendParams(), bE(), ck(), endpointURL(), f0(), fh(), Ft(), h0() (+16 more)
 
 ### Community 53 - "Community 53"
 Cohesion: 0.12
@@ -418,8 +418,8 @@ Cohesion: 0.25
 Nodes (3): c0(), d0(), dE
 
 ### Community 78 - "Community 78"
-Cohesion: 0.18
-Nodes (6): connect(), connectWithFallback(), remove(), transportConnect(), transportName(), Yb()
+Cohesion: 0.12
+Nodes (7): connect(), connectWithFallback(), Dw, remove(), transportConnect(), transportName(), Yb()
 
 ### Community 79 - "Community 79"
 Cohesion: 0.15
@@ -509,7 +509,7 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.263) - this node is a cross-community bridge._
 - **Why does `autoDetectMapping()` connect `Community 7` to `Community 0`, `Community 66`?**
   _High betweenness centrality (0.263) - this node is a cross-community bridge._
-- **Why does `PE()` connect `Community 34` to `Community 67`, `Community 69`, `Community 70`, `Community 42`, `Community 45`, `Community 52`, `Community 56`, `Community 60`, `Community 62`, `Community 31`?**
+- **Why does `PE()` connect `Community 34` to `Community 67`, `Community 69`, `Community 70`, `Community 42`, `Community 45`, `Community 50`, `Community 56`, `Community 60`, `Community 62`, `Community 31`?**
   _High betweenness centrality (0.045) - this node is a cross-community bridge._
 - **Are the 73 inferred relationships involving `Se()` (e.g. with `._authenticate()` and `._challenge()`) actually correct?**
   _`Se()` has 73 INFERRED edges - model-reasoned connections that need verification._

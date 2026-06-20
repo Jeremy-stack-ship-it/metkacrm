@@ -471,6 +471,29 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
               </div>
             ))}
 
+            {/* v3.89 — Newest Leads + one-tap quick text */}
+            <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:'0.7rem',marginTop:'0.6rem'}}>
+              <div style={{fontSize:'0.688rem',color:'#94a3b8',marginBottom:'0.6rem',textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700}}>🆕 Newest Leads</div>
+              {(() => {
+                const newest = (leads||[]).filter(l => l && !l.archived && l.assignDate)
+                  .sort((a,b) => new Date(b.assignDate) - new Date(a.assignDate))
+                  .slice(0,10);
+                if(!newest.length) return <div style={{fontSize:'11px',color:'var(--t4)'}}>No leads yet.</div>;
+                const ago = (d) => { const h = Math.floor((Date.now()-new Date(d).getTime())/3600000); if(h<1) return 'just now'; if(h<24) return h+'h ago'; return Math.floor(h/24)+'d ago'; };
+                return newest.map(l => (
+                  <div key={l.id} style={{display:'flex',alignItems:'center',gap:'8px',padding:'7px 8px',borderRadius:7,marginBottom:'4px',background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.05)'}}>
+                    <div style={{flex:1,minWidth:0,cursor:'pointer'}} onClick={()=>{setPrevView('dashboard');setOpenId(l.id);setView('contact');}}>
+                      <div style={{fontSize:'12px',fontWeight:700,color:'var(--t1)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                        {l.name||l.phone||'Unknown'}
+                        {l.source==='razor_ridge' && <span style={{marginLeft:6,fontSize:'9px',fontWeight:800,color:'#EF4444',background:'rgba(239,68,68,0.12)',borderRadius:4,padding:'1px 5px'}}>RR</span>}
+                      </div>
+                      <div style={{fontSize:'10px',color:'var(--t3)'}}>{(l.state||'—')} · {ago(l.assignDate)}</div>
+                    </div>
+                    <button onClick={()=>{ try{localStorage.setItem('metka-cd-tab','sms');}catch(e){} setPrevView('dashboard');setOpenId(l.id);setView('contact'); }} title="Text this lead" style={{flexShrink:0,fontSize:'13px',fontWeight:700,color:'#fff',background:'var(--blue)',border:'none',borderRadius:6,padding:'5px 9px',cursor:'pointer'}}>💬</button>
+                  </div>
+                ));
+              })()}
+            </div>
             <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:'0.7rem',marginTop:'0.6rem'}}>
               <div style={{fontSize:'0.688rem',color:'#94a3b8',marginBottom:'0.6rem',textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700}}>Today's Queue</div>
               {/* Total due today */}

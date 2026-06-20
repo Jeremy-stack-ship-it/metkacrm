@@ -2,6 +2,114 @@
 
 All notable changes to this project are documented here. Format: [Date] v[Version] — [Theme]
 
+[2026-06-20] v3.95 — Fix dialer Lead Data pane: Gender + coverage band show
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEM: Dialer's read-only Lead Data pane showed blanks for RR leads. Field-name
+  mismatch: pane read open.sex but RR stores open.gender; "Coverage" only rendered
+  for numeric values but RR sends a text band ("$100,001 - $250,000").
+FILE: src/components/DialView.jsx (left Lead Data pairs)
+WHAT:
+  - "Sex" -> "Gender", reads open.gender || open.sex.
+  - Coverage now falls back to the raw requestedCoverage string (shows the band).
+  - Added Employment row (open.employment) under Beneficiary.
+NOTE: Beneficiary/Employment still blank on leads imported BEFORE the updated RR
+  script is re-pasted — those values live only in the intake note until then.
+TEST: vite build clean.
+REVERT: restore ["Sex",open.sex]; restore the reqCoverageRange-only fallback; remove Employment row.[2026-06-20] v3.94 — Duplicates view + merge (DUPES nav)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NEED: No way to see or resolve duplicate leads in-app; SQL deletes don't stick
+  (app re-syncs local copies). In-app delete tombstones (LS metka-deleted-ids-v1),
+  so it's the ONLY reliable way to kill a dupe permanently.
+FILES: src/components/DuplicatesView.jsx (new), src/App.jsx (import+route+VALID x2),
+  src/components/NavSidebar.jsx (DUPES nav item), src/lib/leads.js (deleteLead skipConfirm).
+WHAT:
+  - New 🔀 DUPES view (DATA nav group): groups leads by 10-digit phone; shows each
+    group with the most-history lead marked KEEPER, RR badge, notes/disp/date.
+  - Per lead: Open + Delete (Delete uses deleteLead -> tombstone -> sticks).
+  - Per group: "🔗 Merge & keep [keeper]" — pulls the others' notes into the keeper,
+    fills any blank keeper fields from them, then deletes the duplicates (one confirm).
+  - leads.js deleteLead(id, skipConfirm) — merge deletes silently after its own confirm.
+TEST: vite build clean.
+REVERT: remove DuplicatesView + its import/route/VALID/nav entries; revert deleteLead sig.[2026-06-19] v3.93 — Manual appointment setter in lead view
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEM: Lead view (ContactDetail) only offered "BOOK -> CALENDLY" — no way to
+  set an appointment manually by date/time, even though the dialer has one.
+FILE: src/components/ContactDetail.jsx (Disposition card)
+WHAT: Added a datetime-local input + "📅 Set Manually" button under the Calendly
+  button. Sets disposition=appointment_booked, stage=appointment_set,
+  nextCallback=chosen time, apptConfirmed=false, and logs an appointment note.
+  Mirrors the dialer's manual-appt flow (functional updater for fresh notes).
+TEST: vite build clean.
+REVERT: remove the apptTs state + the manual-appt React.createElement block.[2026-06-19] v3.92 — Fix: search clients by phone number (any format)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEM: Contact search compared typed text against the stored phone literally.
+  Numbers are stored "(405) 225-4455" but you type "4052254455" -> never matched.
+FILE: src/App.jsx (filteredContacts search predicate)
+WHAT: Strip non-digits from BOTH the query and l.phone before comparing
+  (qDigits.length >= 3 guard avoids name-with-stray-digit noise). Name/email/city
+  search unchanged. Now "4052254455", "405225", "(405) 225" all find the lead.
+TEST: vite build clean.
+REVERT: restore l.phone.includes(q).[2026-06-19] v3.91 — Surface lead fields: Gender, Zip, Req. Coverage, Beneficiary, Employment
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHY: Razor Ridge data (gender/zip/coverage already in lead data; beneficiary/
+  employment note-only) had no display field on the lead page, so it looked like
+  it was missing — buried in the intake note.
+FILES: src/components/ContactDetail.jsx, RazorRidge_LeadIntake.gs (workspace)
+WHAT:
+  - ContactDetail editable grid: added Gender, Zip, Req. Coverage, Beneficiary,
+    Employment as proper editable fields (gender/zip/requestedCoverage were already
+    populated — now visible; beneficiary/employment newly surfaced).
+  - RazorRidge_LeadIntake.gs: now writes beneficiary + employment as structured
+    fields (not just the note), so the new lead-page fields auto-fill on future
+    RR imports. (Jeremy must re-paste the updated .gs.)
+  - Campaign/Motivation stay in the intake note as context.
+TEST: vite build clean.
+REVERT: remove the 5 grid entries; remove beneficiary/employment from the .gs object.
+
+
+[2026-06-17] v3.90 — Lead view uses the shared SMS panel (fixes missing templates)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEM: The No-Answer rotation, 🔥 intro+card, and ⚠️ INTRO buttons only existed
+  in DialView (shared SmsThread.jsx). The lead view (ContactDetail) had its OWN
+  older inline panel (SmsThreadTab) that lacked all of them — so the INTRO/templates
+  were missing when you opened a lead. Same split-brain as the sequence engine.
+FILE: src/components/ContactDetail.jsx
+WHAT:
+  - cdTab 'sms' now renders the shared <SmsThread/> (open, sendSms, upd, height 560px)
+    instead of the inline SmsThreadTab.
+  - Verified SmsThread is a strict SUPERSET: same sequence-category template picker
+    (cat1/2/3, SMS_SEQUENCES) + selfApply, PLUS No-Answer rotation, 🔥 intro+card,
+    ⚠️ INTRO. Nothing lost; lead view gains everything.
+  - Bonus: the v3.89 dashboard 💬 quick-text opens this tab, so it now lands on the
+    full panel too.
+ORPHAN: the old SmsThreadTab function in ContactDetail.jsx is now dead code — left
+  in place to keep this change minimal; safe to delete in a later cleanup pass.
+TEST: vite build clean.
+REVERT: render SmsThreadTab again; remove the SmsThread import.
+
+
+[2026-06-17] v3.89 — Dashboard: Newest Leads card + one-tap quick text
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILES: src/components/DashboardTab.jsx, src/components/ContactDetail.jsx
+WHAT:
+  - New "🆕 Newest Leads" block in the Lead Intake card: 10 most recent leads by
+    assignDate (newest first), each showing name + RR badge (source razor_ridge)
+    + state + "Xh/Xd ago".
+  - Tap the name → opens the full contact. Tap 💬 → opens the contact straight to
+    the SMS tab (your 🔥 intro is one tap away). Manual send preserved.
+  - ContactDetail: useEffect honors a localStorage 'metka-cd-tab'=sms signal to
+    auto-open the SMS tab, then clears it.
+TEST: vite build clean.
+REVERT: remove the Newest Leads block in DashboardTab + the cd-tab useEffect.
+
+
+[2026-06-17] v3.88 — 🔥 intro asks for best callback time
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE: src/components/SmsThread.jsx
+WHAT: Added "What's the best time to reach you?" to the 🔥 intro cardMsg — a
+  question invites a reply. Build clean.
+
+
 [2026-06-17] v3.87 — 🔥 button = intro + living-benefits + business card
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CHANGE: Repurpose the 🔥 Card chip into a first-touch intro that leads with
