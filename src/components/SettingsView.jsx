@@ -414,7 +414,7 @@ export default function SettingsView({
         }),
         React.createElement("label",{style:{fontSize:"11pxpx",fontWeight:"700",color:"var(--t3)",letterSpacing:"1px",display:"block",marginBottom:"5px"}},"DEFAULT EMAIL SIGNATURE (optional)"),
         React.createElement("textarea",{
-          placeholder:"Jeremy Metka | Senior Field Underwriter\nMinistry of Protection | NPN #21425108\n(405) 555-0000",
+          placeholder:"Your Name | Your Title\nYour Org | NPN #\n(555) 555-0000",
           value: gmailDraft.signature || '',
           onChange: e => setGmailDraft(d => ({...d, signature: e.target.value})),
           rows: 4,

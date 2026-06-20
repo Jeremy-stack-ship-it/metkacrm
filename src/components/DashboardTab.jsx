@@ -1,3 +1,4 @@
+import { BRAND } from '../config.js';
 import React from 'react';
 import { isDueToday, hoursSinceOpen } from '../lib/phaseEngine';
 import { dayKey } from '../lib/activityLog.js';
@@ -803,11 +804,11 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
             {issuedLeads.map(l => {
               const first = (l.name || '').split(' ')[0] || 'there';
               const scripts5r = {
-                'Referrals': `Hi ${first} — this is Jeremy Metka, your Senior Field Underwriter. I'm doing annual reviews this week and wanted to reach out. First — do you feel like your household is fully protected? And second, do you know anyone else who might benefit from a Household Protection Audit?`,
-                'Reset': `Hi ${first} — Jeremy Metka here. I do annual reviews on all our issued households and I want to make sure your coverage still fits your life. Things change — income, family size, health. Can we set 15 minutes to run a quick reset audit?`,
-                'Replace': `Hi ${first}, this is Jeremy Metka. I've been reviewing issued households and there may be a stronger product available now that could give you more Living Benefits for the same or less premium. Worth a 10-minute look?`,
-                'Rugrats': `Hi ${first} — Jeremy Metka here. Just doing our annual reviews. Quick question — any new additions to the family? A new child or grandchild changes the protection picture entirely. Want to run a quick audit?`,
-                'Recruit': `Hi ${first}, this is Jeremy Metka. You've seen firsthand what this work does for families. I'm building a regional team and looking for servant leaders — people with integrity who want to build something real. Would you ever consider learning more about what I do?`,
+                'Referrals': `Hi ${first} — this is ${BRAND.name}, your Senior Field Underwriter. I'm doing annual reviews this week and wanted to reach out. First — do you feel like your household is fully protected? And second, do you know anyone else who might benefit from a Household Protection Audit?`,
+                'Reset': `Hi ${first} — ${BRAND.name} here. I do annual reviews on all our issued households and I want to make sure your coverage still fits your life. Things change — income, family size, health. Can we set 15 minutes to run a quick reset audit?`,
+                'Replace': `Hi ${first}, this is ${BRAND.name}. I've been reviewing issued households and there may be a stronger product available now that could give you more Living Benefits for the same or less premium. Worth a 10-minute look?`,
+                'Rugrats': `Hi ${first} — ${BRAND.name} here. Just doing our annual reviews. Quick question — any new additions to the family? A new child or grandchild changes the protection picture entirely. Want to run a quick audit?`,
+                'Recruit': `Hi ${first}, this is ${BRAND.name}. You've seen firsthand what this work does for families. I'm building a regional team and looking for servant leaders — people with integrity who want to build something real. Would you ever consider learning more about what I do?`,
               };
               return (
                 <div key={l.id} style={{

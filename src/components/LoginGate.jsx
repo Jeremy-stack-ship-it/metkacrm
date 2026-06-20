@@ -1,3 +1,4 @@
+import { BRAND } from '../config.js';
 import React, { useState } from 'react';
 
 const PASSWORD    = import.meta.env.VITE_CRM_PASSWORD;
@@ -53,7 +54,7 @@ export default function LoginGate({ onAuth }) {
         error && React.createElement("div", { style: { fontSize: "11px", color: "var(--red)", marginTop: "6px", fontWeight: "600" } }, "Incorrect password. Try again.")
       ),
       React.createElement("button", { onClick: submit, className: "t", style: { width: "100%", padding: "13px", background: "var(--navy)", color: "#fff", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "600", cursor: "pointer", letterSpacing: "0.3px" } }, "Sign In →"),
-      React.createElement("div", { style: { marginTop: "28px", fontSize: "11pxpx", color: "var(--t4)", textAlign: "center" } }, "Jeremy Metka · Senior Field Underwriter")
+      React.createElement("div", { style: { marginTop: "28px", fontSize: "11pxpx", color: "var(--t4)", textAlign: "center" } }, BRAND.name + " · " + BRAND.title)
     )
   );
 }

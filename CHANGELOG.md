@@ -2,7 +2,27 @@
 
 All notable changes to this project are documented here. Format: [Date] v[Version] — [Theme]
 
-[2026-06-20] v3.95 — Fix dialer Lead Data pane: Gender + coverage band show
+[2026-06-20] v3.96 — White-label: all branding flows from src/config.js
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHY: To hand a clean, independent copy to another agent (Derick) and any future
+  downline, every "Jeremy Metka", NPN, Calendly, hihello card, business name, and
+  Twilio number is now read from ONE file (src/config.js BRAND) instead of being
+  hardcoded across ~10 files. Jeremy's instance is byte-for-byte unchanged (config
+  holds his current values).
+FILES: NEW src/config.js (BRAND). Wired: SmsThread, App.jsx, ContactDetail, AIPanel,
+  LoginGate, DashboardTab (5 R's), defaultScripts, seqSmsBodies, sequenceTemplates
+  (27 email signatures), SettingsView (genericized placeholder).
+WHAT:
+  - Backtick templates -> ${BRAND.name} / ${BRAND.npn} / ${BRAND.business}.
+  - Double/single-quoted strings -> " + BRAND.name + " concatenation.
+  - SMS const CALENDLY/HIHELLO -> BRAND.calendly/BRAND.card. NUM_CHANGE number ->
+    BRAND.phoneDisplay. ContactDetail calendly -> BRAND.calendly. LoginGate footer.
+  - Supabase keys stay in .env (VITE_SUPABASE_*), one per agent.
+  - Email/SMS Calendly + phone were already runtime-injected from Settings.
+VERIFY: 0 'Jeremy Metka' left in src except config.js source; 0 residual hardcoded
+  calendly/hihello/npn/number; vite build clean (4 checkpoints).
+RUNBOOK: ../SETUP_WHITELABEL.md — full new-agent standup (Supabase, Twilio, config, run).
+REVERT: git revert; or each agent's instance is just their own config.js + .env.[2026-06-20] v3.95 — Fix dialer Lead Data pane: Gender + coverage band show
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PROBLEM: Dialer's read-only Lead Data pane showed blanks for RR leads. Field-name
   mismatch: pane read open.sex but RR stores open.gender; "Coverage" only rendered

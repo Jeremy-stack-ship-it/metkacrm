@@ -1,3 +1,4 @@
+import { BRAND } from './config.js';
 
 /*
  * METKA FIELD OPS CRM
@@ -511,9 +512,9 @@ function MetkaCRM(){
       const t = localStorage.getItem("metka-templates-v1");
       if(rs) setScripts(JSON.parse(rs));
       if(t) setTemplates(JSON.parse(t)); else setTemplates({
-        "gl_01_opener":      {name:"GL/DLHA — 1. Opener + TCPA",        text:"Hey {first_name}, this is Jeremy Metka your Field Underwriter following up with the life insurance quotes you requested. I can call you later today, or I can ask you a few questions over text to get your offers. Are you ok with answering a couple of basic medical questions over text to get better pricing? Reply STOP to opt out."},
-        "mp_01_opener":      {name:"MP — 1. Opener + TCPA",              text:"Hey {first_name}, this is Jeremy Metka your Field Underwriter following up on your mortgage protection request. I can call you later today, or ask a few quick questions over text to get your options ready. Are you ok with a couple of basic questions over text? Reply STOP to opt out."},
-        "hpa_01_opener":     {name:"HPA Form — 1. Opener",               text:"Hey {first_name}, Jeremy Metka here — Senior Field Underwriter with Ministry of Protection. Got your Household Protection Audit request. Happy to walk through everything over text or set up a quick call — which works better for you? Reply STOP to opt out."},
+        "gl_01_opener":      {name:"GL/DLHA — 1. Opener + TCPA",        text:"Hey {first_name}, this is " + BRAND.name + " your Field Underwriter following up with the life insurance quotes you requested. I can call you later today, or I can ask you a few questions over text to get your offers. Are you ok with answering a couple of basic medical questions over text to get better pricing? Reply STOP to opt out."},
+        "mp_01_opener":      {name:"MP — 1. Opener + TCPA",              text:"Hey {first_name}, this is " + BRAND.name + " your Field Underwriter following up on your mortgage protection request. I can call you later today, or ask a few quick questions over text to get your options ready. Are you ok with a couple of basic questions over text? Reply STOP to opt out."},
+        "hpa_01_opener":     {name:"HPA Form — 1. Opener",               text:"Hey {first_name}, " + BRAND.name + " here — Senior Field Underwriter with Ministry of Protection. Got your Household Protection Audit request. Happy to walk through everything over text or set up a quick call — which works better for you? Reply STOP to opt out."},
         "q_02_verify":       {name:"Q2 — Verify Info",                   text:"Hi {first_name}, let's start by confirming your submitted info: {name}, {age}, {state}. Is this correct?"},
         "q_03_health":       {name:"Q3 — Health History",                text:"Excellent {first_name}. Do you have any history of medical conditions of any kind (e.g., high blood pressure, heart conditions, sleep apnea, stroke, cancer, diabetes, or depression)?"},
         "q_04_coverage":     {name:"Q4 — Coverage Amount",               text:"Excellent, and how much coverage are you looking for?"},
@@ -521,7 +522,7 @@ function MetkaCRM(){
         "q_06_book_call":    {name:"Q6 — Book the Call",                 text:"That's all the info I need to go to work on your options. Since there are a few different ways we can get your family protected, I wanted to jump on a 7 minute call to show you what you qualify for. Would it be better for you to do that in the morning, afternoon or evening?"},
         "appt_07_reminder":  {name:"Appt — Reminder (24hr)",             text:"Hi {first_name}, this is Jeremy with a friendly reminder for our appointment on {date} at {time}. Reply YES to confirm."},
         "appt_08_confirmed": {name:"Appt — Post-YES Confirmation",       text:"My pleasure, we will talk then. Feel free to reach out with anything in the meantime."},
-        "appt_09_save_num":  {name:"Appt — Save Number + Card",          text:"Perfect — please save my name in your phone, I'll call from this number. For ease here is my digital business card: https://hihello.me/p/6cc69b25-86ec-4c39-a45b-fd48bee85403"},
+        "appt_09_save_num":  {name:"Appt — Save Number + Card",          text:"Perfect — please save my name in your phone, I'll call from this number. For ease here is my digital business card: " + BRAND.card},
       });
       
       if(!r) localStorage.setItem(LS_LEADS,JSON.stringify(SEEDS));

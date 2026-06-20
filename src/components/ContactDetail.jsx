@@ -1,3 +1,4 @@
+import { BRAND } from '../config.js';
 /**
  * CONTACT DETAIL PAGE VIEW
  * Full contact card: identity, health profile, activity log,
@@ -261,7 +262,7 @@ function SmsThreadTab({ open, sendSms, selfApplyUrl }) {
 
   const fill = (text) => {
     const firstName = open ? (open.firstName || (open.name || '').split(' ')[0] || 'there') : 'there';
-    const calendly  = 'https://calendly.com/metkasolutions/20min';
+    const calendly  = BRAND.calendly;
     setMsgText(
       text
         .replace(/\$\{n\}|\{n\}/g, firstName)
@@ -278,7 +279,7 @@ function SmsThreadTab({ open, sendSms, selfApplyUrl }) {
     const firstName = open ? (open.firstName || (open.name || '').split(' ')[0] || 'there') : 'there';
     const map = {
       '{firstName}':  firstName,
-      '{calendly}':   'https://calendly.com/metkasolutions/20min',
+      '{calendly}':   BRAND.calendly,
       '{selfApply}':  selfApplyUrl || '',
     };
     setMsgText(prev => prev + (map[v] || v));
@@ -423,10 +424,10 @@ function SmsThreadTab({ open, sendSms, selfApplyUrl }) {
         React.createElement('div', { style: { overflowY: 'auto', flex: 1 } },
           (SMS_SEQUENCES[tplCategory] && SMS_SEQUENCES[tplCategory].texts || []).map(step => {
             const firstName = open ? (open.firstName || (open.name || '').split(' ')[0] || 'there') : 'there';
-            const preview = step.body(firstName, 'calendly.com/metkasolutions/20min').slice(0, 80) + '…';
+            const preview = step.body(firstName, BRAND.calendly).slice(0, 80) + '…';
             return React.createElement('div', {
               key: step.step,
-              onClick: () => fill(step.body(firstName, 'https://calendly.com/metkasolutions/20min')),
+              onClick: () => fill(step.body(firstName, BRAND.calendly)),
               style: {
                 padding: '8px 10px', marginBottom: '4px', borderRadius: '8px', border: '1px solid var(--border)',
                 cursor: 'pointer', background: 'var(--surface-2)', transition: 'background 0.1s'

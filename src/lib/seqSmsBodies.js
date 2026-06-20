@@ -1,3 +1,4 @@
+import { BRAND } from '../config.js';
 // ── SEQUENCE SMS BODIES (v3.53) ──────────────────────────────────────────────
 // Mirror of the process-sequence Edge Function's SMS template map. The cron's
 // notes only logged "Track | Step" — never the body. These templates are
@@ -7,28 +8,28 @@
 
 const SMS = {
   "new:0": {
-    mp: n => `Hi ${n}, I'm Jeremy Metka — Senior Field Underwriter. I received your Mortgage Protection request. Today's plans include Living Benefits that pay cash for cancer, stroke, or heart attack — not just at death. Can we connect this week? Reply STOP to opt out.`,
-    li: n => `Hi ${n}, I'm Jeremy Metka — Senior Field Underwriter. I received your life insurance inquiry. Today's plans include Living Benefits — cash paid while you're still alive. Can we connect? Reply STOP to opt out.`,
+    mp: n => `Hi ${n}, I'm ${BRAND.name} — Senior Field Underwriter. I received your Mortgage Protection request. Today's plans include Living Benefits that pay cash for cancer, stroke, or heart attack — not just at death. Can we connect this week? Reply STOP to opt out.`,
+    li: n => `Hi ${n}, I'm ${BRAND.name} — Senior Field Underwriter. I received your life insurance inquiry. Today's plans include Living Benefits — cash paid while you're still alive. Can we connect? Reply STOP to opt out.`,
   },
   "new:1": {
-    mp: n => `Hi ${n}, Jeremy Metka following up on your Mortgage Protection review. I have 15 minutes to walk you through what's available in your state. When works for you? Reply STOP to opt out.`,
-    li: n => `Hi ${n}, Jeremy Metka following up on your life insurance inquiry. 15 minutes is all I need to walk you through your options. When works for you? Reply STOP to opt out.`,
+    mp: n => `Hi ${n}, ${BRAND.name} following up on your Mortgage Protection review. I have 15 minutes to walk you through what's available in your state. When works for you? Reply STOP to opt out.`,
+    li: n => `Hi ${n}, ${BRAND.name} following up on your life insurance inquiry. 15 minutes is all I need to walk you through your options. When works for you? Reply STOP to opt out.`,
   },
   "new:2": {
     mp: n => `Hi ${n}, checking in on your Mortgage Protection request. Most families I work with had no idea their plan could pay out while they're still alive — not just at death. Worth a quick call. Reply STOP to opt out.`,
     li: n => `Hi ${n}, checking back on your life insurance inquiry. Living Benefits pay cash for critical illness while you're alive. That changes the whole conversation. Reply STOP to opt out.`,
   },
   "new:3": {
-    mp: n => `Hi ${n}, Jeremy Metka. Still have your Mortgage Protection file open. Can we connect this week? Reply STOP to opt out.`,
-    li: n => `Hi ${n}, Jeremy Metka. Still have your life insurance file open. Can we connect this week? Reply STOP to opt out.`,
+    mp: n => `Hi ${n}, ${BRAND.name}. Still have your Mortgage Protection file open. Can we connect this week? Reply STOP to opt out.`,
+    li: n => `Hi ${n}, ${BRAND.name}. Still have your life insurance file open. Can we connect this week? Reply STOP to opt out.`,
   },
   "new:4": {
     mp: n => `Hi ${n} — Mortgage Protection plans today pay cash for cancer, stroke, or heart attack while your mortgage is active. That's the part most people never hear. 15 minutes to show you how it works. Reply STOP to opt out.`,
     li: n => `Hi ${n} — most families think life insurance only pays when you die. The plans I work with also pay cash for critical illness while you're alive. Worth knowing. Reply STOP to opt out.`,
   },
   "new:5": {
-    mp: n => `Hi ${n}, Jeremy Metka — last follow-up before I wrap up household files in your area. Is Mortgage Protection still something you want to address? Reply STOP to opt out.`,
-    li: n => `Hi ${n}, Jeremy Metka — reaching out before I close your file. Is life insurance still on your list? Reply STOP to opt out.`,
+    mp: n => `Hi ${n}, ${BRAND.name} — last follow-up before I wrap up household files in your area. Is Mortgage Protection still something you want to address? Reply STOP to opt out.`,
+    li: n => `Hi ${n}, ${BRAND.name} — reaching out before I close your file. Is life insurance still on your list? Reply STOP to opt out.`,
   },
   "new:6": {
     mp: n => `Hi ${n}, I'm wrapping up regional household files this week. Before I archive yours — if protecting your home is still a priority, I'm here. Reply STOP to opt out.`,
@@ -43,8 +44,8 @@ const SMS = {
     li: n => `Hi ${n}, we haven't connected on your life insurance inquiry yet. Quick note: these plans pay cash for critical illness while you're alive — not just at death. 15 min. Reply STOP to opt out.`,
   },
   "re-engage:1": {
-    mp: n => `Hi ${n}, Jeremy Metka — following up on your Mortgage Protection review. Can we find 15 minutes this week? Reply STOP to opt out.`,
-    li: n => `Hi ${n}, Jeremy Metka — following up on your life insurance inquiry. 15 minutes this week? Reply STOP to opt out.`,
+    mp: n => `Hi ${n}, ${BRAND.name} — following up on your Mortgage Protection review. Can we find 15 minutes this week? Reply STOP to opt out.`,
+    li: n => `Hi ${n}, ${BRAND.name} — following up on your life insurance inquiry. 15 minutes this week? Reply STOP to opt out.`,
   },
   "re-engage:2": {
     mp: n => `Hi ${n}, wrapping up household files in your area. Is Mortgage Protection still on your radar? Reply STOP to opt out.`,
@@ -55,8 +56,8 @@ const SMS = {
     li: n => `Hi ${n}, last message — archiving your file. No hard feelings. Reply STOP to opt out.`,
   },
   "ghost:0": {
-    mp: n => `Hi ${n}, Jeremy Metka — several attempts to reach you about your Mortgage Protection review. Last attempt before I archive your household file. Still interested? Reply STOP to opt out.`,
-    li: n => `Hi ${n}, Jeremy Metka — last attempt before I archive your life insurance file. Still interested? Reply STOP to opt out.`,
+    mp: n => `Hi ${n}, ${BRAND.name} — several attempts to reach you about your Mortgage Protection review. Last attempt before I archive your household file. Still interested? Reply STOP to opt out.`,
+    li: n => `Hi ${n}, ${BRAND.name} — last attempt before I archive your life insurance file. Still interested? Reply STOP to opt out.`,
   },
   "ghost:1": {
     mp: n => `Hi ${n}, going ahead and archiving your household file. Reach out anytime if things change. Reply STOP to opt out.`,

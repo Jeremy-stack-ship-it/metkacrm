@@ -1,3 +1,4 @@
+import { BRAND } from '../config.js';
 // ── AI PANEL — Metka Field Ops CRM ───────────────────────────────
 // Floating AI assistant powered by Gemini 2.0 Flash.
 // Four tabs: Chat | Lead Intel | Draft Copy | Note Extraction
@@ -7,7 +8,7 @@ import React from 'react';
 
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-const SYS = `You are the AI assistant embedded in the Metka Field Ops CRM, used exclusively by Jeremy Metka — Senior Household Protection Advisor, Ministry of Protection, SFG/Quility. NPN #21425108.
+const SYS = `You are the AI assistant embedded in the Metka Field Ops CRM, used exclusively by ${BRAND.name} — Senior Household Protection Advisor, Ministry of Protection, SFG/Quility. NPN #${BRAND.npn}.
 
 Production target: 5 submitted life insurance applications per week. Every response serves this mission.
 

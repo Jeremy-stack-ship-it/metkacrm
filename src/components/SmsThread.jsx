@@ -1,28 +1,29 @@
+import { BRAND } from '../config.js';
 import React from 'react';
 import { reconstructSeqSms } from '../lib/seqSmsBodies.js'; // v3.53 — real text for auto sends
 import { SMS_SEQUENCES, suggestSeqCat, hoursSinceOpen } from '../lib/phaseEngine.js'; // v3.62 card touch
 
-const CALENDLY = 'https://calendly.com/metkasolutions/20min';
-const HIHELLO  = 'https://hihello.me/p/6cc69b25-86ec-4c39-a45b-fd48bee85403'; // digital business card
+const CALENDLY = BRAND.calendly;
+const HIHELLO  = BRAND.card; // digital business card
 const SELF_APPLY = 'https://apply.quility.com/#/symmetry/raq/SFG0092434?redirect_url=https%3A%2F%2Fyourlivingbenefit.com%2F&leadtype=Life%20Insurance&producttype=Life%20Insurance';
 
 // v3.86 — No Answer rotating templates (per-person 5-shot cycle), casual rewrite.
 // Exported so DialView's No Answer confirm-to-send uses the same single source.
 export const NO_ANSWER_TEMPLATES = [
-  "Hey {firstName}, it's Jeremy Metka — tried giving you a call about the life insurance info you requested. Send me a time that works and I'll catch you then.",
+  "Hey {firstName}, it's " + BRAND.name + " — tried giving you a call about the life insurance info you requested. Send me a time that works and I'll catch you then.",
   "Hey {firstName}, Jeremy again. Missed you just now. Still want to get you squared away on the coverage you reached out about — when's good for you?",
-  "Hi {firstName}, Jeremy Metka here. Tried your line about your life insurance request. No rush on my end — just let me know when you've got a few minutes.",
+  "Hi {firstName}, " + BRAND.name + " here. Tried your line about your life insurance request. No rush on my end — just let me know when you've got a few minutes.",
   "Hey {firstName}, it's Jeremy. Been trying to reach you about the coverage you asked about. Happy to keep it short — what's a good time to connect?",
-  "Hey {firstName}, Jeremy Metka here — circling back on your life insurance request. I know things get busy. What day this week is easiest for a quick call?",
+  "Hey {firstName}, " + BRAND.name + " here — circling back on your life insurance request. I know things get busy. What day this week is easiest for a quick call?",
 ];
 
 // v3.79 — Number change broadcast template
 const NUM_CHANGE_TEMPLATE =
-  "Hey {firstName}, Jeremy Metka here — I changed my number. Please save (580) 263-5409 as my new contact. I’ll be in touch soon. Reply STOP to opt out.";
+  "Hey {firstName}, " + BRAND.name + " here — I changed my number. Please save " + BRAND.phoneDisplay + " as my new contact. I’ll be in touch soon. Reply STOP to opt out.";
 
 // v3.78 — TCPA-compliant initial contact template (must be first text from this number)
 const INITIAL_CONTACT_TEMPLATE =
-  "Hey {firstName}, this is Jeremy Metka. Most agents that reach out just sell death benefits. I specialize in Living Benefits — coverage that pays YOU while you're still alive. Big difference. When's a good time to connect? Reply STOP to opt out.";
+  "Hey {firstName}, this is " + BRAND.name + ". Most agents that reach out just sell death benefits. I specialize in Living Benefits — coverage that pays YOU while you're still alive. Big difference. When's a good time to connect? Reply STOP to opt out.";
 
 // ── SMS THREAD ────────────────────────────────────────────────────────────────
 // Shared two-way SMS thread component.
@@ -250,7 +251,7 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
         (() => {
           if (open.smsOptOut) return null;
           const first = open.firstName || (open.name||'').split(' ')[0] || 'there';
-          const cardMsg = 'Hey ' + first + ', Jeremy Metka \u2014 got your request about life insurance with living benefits. Here\u2019s my card so you know who\u2019s calling: ' + HIHELLO + '. What\u2019s the best time to reach you? Reply STOP to opt out.';
+          const cardMsg = 'Hey ' + first + ', ' + BRAND.name + ' \u2014 got your request about life insurance with living benefits. Here\u2019s my card so you know who\u2019s calling: ' + HIHELLO + '. What\u2019s the best time to reach you? Reply STOP to opt out.';
           return React.createElement('button', {
             onClick: () => setMsgText(cardMsg),
             title: 'Send your intro + business card',

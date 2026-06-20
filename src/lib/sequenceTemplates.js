@@ -1,3 +1,4 @@
+import { BRAND } from '../config.js';
 // ── SEQUENCE TEMPLATES v1.0 ───────────────────────────────────────────────────
 // Defines touch schedules + message content for all three sequence tracks.
 // All external copy names "life insurance" explicitly per compliance rule.
@@ -127,8 +128,8 @@ export const SMS = {
       li: (n,c)=>`Hi ${n}, this is Jeremy — Senior Field Underwriter. Tried to reach you several times about your life insurance inquiry. Closing regional files this week. Keep yours open? ${c||'[CALENDLY]'}`,
     },
     1: {
-      mp: (n,c)=>`${n} — last message from me. If protecting your home and family with Mortgage Protection ever moves back up the list, I'm still here. — Jeremy, Metka Solutions`,
-      li: (n,c)=>`${n} — last message. If life insurance ever moves back up the list, I'm still here. Wishing you well. — Jeremy, Metka Solutions`,
+      mp: (n,c)=>`${n} — last message from me. If protecting your home and family with Mortgage Protection ever moves back up the list, I'm still here. — Jeremy, ${BRAND.business}`,
+      li: (n,c)=>`${n} — last message. If life insurance ever moves back up the list, I'm still here. Wishing you well. — Jeremy, ${BRAND.business}`,
     },
   },
 
@@ -172,7 +173,7 @@ export const EMAIL = {
         subject: (n)=>`Your Mortgage Protection Review — ${n}`,
         body: (n,ph,c)=>`Hi ${n},
 
-My name is Jeremy Metka — I'm a Senior Field Underwriter based in Oklahoma, and I received your request for a Mortgage Protection review.
+My name is ${BRAND.name} — I'm a Senior Field Underwriter based in Oklahoma, and I received your request for a Mortgage Protection review.
 
 I want to make sure I reach a real person and not just leave a message in a void, so I'm following up both by phone and here.
 
@@ -186,16 +187,16 @@ Or reply to this email and we'll find something that works.
 
 Looking forward to connecting,
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
       li: {
         subject: (n)=>`Your Life Insurance Review — ${n}`,
         body: (n,ph,c)=>`Hi ${n},
 
-My name is Jeremy Metka — Senior Field Underwriter, and I received your life insurance inquiry.
+My name is ${BRAND.name} — Senior Field Underwriter, and I received your life insurance inquiry.
 
 I want to make sure you actually hear from a real person, so I'm following up here as well.
 
@@ -207,9 +208,9 @@ Grab a time here: ${c||'[CALENDLY LINK]'}
 
 Or just reply and we'll find something that works.
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
     },
@@ -230,9 +231,9 @@ I'd love to show you how it works. Takes 15 minutes.
 
 ${c||'[CALENDLY LINK]'}
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
       li: {
@@ -249,9 +250,9 @@ I'd love to walk you through what's available in your state. 15 minutes.
 
 ${c||'[CALENDLY LINK]'}
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
     },
@@ -270,9 +271,9 @@ ${c||'[CALENDLY LINK]'}
 
 If I don't hear back, I'll go ahead and archive your file. No hard feelings — life gets busy.
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
       li: {
@@ -289,9 +290,9 @@ ${c||'[CALENDLY LINK]'}
 
 If I don't hear back, I'll archive your file. No hard feelings.
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
     },
@@ -311,9 +312,9 @@ That's worth 15 minutes of your time.
 
 Grab a time here: ${c||'[CALENDLY LINK]'}
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
       li: {
@@ -326,9 +327,9 @@ Quick thing worth knowing: the life insurance plans I work with include Living B
 
 Worth 15 minutes. Here's my calendar: ${c||'[CALENDLY LINK]'}
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
     },
@@ -343,8 +344,8 @@ If Mortgage Protection is still on your radar, I'm here. 15 minutes is all it ta
 
 ${c||'[CALENDLY LINK]'}
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
 ${ph||''}`,
       },
       li: {
@@ -355,8 +356,8 @@ Making one final attempt before I close your file. If life insurance is still so
 
 ${c||'[CALENDLY LINK]'}
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
 ${ph||''}`,
       },
     },
@@ -377,9 +378,9 @@ What I want you to hold onto from our conversation: the plans I work with aren't
 
 When you're ready to pick it back up, I'm here: ${c||'[CALENDLY LINK]'}
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
       li: {
@@ -392,9 +393,9 @@ I also know you didn't make a decision, and that's okay. What I want you to reme
 
 When you're ready: ${c||'[CALENDLY LINK]'}
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
     },
@@ -413,9 +414,9 @@ That's not a sales line. That's genuinely how these plans work, and most familie
 
 If that's worth 15 minutes to revisit: ${c||'[CALENDLY LINK]'}
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
       li: {
@@ -430,9 +431,9 @@ That's the part most people haven't heard. And it changes the entire conversatio
 
 If it's worth 15 minutes to revisit: ${c||'[CALENDLY LINK]'}
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
     },
@@ -453,9 +454,9 @@ If you're ready to lock something in: ${c||'[CALENDLY LINK]'}
 
 If you're not, that's okay too. I'm still here.
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
       li: {
@@ -470,9 +471,9 @@ I'm not saying this to pressure you. I'm saying it because I'd rather you hear i
 
 When you're ready: ${c||'[CALENDLY LINK]'}
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
     },
@@ -494,9 +495,9 @@ ${c||'[CALENDLY LINK]'}
 
 If I don't hear back, I'll go ahead and close your file. No hard feelings at all.
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
       li: {
@@ -507,9 +508,9 @@ Several attempts to reach you about your life insurance inquiry haven't connecte
 
 If it's still something you want to address, I'm here: ${c||'[CALENDLY LINK]'}
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}
 ${ph||''}`,
       },
     },
@@ -582,7 +583,7 @@ That's a different conversation than what most people expect.
 
 If you'd like a no-obligation review of what's available in your state, I'm 15 minutes away: ${c}
 
-Jeremy Metka
+${BRAND.name}
 ${ph}`,
   },
   1: {
@@ -595,7 +596,7 @@ That's what I call a Living Benefit. It's the part most agents never explain.
 
 If that's worth 15 minutes of your time, here's my calendar: ${c}
 
-Jeremy Metka
+${BRAND.name}
 ${ph}`,
   },
   2: {
@@ -608,7 +609,7 @@ If anything has shifted — new job, growing family, new mortgage — now may be
 
 I have availability this week: ${c}
 
-Jeremy Metka
+${BRAND.name}
 ${ph}`,
   },
   3: {
@@ -621,7 +622,7 @@ Life insurance is one of those things that gets harder — not easier — to qua
 
 If you're in a good health window right now, this is worth 15 minutes: ${c}
 
-Jeremy Metka
+${BRAND.name}
 ${ph}`,
   },
   4: {
@@ -634,7 +635,7 @@ A lot can change in a year. If you're ready to revisit — or if someone in your
 
 15 minutes: ${c}
 
-Jeremy Metka
+${BRAND.name}
 ${ph}`,
   },
   5: {
@@ -647,9 +648,9 @@ If anything changes down the road, you can always reach me at ${ph}.
 
 Wishing you and your family the best.
 
-Jeremy Metka
-Senior Field Underwriter | Metka Solutions
-NPN #21425108`,
+${BRAND.name}
+Senior Field Underwriter | ${BRAND.business}
+NPN #${BRAND.npn}`,
   },
 };
 
@@ -663,7 +664,7 @@ export const getLBLDay1Opener = (firstName, hobby) => {
   const n = firstName || "there";
   const h = (hobby || "").trim() || "your interests";
   return {
-    text1: `Hey ${n}! Jeremy Metka here — I got your request for a life insurance review. Quick question before I pull your file: do you prefer text or a quick call? 📱`,
+    text1: `Hey ${n}! ${BRAND.name} here — I got your request for a life insurance review. Quick question before I pull your file: do you prefer text or a quick call? 📱`,
     text2: `And ${n} — I noticed you're into ${h}. I've helped a lot of families who love that make sure their people are taken care of. When's a good window for 15 minutes?`,
   };
 };
