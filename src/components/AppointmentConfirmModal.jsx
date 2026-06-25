@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 // ── APPOINTMENT CONFIRMATION MODAL ──────────────────────────────────────────
 // Full-screen lock — no X, no backdrop close. Must resolve before anything else.
-export default function AppointmentConfirmModal({ open, upd, logActivity, fmt, onAdvance }) {
+export default function AppointmentConfirmModal({ open, upd, logActivity, fmt, onAdvance, onCallFirst, onSkip }) {
   const [confirmReschedule, setConfirmReschedule] = useState(false);
   const [confirmCbDate,     setConfirmCbDate]     = useState('');
   const [confirmCbTime,     setConfirmCbTime]     = useState('');
@@ -139,6 +139,14 @@ export default function AppointmentConfirmModal({ open, upd, logActivity, fmt, o
             )
           )
         : React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+            onCallFirst && React.createElement('button', {
+              onClick: onCallFirst,
+              style: { minHeight: '54px', padding: '14px 16px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: '800', cursor: 'pointer', textAlign: 'center' }
+            }, '📞  Call ' + first + ' now'),
+            onSkip && React.createElement('button', {
+              onClick: onSkip,
+              style: { background: 'none', border: 'none', color: 'var(--t3)', fontSize: '12px', fontWeight: '600', cursor: 'pointer', textAlign: 'center', marginBottom: '2px' }
+            }, 'Skip for now - call from my phone'),
             React.createElement('button', {
               onClick: handleShowed,
               style: { minHeight: '54px', padding: '14px 16px', background: '#ECFDF5', color: '#065F46', border: '2px solid #6EE7B7', borderRadius: '10px', fontSize: '14px', fontWeight: '800', cursor: 'pointer', textAlign: 'left', transition: 'all 0.1s' }

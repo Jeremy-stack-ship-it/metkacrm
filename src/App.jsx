@@ -220,6 +220,7 @@ function MetkaCRM(){
     page, setPage,
   } = useContactFilters();
   const [prevView, setPrevView] = useState("contacts");
+  const [apptSnoozeId, setApptSnoozeId] = useState(null); // v3.98 — dismiss appt check-in to call first
   const [clockNow, setClockNow]     = useState(new Date());
   const [dupeLead, setDupeLead]     = useState(null);
   // ── Settings config (extracted → lib/useSettingsConfig.js v3.14) ──────────
@@ -1479,10 +1480,12 @@ const queue = useMemo(() => {
     React.createElement(AIPanel, { activeLead: open, aiConfig }),
 
     // ── APPOINTMENT CONFIRMATION MODAL ── full-screen lock, no escape
-    (open && open.disposition === 'appointment_booked' && open.nextCallback && new Date(open.nextCallback) < new Date() && !open.apptConfirmed) &&
+    (open && open.disposition === 'appointment_booked' && open.nextCallback && new Date(open.nextCallback) < new Date() && !open.apptConfirmed && !callStatus && apptSnoozeId !== open.id) &&
       React.createElement(AppointmentConfirmModal, {
         open, upd, logActivity, fmt,
         onAdvance: () => setOpenId(null),
+        onCallFirst: () => dialLead(open),
+        onSkip: () => setApptSnoozeId(open.id),
       })
   );
 }

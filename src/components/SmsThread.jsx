@@ -24,10 +24,23 @@ export const NO_ANSWER_TEMPLATES_LI = [
   "Hey {firstName}, it's Jeremy. Been trying to reach you about the coverage you asked about. Happy to keep it short — what's a good time to connect?",
   "Hey {firstName}, " + BRAND.name + " here — circling back on your life insurance request. I know things get busy. What day this week is easiest for a quick call?",
 ];
-// Pick the rotation for a lead: leadType containing "mortgage" -> MP set, else life set.
-export const noAnswerTemplatesFor = (lead) =>
-  (((lead && lead.leadType) || '') + '').toLowerCase().includes('mortgage')
+// v3.100 — Aged reactivation set (180+ days). Matches the Reactivation Call Script voice:
+// Ghost Protocol / file-close, "wrapping up old household files", verify-and-close, no pitch.
+export const NO_ANSWER_TEMPLATES_AGED = [
+  "Hey {firstName}, this is " + BRAND.name + " with " + BRAND.business + ". I'm wrapping up some old household files and yours is still open in my system. Tried you just now — got two minutes to close it out? Reply STOP to opt out.",
+  "Hi {firstName}, " + BRAND.name + " with " + BRAND.business + ". You came through a form on life insurance and mortgage protection a while back and your file's still open. Just need to verify a couple things and update the status — when's good? Reply STOP to opt out.",
+  "Hey {firstName}, " + BRAND.name + " again. Not coming at you with the same conversation you may have already heard — I just need to verify a couple things on your record so I can close it out. Two minutes. What works? Reply STOP to opt out.",
+  "Hi {firstName}, " + BRAND.name + " with " + BRAND.business + ". I'm looking at your household file — open since you requested info on life insurance and mortgage protection. Tried your line; when can I reach you to wrap it up? Reply STOP to opt out.",
+  "Hey {firstName}, " + BRAND.name + " here — closing out old files this week and wanted to reach you on yours first. Couple quick questions, takes two minutes. Or reply STOP and I'll remove you.",
+];
+// Pick the rotation: 180+ days old -> aged reactivation set; else leadType "mortgage" -> MP, else life.
+export const noAnswerTemplatesFor = (lead) => {
+  const t = lead && lead.assignDate ? new Date(lead.assignDate).getTime() : NaN;
+  const days = Number.isFinite(t) ? Math.floor((Date.now() - t) / 86400000) : 0;
+  if (days >= 180) return NO_ANSWER_TEMPLATES_AGED;
+  return (((lead && lead.leadType) || '') + '').toLowerCase().includes('mortgage')
     ? NO_ANSWER_TEMPLATES_MP : NO_ANSWER_TEMPLATES_LI;
+};
 // Back-compat alias (life set = default rotation).
 export const NO_ANSWER_TEMPLATES = NO_ANSWER_TEMPLATES_LI;
 

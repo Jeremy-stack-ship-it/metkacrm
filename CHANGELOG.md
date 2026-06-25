@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here. Format: [Date] v[Version] — [Theme]
 
+[2026-06-23] v3.100 — No-Answer aged reactivation set (180d+), script-matched
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+src/components/SmsThread.jsx: NO_ANSWER_TEMPLATES_AGED (5, neutral) — Ghost Protocol /
+  file-close voice matched to Reactivation_Call_Script ("wrapping up old household files",
+  verify-and-close, no pitch, STOP/remove-you). noAnswerTemplatesFor now reads lead age via
+  assignDate: >=180 days -> aged set; else the v3.99 MP/life split. DialView confirm-send +
+  the in-thread No-Answer dropdown both pick it up (both call the selector). No tagging needed.
+TEST: vite build clean. Text-only; eyeball in the confirm popup. Ships in the SAME push as v3.99.
+REVERT: remove NO_ANSWER_TEMPLATES_AGED + the >=180 branch in noAnswerTemplatesFor.
+
 [2026-06-23] v3.99 — Dial Groups auto-start + No-Answer split + sequence handoff fix
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 DASHBOARD DIAL GROUPS (src/App.jsx, components/DashboardTab.jsx, components/DialView.jsx):
@@ -63,7 +73,22 @@ TEST: send-intro live smoke test 200 OK. No vite build (no src/ app change).
 REVERT: cron.unschedule('send-intro-sweep'); delete send-intro fn; revert the
   process-sequence guard line.
 
-[2026-06-20] v3.97 — Dial Groups: Account Close + Aged 30-60d launchers
+[2026-06-20] v3.98 — Appointment Check-In no longer blocks the call
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEM: At a phone appointment's scheduled time, the full-screen Appointment
+  Check-In modal (Showed/No-Show/Reschedule) locked the screen — Jeremy couldn't
+  dial the lead, but the call IS how you learn if they showed. Chicken-and-egg.
+FILES: src/components/AppointmentConfirmModal.jsx, src/App.jsx
+WHAT:
+  - Modal: added "📞 Call [name] now" (dials via onCallFirst) and a "Skip for now -
+    call from my phone" link (onSkip).
+  - App.jsx: modal gate now also hides while a call is active (!callStatus) and when
+    snoozed (apptSnoozeId). So: tap Call now -> modal hides -> talk -> call ends ->
+    modal returns to log Showed/No-Show. Skip dismisses it for the session (call
+    from cell, mark outcome in the dialer/APPTS after).
+TEST: vite build clean.
+REVERT: restore the original gate (drop !callStatus/apptSnoozeId) + remove the two
+  buttons and the onCallFirst/onSkip props.[2026-06-20] v3.97 — Dial Groups: Account Close + Aged 30-60d launchers
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 NEED: When a dial session runs dry before 200/day, no way to pull more leads.
   Jeremy wanted named dial groups he can launch into.
