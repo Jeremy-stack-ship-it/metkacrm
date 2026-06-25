@@ -5,7 +5,7 @@ import { dayKey } from '../lib/activityLog.js';
 import { priority } from '../lib/leadScoring';
 import { getSequenceStatus, getSequenceBadgeColor } from '../lib/sequenceEngine.js';
 
-function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig = {}, setView, setOpenId, setPrevView = () => {}, startDialSession = () => {}, refreshQueueOrder = () => {}, seqStats = null, onStartDialSlot = null }) {
+function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig = {}, setView, setOpenId, setPrevView = () => {}, startDialSession = () => {}, refreshQueueOrder = () => {}, seqStats = null, onStartDialSlot = null, onStartDialGroup = () => {} }) {
 
   const now = new Date();
   // v3.24 — confirmation modal state
@@ -493,6 +493,43 @@ function DashboardTab({ leads = [], activity = [], goals = {}, financialConfig =
                     <button onClick={()=>{ try{localStorage.setItem('metka-cd-tab','sms');}catch(e){} setPrevView('dashboard');setOpenId(l.id);setView('contact'); }} title="Text this lead" style={{flexShrink:0,fontSize:'13px',fontWeight:700,color:'#fff',background:'var(--blue)',border:'none',borderRadius:6,padding:'5px 9px',cursor:'pointer'}}>💬</button>
                   </div>
                 ));
+              })()}
+            </div>
+            {/* v3.97 — Dial Groups: launch a session from a named set */}
+            <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:'0.7rem',marginTop:'0.6rem'}}>
+              <div style={{fontSize:'0.688rem',color:'#94a3b8',marginBottom:'0.6rem',textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700}}>Dial Groups</div>
+              {(() => {
+                const today = new Date().toISOString().slice(0,10);
+                const dead = (d) => ['dnc','not_interested','withdrawn'].includes(d);
+                // v3.99 — Cold 90d+ : the aged backlog, OLDEST FIRST, skip anyone dialed today (resumes down the pile)
+                const coldG = (leads||[]).filter(l => {
+                  if (!l || l.archived || !l.assignDate || !l.phone || dead(l.disposition)) return false;
+                  const days = Math.floor((Date.now()-new Date(l.assignDate).getTime())/86400000);
+                  if (days < 90) return false;
+                  if ((l.lastContact||'').slice(0,10) === today) return false;
+                  return true;
+                }).sort((a,b)=> new Date(a.assignDate||0)-new Date(b.assignDate||0)); // oldest first
+                const agedG = (leads||[]).filter(l => {
+                  if (!l || l.archived || !l.assignDate || dead(l.disposition)) return false;
+                  const days = Math.floor((Date.now()-new Date(l.assignDate).getTime())/86400000);
+                  if (days < 30 || days > 60) return false;
+                  if ((l.lastContact||'').slice(0,10) === today) return false;
+                  return true;
+                }).sort((a,b)=> new Date(a.assignDate||0)-new Date(b.assignDate||0));
+                const tile = (label, sub, count, color, ids, auto=false) => React.createElement('button', {
+                  key: label,
+                  onClick: () => { if(!count){ alert('No leads in this group right now.'); return; } (auto ? onStartDialGroup : startDialSession)(ids); },
+                  style:{ width:'100%', textAlign:'left', display:'flex', alignItems:'center', justifyContent:'space-between', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', borderLeft:'3px solid '+color, borderRadius:8, padding:'0.6rem 0.8rem', marginBottom:'0.4rem', cursor: count?'pointer':'default', opacity: count?1:0.5 }
+                }, React.createElement('div', { key:'l' },
+                    React.createElement('div', { style:{ fontSize:'0.78rem', fontWeight:800, color:'#e2e8f0' } }, label),
+                    React.createElement('div', { style:{ fontSize:'0.66rem', color:'#94a3b8' } }, sub)
+                  ),
+                  React.createElement('div', { key:'c', style:{ fontSize:'1.1rem', fontWeight:900, color } }, count)
+                );
+                return React.createElement(React.Fragment, null,
+                  tile('📞 Cold 90d+ (oldest first)', 'work the aged pile · revenue dials', coldG.length, '#8B5CF6', coldG.map(l=>l.id), true),
+                  tile('📅 Aged 30–60d', 'not dialed today · file-close', agedG.length, '#F59E0B', agedG.map(l=>l.id), true)
+                );
               })()}
             </div>
             <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:'0.7rem',marginTop:'0.6rem'}}>

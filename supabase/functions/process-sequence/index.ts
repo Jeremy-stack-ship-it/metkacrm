@@ -736,7 +736,7 @@ serve(async (req) => {
       emailsSent: 0,
       smsSent:    0,
       skipped:    0,
-      smsBlocked: { killSwitch: 0, optOut: 0, quietHours: 0, inFunnel: 0, cap: 0 }, // v3.54
+      smsBlocked: { killSwitch: 0, optOut: 0, quietHours: 0, inFunnel: 0, cap: 0, introSent: 0 }, // v3.54 (+v3.93 introSent deconflict)
       errors:     [] as string[],
     };
 
@@ -810,6 +810,7 @@ serve(async (req) => {
       // ── SEND SMS (v3.54 — five guards, in order; see header) ─────────────
       const _smsGuard = (): string | null => {
         if (!SMS_ENABLED)                      return "killSwitch";
+        if (step === 0 && lead.introSent === true) return "introSent"; // v3.93 deconflict: send-intro owns the day-0 touch
         if (lead.smsOptOut === true)           return "optOut";
         if (!inSmsWindow(lead.state as string)) return "quietHours";
         if (lead.inFunnel === true)            return "inFunnel";
@@ -917,7 +918,10 @@ serve(async (req) => {
       // ── ADVANCE STEP ──────────────────────────────────────────────
       const nextStep  = step + 1;
       const nextEntry = sched.find(s => s.step === nextStep);
-      const seqPatch  = (!nextEntry || nextEntry.channels.includes("archive"))
+      // v3.93 fix — only TERMINAL-exhaust when there is no next step at all. When the next
+      // step is the archive step, advance onto it UN-paused so the archive branch fires on
+      // schedule and rolls non-nurture tracks into the nurture drip (was: dead-ending here).
+      const seqPatch  = (!nextEntry)
         ? { seqStep: nextStep, seqPaused: true, seqExitReason: "exhausted" }
         : { seqStep: nextStep };
 

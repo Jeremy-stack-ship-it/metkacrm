@@ -157,6 +157,8 @@ function MetkaCRM(){
   // v3.24 — init view from URL hash so browser back/forward works
   // v3.24 — slot-launch signal: dashboard AM/PM tiles set this, DialView consumes + clears it
   const [pendingDialSlot, setPendingDialSlot] = useState(null);
+  // v3.99 — dial-group launch: dashboard Dial Group tile sets an explicit id list; DialView consumes + clears + auto-starts PD
+  const [pendingDialIds, setPendingDialIds] = useState(null);
 
   // v3.24 — init view from URL hash so browser back/forward works
   const [view,setView]=useState(() => {
@@ -1300,6 +1302,7 @@ const queue = useMemo(() => {
           refreshQueueOrder, startDialSession,
           seqStats,
           onStartDialSlot: (slot) => { setPendingDialSlot(slot); setView('dial'); },
+          onStartDialGroup: (ids) => { startDialSession(ids); setPendingDialIds(ids); },
         }),
 
         // ── CALLBACK QUEUE VIEW (v3.1) ──
@@ -1352,6 +1355,7 @@ const queue = useMemo(() => {
           setView, setPrevView,
           callbackPresets, setCallbackPresets,
           pendingDialSlot, clearPendingDialSlot: () => setPendingDialSlot(null),
+          pendingDialIds, clearPendingDialIds: () => setPendingDialIds(null),
         }),
 
 

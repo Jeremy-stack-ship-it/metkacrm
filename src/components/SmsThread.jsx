@@ -7,15 +7,29 @@ const CALENDLY = BRAND.calendly;
 const HIHELLO  = BRAND.card; // digital business card
 const SELF_APPLY = 'https://apply.quility.com/#/symmetry/raq/SFG0092434?redirect_url=https%3A%2F%2Fyourlivingbenefit.com%2F&leadtype=Life%20Insurance&producttype=Life%20Insurance';
 
-// v3.86 — No Answer rotating templates (per-person 5-shot cycle), casual rewrite.
+// v3.86/v3.99 — No Answer rotating templates (per-person 5-shot cycle), casual rewrite.
+// SPLIT by lead type: mortgage protection vs life. General Life falls to the life set.
 // Exported so DialView's No Answer confirm-to-send uses the same single source.
-export const NO_ANSWER_TEMPLATES = [
+export const NO_ANSWER_TEMPLATES_MP = [
+  "Hey {firstName}, it's " + BRAND.name + " — tried giving you a call about the mortgage protection info you requested. Send me a time that works and I'll catch you then.",
+  "Hey {firstName}, Jeremy again. Missed you just now. Still want to get your mortgage protection squared away — when's good for you?",
+  "Hi {firstName}, " + BRAND.name + " here. Tried your line about your mortgage protection request. No rush on my end — just let me know when you've got a few minutes.",
+  "Hey {firstName}, it's Jeremy. Been trying to reach you about the mortgage protection you asked about. Happy to keep it short — what's a good time to connect?",
+  "Hey {firstName}, " + BRAND.name + " here — circling back on your mortgage protection request. I know things get busy. What day this week is easiest for a quick call?",
+];
+export const NO_ANSWER_TEMPLATES_LI = [
   "Hey {firstName}, it's " + BRAND.name + " — tried giving you a call about the life insurance info you requested. Send me a time that works and I'll catch you then.",
   "Hey {firstName}, Jeremy again. Missed you just now. Still want to get you squared away on the coverage you reached out about — when's good for you?",
   "Hi {firstName}, " + BRAND.name + " here. Tried your line about your life insurance request. No rush on my end — just let me know when you've got a few minutes.",
   "Hey {firstName}, it's Jeremy. Been trying to reach you about the coverage you asked about. Happy to keep it short — what's a good time to connect?",
   "Hey {firstName}, " + BRAND.name + " here — circling back on your life insurance request. I know things get busy. What day this week is easiest for a quick call?",
 ];
+// Pick the rotation for a lead: leadType containing "mortgage" -> MP set, else life set.
+export const noAnswerTemplatesFor = (lead) =>
+  (((lead && lead.leadType) || '') + '').toLowerCase().includes('mortgage')
+    ? NO_ANSWER_TEMPLATES_MP : NO_ANSWER_TEMPLATES_LI;
+// Back-compat alias (life set = default rotation).
+export const NO_ANSWER_TEMPLATES = NO_ANSWER_TEMPLATES_LI;
 
 // v3.79 — Number change broadcast template
 const NUM_CHANGE_TEMPLATE =
@@ -277,7 +291,7 @@ export default function SmsThread({ open, sendSms, upd, height = '100%' }) {
             style:{ position:'absolute', bottom:'100%', right:0, zIndex:200, background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'8px 8px 0 8px', boxShadow:'0 -6px 20px rgba(0,0,0,0.22)', minWidth:'300px', maxWidth:'320px', padding:'6px', marginBottom:'0' }
           },
             // Template items
-            [...NO_ANSWER_TEMPLATES.map((tpl, i) =>
+            [...noAnswerTemplatesFor(open).map((tpl, i) =>
               React.createElement('button', {
                 key: 'na'+i,
                 onClick: () => {

@@ -2,7 +2,83 @@
 
 All notable changes to this project are documented here. Format: [Date] v[Version] — [Theme]
 
-[2026-06-20] v3.96 — White-label: all branding flows from src/config.js
+[2026-06-23] v3.99 — Dial Groups auto-start + No-Answer split + sequence handoff fix
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DASHBOARD DIAL GROUPS (src/App.jsx, components/DashboardTab.jsx, components/DialView.jsx):
+  - Aged 30–60d tile now AUTO-STARTS the power dialer on click (was: opened queue only).
+  - Account Close tile REPLACED with "Cold 90d+ (oldest first)": dialable leads (has phone,
+    not archived, not dnc/not_interested/withdrawn) aged 90+ days, sorted OLDEST FIRST,
+    skips anyone dialed today; auto-starts the dialer. Grind the aged pile from the top.
+  - Mechanism: new pendingDialIds signal in App.jsx (onStartDialGroup) -> DialView effect
+    resolves the id list to lead objects -> pdStart(override). Reuses the proven AM/PM
+    slot-tile auto-start path; no new dial-connect logic.
+NO-ANSWER SPLIT (components/SmsThread.jsx, components/DialView.jsx):
+  - NO_ANSWER_TEMPLATES split into NO_ANSWER_TEMPLATES_MP (mortgage protection wording) and
+    NO_ANSWER_TEMPLATES_LI (life). New noAnswerTemplatesFor(lead) selects by leadType
+    ("mortgage" -> MP, else life; General Life -> life). DialView confirm-to-send + the
+    in-thread No-Answer dropdown both use it. Per-person naStep rotation unchanged.
+    NO_ANSWER_TEMPLATES kept as back-compat alias (= LI set).
+SEQUENCE HANDOFF FIX (supabase/functions/process-sequence/index.ts) — REQUIRES REDEPLOY:
+  - ROOT CAUSE of the drain: the Advance-Step seqPatch exhausted a lead the instant its NEXT
+    step was "archive" — so it never reached the archive branch that rolls non-nurture tracks
+    into the nurture drip. Nurture had 0 members; 894 leads dead-ended in "exhausted".
+  - FIX: seqPatch only terminal-exhausts when there is NO next step at all. Archive-next leads
+    advance onto the archive step UN-paused; the archive branch fires on schedule and enrolls
+    them in nurture. Nurture's own 2yr end still archives. (Ships with the v3.98 day-0
+    introSent deconflict — same file, same deploy.)
+DB OPS (not code): 305 never-touched emailable leads backfilled into re-engage (staggered
+  ~102/day); 36 fresh (<=30d) exhausted-but-emailable leads re-armed into re-engage step0
+  (incl. Doris West). Both resume email on the next process-sequence run.
+DEPLOY: supabase functions deploy process-sequence  (Jeremy's terminal). send-intro already live.
+TEST: vite build clean (CRM). Dial-path rule: ONE live test call via a Dial Group tile before commit.
+REVERT: re-add the archive clause to seqPatch + redeploy; revert the 3 dashboard files + SmsThread.
+
+[2026-06-23] v3.98 — Auto-intro on lead intake (send-intro) + day-0 deconflict
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NEED: Fire the 🔥 Card intro text automatically when a NEW lead lands — no manual
+  per-lead send. (Cowork request 6/23.)
+NEW: supabase/functions/send-intro/index.ts (deployed v1, verify_jwt on).
+  7 guards: kill switch INTRO_ENABLED (default OFF) · introEligible-only so the
+  ~2,481 backlog can NEVER be touched · once-only introSent · opt-out (here +
+  send-sms) · 8AM–9PM lead-local quiet hours (overnight arrivals queue → fire at
+  8AM local) · licensed-state · run cap (INTRO_RUN_CAP, default 30). Calls
+  send-sms for the Twilio send. ASCII-only copy (avoids UCS-2 segment split).
+CRON: pg_cron 'send-intro-sweep' */15 * * * * (jobid 3), anon bearer, gated by
+  the kill switch. Smoke-tested 200 {enabled:false,eligible:0,sent:0}.
+DECONFLICT: process-sequence guard returns "introSent" at step 0 when
+  lead.introSent=true → no double-text on day one (smsBlocked.introSent tally).
+INTAKE: RazorRidge_LeadIntake.gs + FormToSupabase.gs stamp introEligible:true on
+  new inserts (Jeremy re-paste pending).
+SAFE: kill switch OFF + zero introEligible leads = fully inert until Jeremy
+  enables after a one-lead self-test. process-sequence edit is in-repo; redeploy
+  only when SMS_ENABLED is re-enabled.
+CONSOLIDATED (Jeremy approved): 3 capture scripts that auto-texted leads with no
+  STOP / quiet-hours / kill switch + internal "Ministry of Protection" wording to
+  prospects — inline send DISABLED + introEligible stamped. All intake now routes
+  through the single guarded send-intro path. (MinistryOfProtection_LeadCapture.gs,
+  LandingPageCapture.gs, marketing/LeadCapture.gs — re-paste pending.)
+BACKFILL (Jeremy approved): 305 never-touched emailable leads enrolled into
+  re-engage step0, staggered ~102/day over 3 days (DB-only; not a code change).
+TEST: send-intro live smoke test 200 OK. No vite build (no src/ app change).
+REVERT: cron.unschedule('send-intro-sweep'); delete send-intro fn; revert the
+  process-sequence guard line.
+
+[2026-06-20] v3.97 — Dial Groups: Account Close + Aged 30-60d launchers
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NEED: When a dial session runs dry before 200/day, no way to pull more leads.
+  Jeremy wanted named dial groups he can launch into.
+FILE: src/components/DashboardTab.jsx (new "Dial Groups" block in Lead Intake card)
+WHAT: Two launcher tiles, each starts a session via startDialSession(ids):
+  - 📞 Account Close — mid-pipeline accounts to close: stage in
+    appointment_set/app_submitted/underwriting OR disposition follow_up/
+    appointment_booked; excludes dnc/not_interested/withdrawn; oldest first.
+  - 📅 Aged 30–60d — assignDate 30-60 days ago AND lastContact != today (skips
+    anything dialed today); excludes dead dispositions; oldest first. Pairs with
+    the uploaded Reactivation / Aged File Close script.
+  Each tile shows a live count; tap launches the dialer queued to that group.
+SAFE: uses the existing startDialSession entry point — no power-dialer core change.
+TEST: vite build clean.
+REVERT: remove the Dial Groups block from DashboardTab.[2026-06-20] v3.96 — White-label: all branding flows from src/config.js
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 WHY: To hand a clean, independent copy to another agent (Derick) and any future
   downline, every "Jeremy Metka", NPN, Calendly, hihello card, business name, and

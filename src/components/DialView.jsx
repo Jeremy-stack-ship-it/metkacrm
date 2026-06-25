@@ -4,7 +4,7 @@ import { usePowerDialer } from '../lib/usePowerDialer.js';
 import { getNextTouchDate } from '../lib/sequenceEngine.js';
 import { getTrackLength } from '../lib/sequenceTemplates.js';
 import { PHASE_DEFS, buildTodayQueue, effectivePhase, leadAgeDays, hoursSinceOpen } from '../lib/phaseEngine.js'; // v3.57-59 queue brain + chips + heat
-import { NO_ANSWER_TEMPLATES } from './SmsThread.jsx'; // v3.86 — shared no-answer text rotation
+import { noAnswerTemplatesFor } from './SmsThread.jsx'; // v3.86/v3.99 — no-answer rotation, split by lead type
 
 
 // ── Script token renderer — module scope (no per-render redefinition) ──────
@@ -55,6 +55,8 @@ export default function DialView({
   callbackPresets,
   pendingDialSlot,
   clearPendingDialSlot,
+  pendingDialIds,
+  clearPendingDialIds,
 }) {
   // ── POWER DIALER ENGINE — extracted to lib/usePowerDialer.js ──────────
   // ── Local view state ────────────────────────────────────────────────────
@@ -100,6 +102,19 @@ export default function DialView({
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingDialSlot]);
+
+  // v3.99 — auto-start PD when launched from a dashboard Dial Group (explicit id list)
+  useEffect(() => {
+    if (!pendingDialIds || !pendingDialIds.length) return;
+    const t = setTimeout(() => {
+      const byId = new Map((leads || []).map(l => [l.id, l]));
+      const groupLeads = pendingDialIds.map(id => byId.get(id)).filter(Boolean);
+      if (groupLeads.length > 0) pdStartRef.current(groupLeads);
+      if (clearPendingDialIds) clearPendingDialIds();
+    }, 120);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingDialIds]);
 
   const [cbPopoverOpen,     setCbPopoverOpen]     = useState(false);
   const [cbCustomTs,        setCbCustomTs]        = useState('');
@@ -654,9 +669,10 @@ export default function DialView({
             if (!open) return;
             const phone = (open.phone || '').trim();
             if (open.smsOptOut === true || !phone) { fireDisp('no_answer'); return; }
-            const idx = (open.naStep || 0) % NO_ANSWER_TEMPLATES.length;
+            const naSet = noAnswerTemplatesFor(open);
+            const idx = (open.naStep || 0) % naSet.length;
             const firstName = (open.firstName || (open.name || '').split(' ')[0] || 'there');
-            const body = NO_ANSWER_TEMPLATES[idx].replace(/\{firstName\}/g, firstName);
+            const body = naSet[idx].replace(/\{firstName\}/g, firstName);
             const ok = window.confirm('Send this text to ' + (open.name || 'this lead') + '?\n\n' + body);
             if (ok) {
               sendSms(phone, body, open.id);
