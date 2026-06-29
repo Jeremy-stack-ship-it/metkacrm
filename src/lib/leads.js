@@ -135,7 +135,7 @@ export const makeLeadManager = (
     // v3.38 — persistLeads synchronous (no setTimeout) to prevent notes loss on quick refresh.
     // v3.50 — G10 write order (Derick handoff): ACTIVITY FIRST, then lead persist —
     // if the lead write fails partway, the attempt record is already preserved.
-    if (sfEvents)  appendActivity(sfEvents);
+    if (sfEvents)  { appendActivity(sfEvents); sfEvents.forEach(ev => sbAppendActivity(ev).catch(() => {})); } // v3.99 — sync contact/appt events to Supabase (were local-only -> wiped on hydration)
     if (sfUpdated) persistLeads(sfLeads, sfUpdated);
   };
 

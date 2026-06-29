@@ -12,7 +12,7 @@ export const DEFAULT_GOALS = { dials: 30, contacts: 10, appointments: 3 };
 // Dispositions that mean a real human picked up the phone
 export const CONTACT_DISPS = [
   "appointment_booked", "no_show", "callback", "not_interested",
-  "dnc", "follow_up_needed", "chargeback", "hung_up"
+  "dnc", "follow_up", "follow_up_needed", "chargeback", "hung_up"
 ];
 
 export const ACTIVITY_TYPES = [

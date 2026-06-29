@@ -2,6 +2,30 @@
 
 All notable changes to this project are documented here. Format: [Date] v[Version] — [Theme]
 
+[2026-06-29] v4.00 — Fix: contacts not tracking (Supabase sync + follow_up)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEM: Contacts read 0 despite dispositioning answered calls. Two bugs:
+  1. Queued contact/appointment events were appended to LOCAL activity only — never
+     synced to Supabase (unlike dials, which call sbAppendActivity). On the hosted
+     site every Supabase hydration overwrote local activity, wiping the contacts.
+  2. The dialer's "Follow Up" button records `follow_up`, but CONTACT_DISPS only had
+     `follow_up_needed` — so reaching a lead + Follow Up never counted as a contact.
+FILES: src/lib/leads.js, src/lib/activityLog.js
+FIX:
+  - leads.js: the queued-event flush now also calls sbAppendActivity(ev) for each
+    event, so contact + appointment events persist to Supabase like dials and survive
+    hydration.
+  - activityLog.js: added "follow_up" to CONTACT_DISPS. Contact dispositions are now
+    callback, appointment_booked, not_interested, hung_up, follow_up, dnc, no_show,
+    follow_up_needed, chargeback (matches Jeremy's spec).
+NOTE: takes effect on the live site after commit + push + Netlify redeploy. Today's
+  already-marked contacts (callback x2, not_interested x1, follow_up x1) can be
+  backfilled into Supabase separately.
+TEST: vite build clean.
+REVERT: drop the sbAppendActivity loop in the flush; remove follow_up from CONTACT_DISPS.
+
+(prev top: v3.100)
+
 [2026-06-23] v3.100 — No-Answer aged reactivation set (180d+), script-matched
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 src/components/SmsThread.jsx: NO_ANSWER_TEMPLATES_AGED (5, neutral) — Ghost Protocol /
